@@ -1,5 +1,7 @@
 import React, { memo, useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
+import { palette } from './global';
+import { d3 } from './libs';
 import { Grid } from './components';
 import User from './User.jsx';
 import Colors from './Colors.jsx';
@@ -41,7 +43,7 @@ function useSocket(cb = null) {
 
   const handleMessage = useCallback(msg => {
     const { type, payload } = JSON.parse(msg.data);
-    console.log('useSocket got message', type, payload)
+    // console.log('useSocket got message', type, payload)
 
     switch (type) {
       case 'check_uuid':
@@ -59,8 +61,6 @@ function useSocket(cb = null) {
 
   useEffect(() => {
     if (!client.current) {
-      console.log('useSocket initialize')
-
       const loc = window.location;
       let socketURI;
       if (loc.protocol === 'https:') {
@@ -92,9 +92,7 @@ function useSocket(cb = null) {
 
 
   return {
-    client: client.current,
-    active: open,
-    uuid: uuid,
+    active: open && !!uuid,
     post: postMessage,
   };
 };
@@ -103,53 +101,101 @@ function useSocket(cb = null) {
 
 
 
-export default memo(function App() {
-  const [name, setName] = useState('me');
-  const [grid, setGrid] = useState([]);
-  const [color, setColor] = useState('');
 
 
 
+function useGrid() {
+  const dataRef = useRef(null);
+  const gridRef = useRef(null);
+  const nodeRef = useRef(null);
 
-  const updateGrid = useCallback(payload => {
-    const index = grid.findIndex(a => a.id === payload.id);
-    const newGrid = [...grid];
-    newGrid[index] = payload;
-    setGrid(newGrid);
-  }, [grid, setGrid]);
+
+  useEffect(() => {
+    const el = gridRef.current;
+    if (el && !nodeRef.current) {
+      nodeRef.current = d3.select(el);
+    };
+  }, [gridRef, nodeRef]);
+
+
+  const draw = useCallback(() => {
+    const data = dataRef.current;
+    const node = nodeRef.current;
+    if (!data || !node) {
+      return null;
+    };
+
+    node.selectAll('div')
+      .data(data, d => d.id)
+        .attr('id', d => d.id)
+        .attr('class', 'Grid--cel')
+        .style('left', d => d.col * 30 + 'px')
+        .style('top', d => d.row * 30 + 'px')
+        .style('background-color', d => palette[d.color])
+      .enter()
+        .append('div')
+        .attr('id', d => d.id)
+        .attr('class', 'Grid--cel')
+        .style('left', d => d.col * 30 + 'px')
+        .style('top', d => d.row * 30 + 'px')
+        .style('background-color', d => palette[d.color])
+      .exit()
+        .remove();
+  }, [dataRef, nodeRef]);
+
+
+  const updateCel = useCallback(newCel => {
+    const data = dataRef.current;
+    const index = data.findIndex(a => a.id === newCel.id);
+    data[index] = newCel;
+    draw();
+  }, [dataRef, draw]);
+
+
+  const updateGrid = useCallback(newGrid => {
+    dataRef.current = newGrid;
+    draw();
+  }, [dataRef, draw]);
 
 
   const handleSocketMessage = useCallback(({ type, payload }) => {
     switch (type) {
-      case 'grid':
-        setGrid(payload);
+      case 'update_cel':
+        updateCel(payload);
         break;
-      case 'cel':
-        // console.log('socket cent cel', payload);
+      case 'update_grid':
         updateGrid(payload);
         break;
       default:
-        // console.log('socket sent:', type)
+        console.log('UNKNOWN MESSAGE', type, payload);
         return null;
     };
-  }, [setGrid, updateGrid]);
+  }, [updateGrid, updateCel]);
 
-
-  const { client, active, uuid, post } = useSocket(handleSocketMessage);
-
+  const { active, post } = useSocket(handleSocketMessage);
 
 
   useEffect(() => {
-    if (!grid.length) {
+    const data = dataRef.current;
+    if (!data && active) {
       post('get_grid');
     };
-  }, [grid, post])
+  }, [dataRef, active, post]);
+
+
+  return {
+    gridRef,
+    post,
+  };
+};
 
 
 
-  const handleName = useCallback(val => {
-    setName(val);
-  }, [setName]);
+
+
+export default memo(function App() {
+  const { gridRef, post } = useGrid();
+  const [color, setColor] = useState('');
 
 
   const handleColor = useCallback(val => {
@@ -160,40 +206,16 @@ export default memo(function App() {
   return (
     <div id="App">
       <div className="App--gridbox">
-        {active && (
-          <Grid
-            grid={grid}
-            post={post}
-
-            uuid={uuid}
-            name={name}
-            color={color}
-            client={client}
-          />
-        )}
+        <Grid
+          gridRef={gridRef}
+          post={post}
+          color={color}
+        />
       </div>
-
-
-      <Colors userColor={color} handleColor={handleColor} />
-
-
-
+      <Colors
+        userColor={color}
+        handleColor={handleColor}
+      />
     </div>
   );
 });
-
-
-      // <div className="App--sidebar">
-      //   <User username={name} handleName={handleName} />
-      //   <Colors userColor={color} handleColor={handleColor} />
-      // </div>
-
-
-
-        // <div className="App--status">
-        //   {active ? 'Active' : 'Connecting...'}
-        //   <h4>{message}</h4>
-        // </div>
-
-
-        //

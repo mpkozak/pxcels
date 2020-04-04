@@ -44,15 +44,29 @@ for (let row = 0; row < gridHeight; row++) {
 };
 
 
-function updateGrid(payload) {
-  const { id, color, author, time } = payload;
+// function updateGrid(payload) {
+//   const { id, color, author, time } = payload;
+//   const cel = GRID.find(a => a.id === id);
+//   cel.color = color;
+//   cel.lastChangeAuthor = author;
+//   cel.lastChangeTime = time;
+//   socketDispatchAll('cel', cel);
+//   // dispatchGrid();
+// };
+
+
+
+function handleSetCel({ id, color, t }, uuid) {
   const cel = GRID.find(a => a.id === id);
   cel.color = color;
-  cel.lastChangeAuthor = author;
-  cel.lastChangeTime = time;
-  socketDispatchAll('cel', cel);
-  // dispatchGrid();
+  cel.lastChangeAuthor = uuid;
+  cel.lastChangeTime = t;
+  socketDispatchAll('update_cel', cel);
 };
+
+
+
+
 
 
 // function dispatchGrid() {
@@ -101,6 +115,7 @@ const wss = new WebSocket.Server({
 
 
 function socketDispatchAll(type, payload) {
+  console.log('socketDispatchAll')
   wss.clients.forEach(client => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify({ type, payload }));
@@ -130,38 +145,21 @@ wss.on('connection', ws => {
 
     switch (type) {
       case 'check_uuid':
-        handleCheckUuid(payload)
-      case 'get_grid':
-        postMessage('grid', GRID);
+        handleCheckUuid(payload);
         break;
-
-
-
-
-      case 'paint':
-        // console.log('socket sent paint', payload);
-        updateGrid(payload);
+      case 'get_grid':
+        postMessage('update_grid', GRID);
+        break;
+      case 'set_cel':
+        handleSetCel(payload, uuid);
         break;
       default:
-        console.log('socket sent:', type);
+        console.log('UNKNOWN MESSAGE', type);
         return null;
     };
   });
 
-  // const msg = {
-  //   type: 'uuid',
-  //   payload: userID,
-  // };
-
-  // const msg = {
-  //   type: 'check_uuid',
-  // };
-
-  // ws.send(JSON.stringify(msg));
-
   postMessage('check_uuid');
-
-  // dispatchGrid();
 });
 
 
