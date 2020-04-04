@@ -5,7 +5,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 
 const WebSocket = require('ws');
-const uuid = require('uuid').v4;
+const UUID = require('uuid').v4;
 
 
 
@@ -50,35 +50,43 @@ function updateGrid(payload) {
   cel.color = color;
   cel.lastChangeAuthor = author;
   cel.lastChangeTime = time;
-  dispatchCel(cel)
+  socketDispatchAll('cel', cel);
   // dispatchGrid();
 };
 
 
-function dispatchGrid() {
-  wss.clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) {
-      const msg = {
-        type: 'grid',
-        payload: GRID,
-      };
-      client.send(JSON.stringify(msg));
-    };
-  });
-};
+// function dispatchGrid() {
+//   wss.clients.forEach(client => {
+//     if (client.readyState === WebSocket.OPEN) {
+//       const msg = {
+//         type: 'grid',
+//         payload: GRID,
+//       };
+//       client.send(JSON.stringify(msg));
+//     };
+//   });
+// };
 
 
-function dispatchCel(cel) {
-  wss.clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) {
-      const msg = {
-        type: 'cel',
-        payload: cel,
-      };
-      client.send(JSON.stringify(msg));
-    };
-  });
-};
+// function dispatchCel(cel) {
+//   socketDispatchAll('cel', cel);
+//   wss.clients.forEach(client => {
+//     if (client.readyState === WebSocket.OPEN) {
+//       const msg = {
+//         type: 'cel',
+//         payload: cel,
+//       };
+//       client.send(JSON.stringify(msg));
+//     };
+//   });
+// };
+
+
+
+
+
+
+
 
 
 
@@ -87,19 +95,49 @@ function dispatchCel(cel) {
 
 // WEBSOCKET
 
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({
+  server: server,
+});
+
+
+function socketDispatchAll(type, payload) {
+  wss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type, payload }));
+    };
+  });
+};
+
+
+
+
+
+
 
 wss.on('connection', ws => {
-  const userID = uuid();
+  let userID = undefined;
+
+  const postMessage = (type, payload) => ws.send(JSON.stringify({ type, payload }));
+
+  const handleCheckUuid = (payload) => {
+    userID = payload || UUID();
+    postMessage('store_uuid', userID);
+  };
 
   ws.on('message', msg => {
-    console.log('socket got message from ', userID)
+    const { type, payload, uuid } = JSON.parse(msg);
+    console.log('socket got message', type, uuid, payload)
 
-    const { type, ...payload } = JSON.parse(msg);
     switch (type) {
-      case 'message':
-        // console.log('socket sent message', payload);
+      case 'check_uuid':
+        handleCheckUuid(payload)
+      case 'get_grid':
+        postMessage('grid', GRID);
         break;
+
+
+
+
       case 'paint':
         // console.log('socket sent paint', payload);
         updateGrid(payload);
@@ -110,13 +148,20 @@ wss.on('connection', ws => {
     };
   });
 
-  const msg = {
-    type: 'uuid',
-    payload: userID,
-  };
-  ws.send(JSON.stringify(msg));
+  // const msg = {
+  //   type: 'uuid',
+  //   payload: userID,
+  // };
 
-  dispatchGrid();
+  // const msg = {
+  //   type: 'check_uuid',
+  // };
+
+  // ws.send(JSON.stringify(msg));
+
+  postMessage('check_uuid');
+
+  // dispatchGrid();
 });
 
 

@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
-import Grid from './Grid.jsx';
+import { Grid } from './components';
 import User from './User.jsx';
 import Colors from './Colors.jsx';
 
@@ -8,29 +8,94 @@ import Colors from './Colors.jsx';
 
 
 
-function useSocket() {
+function useSocket(cb = null) {
   const client = useRef(null);
-  const [active, setActive] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [uuid, setUuid] = useState(null);
 
 
-  const handleActive = useCallback(() => {
-    console.log('handleActive')
-    setActive(true);
-  }, [setActive]);
+  const handleOpen = useCallback(() => {
+    if (client.current.readyState === 1) {
+      setOpen(true);
+    };
+  }, [client, setOpen]);
+
+  const handleClose = useCallback(() => {
+    if (client.current.readyState === 3) {
+      setOpen(false);
+    };
+  }, [client, setOpen]);
+
+
+  const checkUuid = useCallback(() => {
+    const storedUuid = localStorage.getItem('uuid');
+    const msg = { type: 'check_uuid', payload: storedUuid };
+    client.current.send(JSON.stringify(msg));
+  }, [client]);
+
+  const storeUuid = useCallback(val => {
+    localStorage.setItem('uuid', val);
+    setUuid(val);
+  }, [setUuid]);
+
+
+  const handleMessage = useCallback(msg => {
+    const { type, payload } = JSON.parse(msg.data);
+    console.log('useSocket got message', type, payload)
+
+    switch (type) {
+      case 'check_uuid':
+        checkUuid();
+        break;
+      case 'store_uuid':
+        storeUuid(payload);
+        break;
+      default:
+        cb({ type, payload });
+        return null;
+    };
+  }, [checkUuid, storeUuid, cb]);
 
 
   useEffect(() => {
     if (!client.current) {
-      console.log('instantiating socket')
-      client.current = new WebSocket('ws://192.168.0.3:8080');
-      client.current.onopen = handleActive;
+      console.log('useSocket initialize')
+
+      const loc = window.location;
+      let socketURI;
+      if (loc.protocol === 'https:') {
+        socketURI = 'wss:';
+      } else {
+        socketURI = 'ws:';
+      };
+      socketURI += '//' + loc.host;
+      socketURI += loc.pathname;
+
+      if (process.env.NODE_ENV === 'development') {
+        socketURI = 'ws://localhost:8080';
+      };
+
+      client.current = new WebSocket(socketURI);
+      client.current.onopen = handleOpen;
+      client.current.onclose = handleClose;
+      client.current.onmessage = handleMessage;
     };
-  }, [client, handleActive]);
+  }, [client, handleOpen, handleClose, handleMessage]);
+
+
+  const postMessage = useCallback((type, payload) => {
+    if (!open || !uuid) {
+      return null;
+    };
+    client.current.send(JSON.stringify({ type, payload, uuid }));
+  }, [open, uuid, client]);
 
 
   return {
     client: client.current,
-    active: active,
+    active: open,
+    uuid: uuid,
+    post: postMessage,
   };
 };
 
@@ -39,12 +104,10 @@ function useSocket() {
 
 
 export default memo(function App() {
-  const { client, active } = useSocket();
   const [name, setName] = useState('me');
-  const [color, setColor] = useState('');
-  const [uuid, setUuid] = useState('');
-  const [message, setMessage] = useState('');
   const [grid, setGrid] = useState([]);
+  const [color, setColor] = useState('');
+
 
 
 
@@ -56,20 +119,9 @@ export default memo(function App() {
   }, [grid, setGrid]);
 
 
-  const handleSocketMessage = useCallback(msg => {
-    const { type, payload } = JSON.parse(msg.data);
-
+  const handleSocketMessage = useCallback(({ type, payload }) => {
     switch (type) {
-      case 'uuid':
-        // console.log('socket sent uuid', payload)
-        setUuid(payload);
-        break;
-      case 'message':
-        // console.log('socket sent message', payload)
-        setMessage(payload);
-        break;
       case 'grid':
-        // console.log('socket sent grid', payload)
         setGrid(payload);
         break;
       case 'cel':
@@ -80,14 +132,19 @@ export default memo(function App() {
         // console.log('socket sent:', type)
         return null;
     };
-  }, [setUuid, setMessage, setGrid, updateGrid]);
+  }, [setGrid, updateGrid]);
+
+
+  const { client, active, uuid, post } = useSocket(handleSocketMessage);
+
 
 
   useEffect(() => {
-    if (client) {
-      client.onmessage = handleSocketMessage;
+    if (!grid.length) {
+      post('get_grid');
     };
-  }, [client, handleSocketMessage]);
+  }, [grid, post])
+
 
 
   const handleName = useCallback(val => {
@@ -105,10 +162,12 @@ export default memo(function App() {
       <div className="App--gridbox">
         {active && (
           <Grid
+            grid={grid}
+            post={post}
+
             uuid={uuid}
             name={name}
             color={color}
-            grid={grid}
             client={client}
           />
         )}

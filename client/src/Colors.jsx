@@ -1,7 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import './Colors.css';
-import params from './_params.js'
-const { palette } = params;
+import { palette } from './global';
 
 
 
