@@ -1,0 +1,53 @@
+#User {
+  width: 100%;
+  height: auto;
+  min-height: 8vh;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+  transition: min-height 200ms ease;
+  /*background-color: yellow;*/
+}
+
+#User.showform {
+  min-height: 14vh;
+}
+
+
+
+#User>h1 {
+  padding: 2%;
+}
+
+
+
+#User>form {
+  display: none;
+}
+
+#User.showform>form {
+  width: 100%;
+  height: 100%;
+  padding: 8% 0;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-around;
+}
+
+
+#User>form>input {
+  width: 60%;
+  padding: .4vh;
+  font-size: 3vh;
+  user-select: auto;
+}
+
+
+#User>form>button {
+  font-size: 2vh;
+  padding: 0 1vmin;
+  cursor: pointer;
+  user-select: auto;
+}

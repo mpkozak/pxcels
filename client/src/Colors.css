@@ -1,0 +1,83 @@
+#Colors {
+  position: fixed;
+  left: 0px;
+  bottom: 15px;
+  width: 100%;
+  max-width: 768px;
+  height: auto;
+  padding: 1% 0;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+
+@media only screen and (max-width: 768px) {
+  #Colors {
+    position: fixed;
+    left: 0px;
+    bottom: 15px;
+    width: 100%;
+    max-width: 380px;
+  }
+}
+
+
+
+.Colors--celbox {
+  position: relative;
+  width: auto;
+  height: auto;
+  padding: 3px;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, .3);
+  border-radius: 5px;
+}
+
+
+
+.Colors--cel {
+  width: 40px;
+  height: 40px;
+  margin: 3px;
+  border-radius: 2px;
+  user-select: auto;
+  cursor: pointer;
+}
+
+.Colors--cel.active {
+  box-sizing: border-box;
+  border: 25% solid rgba(255, 255, 255, .7);
+}
+
+
+
+
+
+
+
+
+/*.Colors--selection {
+  width: 90%;
+  height: 10%;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.Colors--selection-pick {
+  color: #bbb;
+  white-space: nowrap;
+}
+
+.Colors--selection-name {
+  margin-right: 2%;
+  text-shadow: 0 0 3px rgba(255, 255, 255, .5);
+}
+*/

@@ -1,0 +1,25 @@
+{
+  "name": "pixels",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js 8080",
+    "both": "concurrently \"nodemon index.js\" \"cd client && npm start\""
+  },
+  "author": "m. parker kozak",
+  "license": "ISC",
+  "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "uuid": "^7.0.3",
+    "ws": "^7.2.3"
+  },
+  "devDependencies": {
+    "concurrently": "^5.1.0",
+    "nodemon": "^2.0.2"
+  }
+}
