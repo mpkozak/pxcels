@@ -13,7 +13,7 @@ export default memo(function Grid({ gridRef, click = null } = {}) {
         <div
           className="Grid--celbox"
           ref={gridRef}
-          onClick={click}
+          // onClick={click}
         />
       </div>
     </div>

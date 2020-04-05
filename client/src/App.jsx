@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback } from 'react';
+import React, { memo } from 'react';
 import './App.css';
 import { useGrid } from './hooks';
 import { Grid, Colors } from './components';
@@ -8,33 +8,17 @@ import { Grid, Colors } from './components';
 
 
 export default memo(function App() {
-  const { gridRef, post } = useGrid();
-  const [color, setColor] = useState(null);
+  const { gridRef, username, color, setColor } = useGrid();
 
-
-  const handleColor = useCallback(val => {
-    setColor(val);
-  }, [setColor]);
-
-
-  const handleGridClick = useCallback(e => {
-    const { id } = e.target;
-    if (!id || !color) {
-      return null;
-    };
-    post('set_cel', { id, color, t: Date.now() });
-  }, [post, color]);
-
+  console.log('app render', username)
 
   return (
     <div id="App">
-      <Grid
-        gridRef={gridRef}
-        click={handleGridClick}
-      />
+      <Grid gridRef={gridRef} />
       <Colors
         activeColor={color}
-        handleColor={handleColor}
+        // handleColor={handleColor}
+        handleColor={setColor}
       />
     </div>
   );

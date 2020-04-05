@@ -82,7 +82,8 @@ socketServer.on('connection', socket => {
         };
         const lastDraw = User.didDraw(uuid);
         postMessage('update_last_draw', lastDraw);
-        const cel = Grid.update({ ...payload, uuid });
+        const name = User.getName(uuid);
+        const cel = Grid.update({ ...payload, uuid, name });
         socketDispatchAll('update_cel', cel);
         break;
       default:

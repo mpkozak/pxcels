@@ -8,6 +8,8 @@ export default function useSocket(cb = null) {
   const client = useRef(null);
   const [open, setOpen] = useState(false);
   const [uuid, setUuid] = useState(null);
+  const [name, setName] = useState(null);
+
 
 
   const handleOpen = useCallback(() => {
@@ -32,11 +34,10 @@ export default function useSocket(cb = null) {
 
   const handleStoreUser = useCallback(val => {
     const { uuid, name } = val;
-    // handle name storage;
-    console.log('name', name)
     localStorage.setItem('uuid', uuid);
     setUuid(uuid);
-  }, [setUuid]);
+    setName(name);
+  }, [setUuid, setName]);
 
 
   const handleMessage = useCallback(msg => {
@@ -93,5 +94,6 @@ export default function useSocket(cb = null) {
   return {
     active: open && !!uuid,
     post: postMessage,
+    username: name,
   };
 };

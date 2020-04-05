@@ -61,6 +61,14 @@ function canDraw(uuid) {
 };
 
 
+function getName(uuid) {
+  const user = get(uuid);
+  if (!user) {
+    return 'anonymous';
+  };
+  return user.name;
+};
+
 
 
 
@@ -163,17 +171,17 @@ function logout(clientUuid) {
     Backup
 */
 
-// const backupInterval = process.env.USER_BACKUP_INTERVAL * 1e3;
-// let backupTimeout = setTimeout(backup, backupInterval);
+const backupInterval = process.env.USER_BACKUP_INTERVAL * 1e3;
+let backupTimeout = setTimeout(backup, backupInterval);
 
-// async function backup() {
-//   console.log('user backup ran')
-//   const dbFile = path.join(__dirname, 'db_user.json');
-//   const data = JSON.stringify(Users, null, 2);
-//   await fs.writeFile(dbFile, data, 'utf-8');
-//   backupTimeout = setTimeout(backup, backupInterval);
-//   return;
-// };
+async function backup() {
+  console.log('user backup ran')
+  const dbFile = path.join(__dirname, 'db_user.json');
+  const data = JSON.stringify(Users, null, 2);
+  await fs.writeFile(dbFile, data, 'utf-8');
+  backupTimeout = setTimeout(backup, backupInterval);
+  return;
+};
 
 
 
@@ -183,6 +191,7 @@ module.exports = {
   login,
   logout,
   saveName,
+  getName,
   canDraw,
   didDraw,
 };
