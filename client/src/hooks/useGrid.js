@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { d3 } from '../libs';
+import { d3, parse } from '../libs';
 import { palette } from '../global';
 import { useSocket } from './';
 
@@ -7,44 +7,20 @@ import { useSocket } from './';
 
 
 
-function parseTime(ms) {
-  const formatOutput = (val, unit) => {
-    const floor = Math.floor(val);
-    return `${floor} ${unit}${(floor > 1) ? 's' : ''} ago`;
-  };
-
-  const seconds = ms * 1e-3
-  if (seconds < 60) {
-    return formatOutput(seconds, 'second');
-  };
-  const minutes = seconds / 60;
-  if (minutes < 60) {
-    return formatOutput(minutes, 'minute');
-  };
-  const hours = minutes / 60;
-  if (hours < 24) {
-    return formatOutput(hours, 'hour');
-  };
-  const days = hours / 24;
-  return formatOutput(days, 'day');
-};
-
-
-
-
 export default function useGrid() {
   const [color, setColor] = useState('');
+  const [lastDraw, setLastDraw] = useState(0);
   const dataRef = useRef(null);
   const gridRef = useRef(null);
   const gridNodeRef = useRef(null);
 
-  // const tooltipRef = useRef(null);
   const tooltipNodeRef = useRef(null);
 
 
 
-
-
+/*
+    d3 node assign
+*/
 
   useEffect(() => {   // assign grid ref to d3 node
     const el = gridRef.current;
@@ -65,34 +41,9 @@ export default function useGrid() {
 
 
 
-
-
-
-
-
-
-
 /*
     d3 draw stack
 */
-
-  // const showTooltip = useCallback((d, left, top) => {
-  //   const node = tooltipNodeRef.current;
-  //   if (!node) {
-  //     return null;
-  //   };
-
-  //   const { id, author, lastChangeTime } = d;
-
-  //   node
-  //     .html(`cel id: ${id}<br/>author: ${author}`)
-  //     .style('left', left + 'px')
-  //     .style('top', top + 'px')
-  //     .style('opacity', 1);
-
-  //   // console.log("drawTooltip", d, left, top)
-  // }, [tooltipNodeRef]);
-
 
   const showTooltip = useCallback((e) => {
     const node = tooltipNodeRef.current;
@@ -101,12 +52,11 @@ export default function useGrid() {
       return null;
     };
 
-    const { clientX, clientY, target } = e;
-    const { id } = target;
+    const { clientX, clientY, target: { id } } = e;
 
     const datum = data.find(a => a.id === id)
     const { lastChangeAuthor, lastChangeTime } = datum;
-    const deltaTime = parseTime(Date.now() - lastChangeTime);
+    const deltaTime = parse.time(Date.now() - lastChangeTime);
     const displayText = lastChangeAuthor
       ? `<h4>${lastChangeAuthor}</h4><h5>${deltaTime}</h5>`
       : '<h4>blank</h4>'
@@ -120,21 +70,12 @@ export default function useGrid() {
   }, [dataRef, tooltipNodeRef]);
 
 
-
-
-
-
-  const hideTooltip = useCallback((d, e) => {
-    const node = tooltipNodeRef.current;
-    if (!node) {
-      return null;
-    };
-  }, [tooltipNodeRef]);
-
-
-
-
-
+  // const hideTooltip = useCallback((d, e) => {
+  //   const node = tooltipNodeRef.current;
+  //   if (!node) {
+  //     return null;
+  //   };
+  // }, [tooltipNodeRef]);
 
 
   const drawGrid = useCallback(() => {
@@ -146,11 +87,6 @@ export default function useGrid() {
 
     node.selectAll('div')
       .data(data, d => d.id)
-        // .attr('id', d => d.id)
-        // .attr('class', 'GridCel')
-        // .style('left', d => d.col * 30 + 'px')
-        // .style('top', d => d.row * 30 + 'px')
-        // .style('background-color', d => palette[d.color])
       .enter()
         .append('div')
         .attr('id', d => d.id)
@@ -158,20 +94,9 @@ export default function useGrid() {
         .style('left', d => d.col * 30 + 'px')
         .style('top', d => d.row * 30 + 'px')
         .style('background-color', d => palette[d.color])
-        // .on('mouseover', function(d) {
-        //   const { offsetLeft, offsetTop } = this;
-        //   const { clientLeft, clientTop } = this;
-        //   // showTooltip(d, offsetLeft, offsetTop)
-        //   showTooltip(d, clientLeft, clientTop)
-        //   // console.log('mousover in d3', this)
-        //   console.dir(this)
-        // })
-        // .on('mouseover', showTooltip)
-        // .on('mouseout', hideTooltip)
-      // .exit()
-      //   .remove();
-  }, [dataRef, gridNodeRef, showTooltip, hideTooltip]);
-
+      .exit()
+        .remove();
+  }, [dataRef, gridNodeRef ]);
 
 
   const drawCel = useCallback((cel) => {
@@ -203,6 +128,10 @@ export default function useGrid() {
     drawCel(data[index]);
   }, [dataRef, drawCel]);
 
+  const handleUpdateLastDraw = useCallback(timestamp => {
+    setLastDraw(timestamp);
+  }, [setLastDraw]);
+
 
 
 /*
@@ -218,18 +147,15 @@ export default function useGrid() {
         handleUpdateCel(payload);
         break;
       case 'update_last_draw':
-        // handle last draw
-        console.log('lastDraw', payload)
+        handleUpdateLastDraw(payload);
         break;
       default:
         console.log('SOCKET message in useDraw', type, payload);
         return null;
     };
-  }, [handleUpdateGrid, handleUpdateCel]);
+  }, [handleUpdateGrid, handleUpdateCel, handleUpdateLastDraw]);
 
   const { active, post, username } = useSocket(handleSocketMessage);
-
-
 
 
   useEffect(() => {   // get grid data from socket
@@ -239,6 +165,11 @@ export default function useGrid() {
     };
   }, [dataRef, active, post]);
 
+
+
+/*
+    event handlers and registration
+*/
 
   const handleGridClick = useCallback(e => {
     const { id } = e.target;
@@ -263,13 +194,32 @@ export default function useGrid() {
 
 
 
-  useEffect(() => {   //add click listener to grid element
+
+/*
+    WIP
+*/
+
+  // const tooltipRef = useRef({});
+
+  // const updateTooltip = useCallback(currentId => {
+  //   const { id } = tooltipRef.current;
+  //   if (currentId === id) {
+  //     console.log('data is the same')
+  //     return null;
+  //   };
+
+
+  // }, [tooltipRef]);
+
+
+  // const handleMouseMove = useCallback(e => {
+  //   const { clientX, clientY, target: { id } } = e;
+  //   //
+  // })
+
+
+  useEffect(() => {   //add mousemove listener to grid element
     const el = gridRef.current;
-
-    // const handleHover = e => {
-    //   console.log('hovered', e.target.id)
-    // }
-
     if (el) {
       el.addEventListener('mousemove', showTooltip, { passive: true });
     };
@@ -281,6 +231,11 @@ export default function useGrid() {
 
 
 
+
+
+/*
+    Initial draw effect
+*/
 
   useEffect(() => {   // draw initial grid
     const data = dataRef.current;
@@ -294,6 +249,7 @@ export default function useGrid() {
   return {
     gridRef,
     username,
+    lastDraw,
     color,
     setColor,
   };

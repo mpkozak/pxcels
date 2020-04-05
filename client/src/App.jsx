@@ -8,17 +8,16 @@ import { Grid, Colors } from './components';
 
 
 export default memo(function App() {
-  const { gridRef, username, color, setColor } = useGrid();
+  const { gridRef, username, lastDraw, color, setColor } = useGrid();
 
-  console.log('app render', username)
+  // console.log('app render', username, lastDraw)
 
   return (
     <div id="App">
       <Grid gridRef={gridRef} />
       <Colors
         activeColor={color}
-        // handleColor={handleColor}
-        handleColor={setColor}
+        setColor={setColor}
       />
     </div>
   );

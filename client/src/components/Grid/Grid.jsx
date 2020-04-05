@@ -5,16 +5,13 @@ import './Grid.css';
 
 
 
-export default memo(function Grid({ gridRef, click = null } = {}) {
-  console.log('grid render')
+export default memo(function Grid({ gridRef } = {}) {
+  // console.log('grid render')
+
   return (
     <div id="Grid">
       <div className="Grid--wrap">
-        <div
-          className="Grid--celbox"
-          ref={gridRef}
-          // onClick={click}
-        />
+        <div className="Grid--celbox" ref={gridRef} />
       </div>
     </div>
   );
