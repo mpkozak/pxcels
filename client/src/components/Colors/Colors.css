@@ -1,0 +1,67 @@
+#Colors {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: auto;
+  padding-bottom: 1vh;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 200;
+}
+
+
+.Colors--celbox {
+  position: relative;
+  width: auto;
+  height: auto;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(8, 40px);
+  grid-template-rows: repeat(2, 40px);
+  grid-gap: 5px;
+  background-color: rgba(127, 127, 127, .2);
+  border: 1px solid rgba(0, 0, 0, .3);
+  border-radius: 5px;
+  pointer-events: auto;
+}
+
+
+
+@media only screen and (min-width: 768px) {
+  #Colors {
+    bottom: 15px;
+    height: auto;
+    align-items: flex-start;
+  }
+
+  .Colors--celbox {
+    margin-left: 15px;
+    grid-template-columns: repeat(16, 40px);
+    grid-template-rows: 40px;
+  }
+}
+
+
+
+
+
+.ColorsCel {
+  /*align-self: stretch;*/
+  /*place-self: stretch;*/
+  border-radius: 2px;
+  opacity: .95;
+  user-select: auto;
+  cursor: pointer;
+}
+
+.ColorsCel.active {
+  opacity: 1;
+  box-shadow: 0 2px 5px 2px rgba(0, 0, 0, .3);
+  transform: translateY(-3%)scale(1.1);
+}
+
+

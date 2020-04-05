@@ -1,3 +1,4 @@
+require('dotenv').config();
 const path = require('path');
 const http = require('http');
 const express = require('express');
@@ -26,45 +27,11 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'short' : 'dev'));
 
 // GRID
 
-const gridWidth = 128;
-const gridHeight = 72;
-const GRID = [];
-
-for (let row = 0; row < gridHeight; row++) {
-  for (let col = 0; col < gridWidth; col++) {
-    GRID.push({
-      id: `c${col}r${row}`,
-      col,
-      row,
-      color: 'white',
-      lastChangeAuthor: '',
-      lastChangeTime: Date.now(),
-    });
-  };
-};
-
-
-// function updateGrid(payload) {
-//   const { id, color, author, time } = payload;
-//   const cel = GRID.find(a => a.id === id);
-//   cel.color = color;
-//   cel.lastChangeAuthor = author;
-//   cel.lastChangeTime = time;
-//   socketDispatchAll('cel', cel);
-//   // dispatchGrid();
-// };
+const { Grid, User } = require('./db');
 
 
 
-function handleSetCel({ id, color, t }, uuid) {
-  const cel = GRID.find(a => a.id === id);
-  cel.color = color;
-  cel.lastChangeAuthor = uuid;
-  cel.lastChangeTime = t;
-  socketDispatchAll('update_cel', cel);
-};
-
-
+// User
 
 
 
@@ -97,16 +64,6 @@ function handleSetCel({ id, color, t }, uuid) {
 
 
 
-
-
-
-
-
-
-
-
-
-
 // WEBSOCKET
 
 const wss = new WebSocket.Server({
@@ -125,6 +82,13 @@ function socketDispatchAll(type, payload) {
 
 
 
+function validateUser(uuid) {
+
+}
+
+
+
+
 
 
 
@@ -132,26 +96,30 @@ function socketDispatchAll(type, payload) {
 wss.on('connection', ws => {
   let userID = undefined;
 
+
   const postMessage = (type, payload) => ws.send(JSON.stringify({ type, payload }));
 
-  const handleCheckUuid = (payload) => {
-    userID = payload || UUID();
-    postMessage('store_uuid', userID);
-  };
 
   ws.on('message', msg => {
     const { type, payload, uuid } = JSON.parse(msg);
     console.log('socket got message', type, uuid, payload)
 
     switch (type) {
-      case 'check_uuid':
-        handleCheckUuid(payload);
+      case 'register':
+        userID = User.create();
+        postMessage('store_uuid', userID);
+        break;
+      case 'login':
+        userID = User.login(payload)
+        postMessage('store_uuid', userID);
+        // handleLogin(payload);
         break;
       case 'get_grid':
-        postMessage('update_grid', GRID);
+        postMessage('update_grid', Grid.current);
         break;
       case 'set_cel':
-        handleSetCel(payload, uuid);
+        const cel = Grid.update({ ...payload, uuid });
+        socketDispatchAll('update_cel', cel);
         break;
       default:
         console.log('UNKNOWN MESSAGE', type);
@@ -159,7 +127,7 @@ wss.on('connection', ws => {
     };
   });
 
-  postMessage('check_uuid');
+  postMessage('request_uuid');
 });
 
 

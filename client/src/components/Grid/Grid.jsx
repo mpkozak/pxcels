@@ -1,24 +1,20 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo } from 'react';
 import './Grid.css';
 
 
 
 
 
-export default memo(function Grid({ gridRef, post = null, color } = {}) {
-
-  const handleClick = useCallback(e => {
-    const { id } = e.target;
-    if (!id || !color) {
-      return null;
-    };
-    post('set_cel', { id, color, t: Date.now() });
-  }, [post, color]);
-
-
+export default memo(function Grid({ gridRef, click = null } = {}) {
   return (
-    <div className="Grid--wrap">
-      <div id="Grid" ref={gridRef} onClick={handleClick} />
+    <div id="Grid">
+      <div className="Grid--wrap">
+        <div
+          className="Grid--celbox"
+          ref={gridRef}
+          onClick={click}
+        />
+      </div>
     </div>
   );
 });

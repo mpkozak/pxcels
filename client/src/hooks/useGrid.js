@@ -14,6 +14,7 @@ export default function useGrid() {
 
 
   useEffect(() => {
+    console.log('assign noderef')
     const el = gridRef.current;
     if (el && !nodeRef.current) {
       nodeRef.current = d3.select(el);
@@ -84,6 +85,16 @@ export default function useGrid() {
       post('get_grid');
     };
   }, [dataRef, active, post]);
+
+
+  useEffect(() => {
+    console.log('draw effect')
+    const data = dataRef.current;
+    const node = nodeRef.current;
+    if (data && node) {
+      draw();
+    };
+  }, [dataRef, nodeRef, draw]);
 
 
   return {

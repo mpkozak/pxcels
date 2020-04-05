@@ -24,8 +24,14 @@ export default function useSocket(cb = null) {
 
 
   const checkUuid = useCallback(() => {
+    console.log('checkUuid')
+    const msg = { type: 'register' };
     const storedUuid = localStorage.getItem('uuid');
-    const msg = { type: 'check_uuid', payload: storedUuid };
+    if (storedUuid) {
+      msg.type = 'login';
+      msg.payload = storedUuid;
+    };
+    // const msg = { type: 'login', payload: storedUuid };
     client.current.send(JSON.stringify(msg));
   }, [client]);
 
@@ -37,10 +43,10 @@ export default function useSocket(cb = null) {
 
   const handleMessage = useCallback(msg => {
     const { type, payload } = JSON.parse(msg.data);
-    // console.log('useSocket got message', type, payload)
+    console.log('useSocket got message', type, payload)
 
     switch (type) {
-      case 'check_uuid':
+      case 'request_uuid':
         checkUuid();
         break;
       case 'store_uuid':
