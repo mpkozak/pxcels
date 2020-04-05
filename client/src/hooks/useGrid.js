@@ -21,7 +21,7 @@ export default function useGrid() {
   }, [gridRef, nodeRef]);
 
 
-  const draw = useCallback(() => {
+  const drawGrid = useCallback(() => {
     const data = dataRef.current;
     const node = nodeRef.current;
     if (!data || !node) {
@@ -30,11 +30,11 @@ export default function useGrid() {
 
     node.selectAll('div')
       .data(data, d => d.id)
-        .attr('id', d => d.id)
-        .attr('class', 'GridCel')
-        .style('left', d => d.col * 30 + 'px')
-        .style('top', d => d.row * 30 + 'px')
-        .style('background-color', d => palette[d.color])
+        // .attr('id', d => d.id)
+        // .attr('class', 'GridCel')
+        // .style('left', d => d.col * 30 + 'px')
+        // .style('top', d => d.row * 30 + 'px')
+        // .style('background-color', d => palette[d.color])
       .enter()
         .append('div')
         .attr('id', d => d.id)
@@ -42,23 +42,37 @@ export default function useGrid() {
         .style('left', d => d.col * 30 + 'px')
         .style('top', d => d.row * 30 + 'px')
         .style('background-color', d => palette[d.color])
-      .exit()
-        .remove();
+      // .exit()
+      //   .remove();
   }, [dataRef, nodeRef]);
+
+
+  const drawCel = useCallback((cel) => {
+    const node = nodeRef.current;
+    if (!cel || !node) {
+      return null;
+    };
+
+    node.select(`#${cel.id}`)
+      .datum(cel, d => d.id)
+        .style('background-color', d => palette[d.color]);
+  }, [nodeRef]);
 
 
   const handleUpdateGrid = useCallback(newGrid => {
     dataRef.current = newGrid;
-    draw();
-  }, [dataRef, draw]);
+    drawGrid();
+  }, [dataRef, drawGrid]);
 
 
   const handleUpdateCel = useCallback(newCel => {
     const data = dataRef.current;
     const index = data.findIndex(a => a.id === newCel.id);
     data[index] = newCel;
-    draw();
-  }, [dataRef, draw]);
+    drawCel(data[index]);
+  }, [dataRef, drawCel]);
+  //   draw();
+  // }, [dataRef, draw]);
 
 
   const handleSocketMessage = useCallback(({ type, payload }) => {
@@ -94,9 +108,9 @@ export default function useGrid() {
     const data = dataRef.current;
     const node = nodeRef.current;
     if (data && node) {
-      draw();
+      drawGrid();
     };
-  }, [dataRef, nodeRef, draw]);
+  }, [dataRef, nodeRef, drawGrid]);
 
 
   return {
