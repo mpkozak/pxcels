@@ -13,7 +13,6 @@ export default memo(function App() {
 
 
   const handleColor = useCallback(val => {
-    console.log('handleColor', val)
     setColor(val);
   }, [setColor]);
 

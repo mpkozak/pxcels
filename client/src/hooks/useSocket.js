@@ -23,40 +23,38 @@ export default function useSocket(cb = null) {
   }, [client, setOpen]);
 
 
-  const checkUuid = useCallback(() => {
-    console.log('checkUuid')
-    const msg = { type: 'register' };
+  const handleRequestUuid = useCallback(() => {
     const storedUuid = localStorage.getItem('uuid');
-    if (storedUuid) {
-      msg.type = 'login';
-      msg.payload = storedUuid;
-    };
-    // const msg = { type: 'login', payload: storedUuid };
+    const msg = { type: 'check_uuid', payload: storedUuid };
     client.current.send(JSON.stringify(msg));
   }, [client]);
 
-  const storeUuid = useCallback(val => {
-    localStorage.setItem('uuid', val);
-    setUuid(val);
+
+  const handleStoreUser = useCallback(val => {
+    const { uuid, name } = val;
+    // handle name storage;
+    console.log('name', name)
+    localStorage.setItem('uuid', uuid);
+    setUuid(uuid);
   }, [setUuid]);
 
 
   const handleMessage = useCallback(msg => {
     const { type, payload } = JSON.parse(msg.data);
-    console.log('useSocket got message', type, payload)
+    // console.log('useSocket got message', type, payload)
 
     switch (type) {
       case 'request_uuid':
-        checkUuid();
+        handleRequestUuid();
         break;
-      case 'store_uuid':
-        storeUuid(payload);
+      case 'store_user':
+        handleStoreUser(payload);
         break;
       default:
         cb({ type, payload });
         return null;
     };
-  }, [checkUuid, storeUuid, cb]);
+  }, [handleRequestUuid, handleStoreUser, cb]);
 
 
   useEffect(() => {
@@ -68,12 +66,13 @@ export default function useSocket(cb = null) {
       } else {
         socketURI = 'ws:';
       };
-      socketURI += '//' + loc.host;
-      socketURI += loc.pathname;
-
       if (process.env.NODE_ENV === 'development') {
-        socketURI = 'ws://localhost:8080';
+        const base = loc.host.split(':')[0];
+        socketURI += `//${base}:8080`
+      } else {
+        socketURI += '//' + loc.host;
       };
+      socketURI += loc.pathname;
 
       client.current = new WebSocket(socketURI);
       client.current.onopen = handleOpen;

@@ -14,7 +14,6 @@ export default function useGrid() {
 
 
   useEffect(() => {
-    console.log('assign noderef')
     const el = gridRef.current;
     if (el && !nodeRef.current) {
       nodeRef.current = d3.select(el);
@@ -32,14 +31,14 @@ export default function useGrid() {
     node.selectAll('div')
       .data(data, d => d.id)
         .attr('id', d => d.id)
-        .attr('class', 'Grid--cel')
+        .attr('class', 'GridCel')
         .style('left', d => d.col * 30 + 'px')
         .style('top', d => d.row * 30 + 'px')
         .style('background-color', d => palette[d.color])
       .enter()
         .append('div')
         .attr('id', d => d.id)
-        .attr('class', 'Grid--cel')
+        .attr('class', 'GridCel')
         .style('left', d => d.col * 30 + 'px')
         .style('top', d => d.row * 30 + 'px')
         .style('background-color', d => palette[d.color])
@@ -48,7 +47,13 @@ export default function useGrid() {
   }, [dataRef, nodeRef]);
 
 
-  const updateCel = useCallback(newCel => {
+  const handleUpdateGrid = useCallback(newGrid => {
+    dataRef.current = newGrid;
+    draw();
+  }, [dataRef, draw]);
+
+
+  const handleUpdateCel = useCallback(newCel => {
     const data = dataRef.current;
     const index = data.findIndex(a => a.id === newCel.id);
     data[index] = newCel;
@@ -56,25 +61,23 @@ export default function useGrid() {
   }, [dataRef, draw]);
 
 
-  const updateGrid = useCallback(newGrid => {
-    dataRef.current = newGrid;
-    draw();
-  }, [dataRef, draw]);
-
-
   const handleSocketMessage = useCallback(({ type, payload }) => {
     switch (type) {
-      case 'update_cel':
-        updateCel(payload);
-        break;
       case 'update_grid':
-        updateGrid(payload);
+        handleUpdateGrid(payload);
+        break;
+      case 'update_cel':
+        handleUpdateCel(payload);
+        break;
+      case 'update_last_draw':
+        // handle last draw
+        console.log('lastDraw', payload)
         break;
       default:
-        console.log('UNKNOWN MESSAGE', type, payload);
+        console.log('SOCKET message in useDraw', type, payload);
         return null;
     };
-  }, [updateGrid, updateCel]);
+  }, [handleUpdateGrid, handleUpdateCel]);
 
   const { active, post } = useSocket(handleSocketMessage);
 
@@ -88,7 +91,6 @@ export default function useGrid() {
 
 
   useEffect(() => {
-    console.log('draw effect')
     const data = dataRef.current;
     const node = nodeRef.current;
     if (data && node) {

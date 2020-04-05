@@ -28,14 +28,51 @@ function init() {
 
 
 /*
-    Update + Modify
+    GET
+*/
+
+function exists(uuid) {
+  if (!uuid || !(uuid in Users)) {
+    return false;
+  };
+  return true;
+};
+
+
+function get(uuid) {
+  if (!exists(uuid)) {
+    return undefined;
+  };
+  return Users[uuid];
+};
+
+
+function canDraw(uuid) {
+  const user = get(uuid);
+  if (!user) {
+    return false;
+  };
+  const throttle = process.env.USER_THROTTLE * 1e3;
+  const elapsed = Date.now() - user.last_draw;
+  if (elapsed <= throttle) {
+    return false;
+  };
+  return true;
+};
+
+
+
+
+
+/*
+    POST
 */
 
 const protoUser = (t) => ({
   name: 'anonymous',
   date_created: t,
-  last_update: 0,
-  last_login: t,
+  last_draw: 0,
+  last_login: 0,
   last_logout: 0,
   history: [],
 });
@@ -43,86 +80,109 @@ const protoUser = (t) => ({
 
 function create() {
   const uuid = UUID();
-  if (!Users[uuid]) {
-    Users[uuid] = protoUser(Date.now());
-  } else {
+  if (exists(uuid)) {
     console.error('User already exists! ---', uuid);
+    return Users[uuid];
   };
+  const user = protoUser(Date.now());
+  Users[uuid] = user;
   return uuid;
 };
 
 
-function get(uuid) {
-  if (!uuid) {
-    return null;
-  };
-  return Users[uuid] || null;
-};
 
 
 
-function login(uuid) {
-  if (!uuid) {
-    return null;
-  };
+/*
+    PUT
+*/
+
+function didDraw(uuid) {
   const user = get(uuid);
   if (!user) {
-    return null;
+    return false;
   };
-  user.last_login = Date.now();
-  return user.uuid;
+  user.last_draw = Date.now();
+  return user.last_draw;
 };
 
 
-function logout(uuid) {
-  if (!uuid) {
+function saveName(uuid, name) {
+  const user = get(uuid);
+  if (!user || (typeof name !== string)) {
     return null;
   };
+  user.name = name;
+  return {
+    uuid,
+    name: user.name,
+  };
+};
+
+
+
+
+
+/*
+    AUTH
+*/
+
+function login(clientUuid) {
+  let uuid = clientUuid;
+  if (!exists(clientUuid)) {
+    uuid = create();
+  };
   const user = get(uuid);
+  user.last_login = Date.now();
+  return {
+    uuid,
+    name: user.name,
+  };
+};
+
+
+function logout(clientUuid) {
+  if (!exists(clientUuid)) {
+    return null;
+  };
+  const user = get(clientUuid);
   user.last_logout = Date.now();
   user.history.push([
     user.last_login,
     user.last_logout,
   ]);
+  return true;
 };
 
 
 
 
 
-// function update(uuid, params) {
-//   const user = Users[uuid]
-//   if (!user) {
-//     return null;
-//   };
-//   const { name } = params;
 
-// };
+/*
+    Backup
+*/
 
-
-
-
-
-// /*
-//     Backup
-// */
-
-// const backupInterval = +process.env.BACKUP_INTERVAL;
+// const backupInterval = process.env.USER_BACKUP_INTERVAL * 1e3;
 // let backupTimeout = setTimeout(backup, backupInterval);
 
 // async function backup() {
-//   console.log('backupRan')
-//   const dbFile = path.join(__dirname, 'db_grid.json');
-//   await fs.writeFile(dbFile, JSON.stringify(GRID, null, 2), 'utf-8');
+//   console.log('user backup ran')
+//   const dbFile = path.join(__dirname, 'db_user.json');
+//   const data = JSON.stringify(Users, null, 2);
+//   await fs.writeFile(dbFile, data, 'utf-8');
 //   backupTimeout = setTimeout(backup, backupInterval);
+//   return;
 // };
+
 
 
 
 
 module.exports = {
-  create,
   login,
   logout,
-  // update,
+  saveName,
+  canDraw,
+  didDraw,
 };
