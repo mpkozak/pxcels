@@ -1,1 +1,1 @@
-export { default as palette } from './palette.js';
+// export { default as palette } from './palette.js';

@@ -6,37 +6,36 @@ import ColorsPalette from './ColorsPalette.jsx';
 
 
 
-export default memo(function Colors({ activeColor, setColor = null } = {}) {
+export default memo(function Colors({ colorRef, palette = [] } = {}) {
   // console.log('colors render')
 
+  const [activeColor, setActiveColor] = useState(colorRef.current);
   const [showPalette, setShowPalette] = useState(true);
 
 
-
   const handleClickSetColor = useCallback(color => {
-    setColor(color);
+    colorRef.current = color;
+    setActiveColor(color);
     setShowPalette(false);
-  }, [setColor, setShowPalette]);
+  }, [colorRef, setActiveColor]);
 
 
   const handleClickTogglePalette = useCallback(() => {
     setShowPalette(!showPalette);
-  }, [showPalette, setShowPalette])
+  }, [showPalette, setShowPalette]);
 
 
   return (
-    <div id="Colors">
-      <div
-        className="ColorsActive"
-        style={{
-          backgroundColor: activeColor,
-          opacity: !activeColor ? 0 : 1,
-        }}
-        onClick={handleClickTogglePalette}
-      />
+    <div className={'Colors' + (showPalette ? ' active' : '')}>
       <ColorsPalette
+        palette={palette}
         hidden={!showPalette}
         click={handleClickSetColor}
+      />
+      <div
+        className={'Colors--current' + (showPalette ? ' hidden' : '')}
+        style={{ backgroundColor: palette[activeColor] }}
+        onClick={handleClickTogglePalette}
       />
     </div>
   );

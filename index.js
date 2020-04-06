@@ -52,7 +52,7 @@ function socketPostMessage(socket) {
 };
 
 
-socketServer.on('connection', socket => {
+function socketHandleConnection(socket) {
   const postMessage = socketPostMessage(socket);
 
   socket.on('message', msg => {
@@ -72,6 +72,9 @@ socketServer.on('connection', socket => {
           postMessage('store_user', userName);
         };
         break;
+      case 'get_params':
+        postMessage('update_params', Grid.params);
+        break;
       case 'get_grid':
         postMessage('update_grid', Grid.current);
         break;
@@ -80,20 +83,25 @@ socketServer.on('connection', socket => {
           postMessage('too_soon');
           break;
         };
-        const lastDraw = User.didDraw(uuid);
-        postMessage('update_last_draw', lastDraw);
         const name = User.getName(uuid);
         const cel = Grid.update({ ...payload, uuid, name });
-        socketDispatchAll('update_cel', cel);
+        if (cel) {
+          socketDispatchAll('update_cel', cel);
+          const lastDraw = User.didDraw(uuid);
+          postMessage('update_last_draw', lastDraw);
+        };
         break;
       default:
-        console.log('UNKNOWN MESSAGE', type);
+        console.log('Socket --- Unhandled Message:', type);
         return null;
     };
   });
 
   postMessage('request_uuid');
-});
+};
+
+
+socketServer.on('connection', socketHandleConnection);
 
 
 

@@ -9,32 +9,33 @@ import { Grid, Colors } from './components';
 
 export default memo(function App() {
   const {
+    params,
     gridRef,
-    canvasRef,
+    // canvasRef,
+    colorRef,
     // username,
     // lastDraw,
-    color,
-    setColor
+    // color,
+    // setColor,
   } = useGrid();
 
 
 
-
-
-  // console.log('app render', username, lastDraw)
-
   return (
-    <div id="App">
-      <canvas id="CANV"
-        ref={canvasRef}
-        width={128}
-        height={72}
-      />
+    <div className="App">
       <Grid gridRef={gridRef} />
-      <Colors
-        activeColor={color}
-        setColor={setColor}
-      />
+      {!!params && (
+        <Colors
+          colorRef={colorRef}
+          palette={params.colors}
+        />
+      )}
     </div>
   );
 });
+
+      // <canvas id="CANV"
+      //   ref={canvasRef}
+      //   width={128}
+      //   height={72}
+      // />

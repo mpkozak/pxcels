@@ -1,53 +1,55 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { d3, parse } from '../libs';
-import { palette } from '../global';
 import { useSocket } from './';
 
 
-const rgb = {
-  aqua: [0, 255, 255],
-  black: [0, 0, 0],
-  blue: [0, 0, 255],
-  fuchsia: [255, 0, 255],
-  gray: [128, 128, 128],
-  green: [0, 128, 0],
-  lime: [0, 255, 0],
-  maroon: [128, 0, 0],
-  navy: [0, 0, 128],
-  olive: [128, 128, 0],
-  purple: [128, 0, 128],
-  red: [255, 0, 0],
-  silver: [192, 192, 192],
-  teal: [0, 128, 128],
-  white: [255, 255, 255],
-  yellow: [255, 255, 0],
-};
 
 
 
 export default function useGrid() {
-  const [color, setColor] = useState('');
+  // const [color, setColor] = useState('');
   const [lastDraw, setLastDraw] = useState(0);
+
+  const [params, setParams] = useState(null);
+  const paramsRef = useRef(null);
   const dataRef = useRef(null);
-  const gridRef = useRef(null);
-  const gridNodeRef = useRef(null);
 
-  const tooltipNodeRef = useRef(null);
 
+
+
+
+///////////////////////////////////////
+// CANVAS --- WIP
+///////////////////////////////////////
 
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const imageDataRef = useRef(null);
-
-
-
-
 
   const drawCanvas = useCallback(() => {
     const data = dataRef.current;
     const ctx = ctxRef.current;
     if (!ctx || !data) {
       return null;
+    };
+
+    const rgb = {
+      aqua: [0, 255, 255],
+      black: [0, 0, 0],
+      blue: [0, 0, 255],
+      fuchsia: [255, 0, 255],
+      gray: [128, 128, 128],
+      green: [0, 128, 0],
+      lime: [0, 255, 0],
+      maroon: [128, 0, 0],
+      navy: [0, 0, 128],
+      olive: [128, 128, 0],
+      purple: [128, 0, 128],
+      red: [255, 0, 0],
+      silver: [192, 192, 192],
+      teal: [0, 128, 128],
+      white: [255, 255, 255],
+      yellow: [255, 255, 0],
     };
 
     const arr = new Uint8ClampedArray(data.length * 4);
@@ -93,13 +95,18 @@ export default function useGrid() {
   }, [dataRef, imageDataRef]);
 
 
-  // drawCanvas()
 
 
 
-/*
-    d3 node assign
-*/
+
+///////////////////////////////////////
+// D3 -- node assign
+///////////////////////////////////////
+
+  const gridRef = useRef(null);
+  const gridNodeRef = useRef(null);
+  const tooltipNodeRef = useRef(null);
+
 
   useEffect(() => {   // assign grid ref to d3 node
     const el = gridRef.current;
@@ -120,9 +127,9 @@ export default function useGrid() {
 
 
 
-/*
-    d3 draw stack
-*/
+///////////////////////////////////////
+// D3 -- draw stack
+///////////////////////////////////////
 
   const showTooltip = useCallback((e) => {
     const node = tooltipNodeRef.current;
@@ -132,20 +139,21 @@ export default function useGrid() {
     };
 
     const { clientX, clientY, target: { id } } = e;
-
-    const datum = data.find(a => a.id === id)
+    const datum = data.find(a => a.id === id);
+    if (!datum) {
+      return null;
+    };
     const { lastChangeAuthor, lastChangeTime } = datum;
     const deltaTime = parse.time(Date.now() - lastChangeTime);
     const displayText = lastChangeAuthor
       ? `<h4>${lastChangeAuthor}</h4><h5>${deltaTime}</h5>`
-      : '<h4>blank</h4>'
+      : '<h4>blank</h4>';
 
     node
       .html(displayText)
       .style('left', clientX + 'px')
       .style('top', clientY + 'px')
       .style('opacity', !!lastChangeAuthor ? 1 : 0);
-
   }, [dataRef, tooltipNodeRef]);
 
 
@@ -158,9 +166,10 @@ export default function useGrid() {
 
 
   const drawGrid = useCallback(() => {
+    const params = paramsRef.current;
     const data = dataRef.current;
     const node = gridNodeRef.current;
-    if (!data || !node) {
+    if (!params || !data || !node) {
       return null;
     };
 
@@ -172,34 +181,42 @@ export default function useGrid() {
         .attr('class', 'GridCel')
         .style('left', d => d.col * 30 + 'px')
         .style('top', d => d.row * 30 + 'px')
-        .style('background-color', d => palette[d.color])
+        .style('background-color', d => params.colors[d.color])
       .exit()
         .remove();
-  }, [dataRef, gridNodeRef ]);
+  }, [paramsRef, dataRef, gridNodeRef]);
 
 
   const drawCel = useCallback((cel) => {
+    const params = paramsRef.current;
     const node = gridNodeRef.current;
-    if (!cel || !node) {
+    if (!cel || !params || !node) {
       return null;
     };
 
     node.select(`#${cel.id}`)
       .datum(cel, d => d.id)
-        .style('background-color', d => palette[d.color]);
-  }, [gridNodeRef]);
+        .style('background-color', d => params.colors[d.color]);
+  }, [paramsRef, gridNodeRef]);
 
 
 
-/*
-    socket message handlers
-*/
+///////////////////////////////////////
+// Socket -- message handlers
+///////////////////////////////////////
+
+  const handleUpdateParams = useCallback(newParams => {
+    paramsRef.current = newParams;
+    setParams(newParams);
+  }, [paramsRef, setParams]);
+
 
   const handleUpdateGrid = useCallback(newGrid => {
     dataRef.current = newGrid;
     drawGrid();
     drawCanvas();
   }, [dataRef, drawGrid, drawCanvas]);
+
 
   const handleUpdateCel = useCallback(newCel => {
     const data = dataRef.current;
@@ -209,18 +226,22 @@ export default function useGrid() {
     drawCanvas();
   }, [dataRef, drawCel, drawCanvas]);
 
+
   const handleUpdateLastDraw = useCallback(timestamp => {
     setLastDraw(timestamp);
   }, [setLastDraw]);
 
 
 
-/*
-    socket connection
-*/
+///////////////////////////////////////
+// Socket -- connection
+///////////////////////////////////////
 
   const handleSocketMessage = useCallback(({ type, payload }) => {
     switch (type) {
+      case 'update_params':
+        handleUpdateParams(payload);
+        break;
       case 'update_grid':
         handleUpdateGrid(payload);
         break;
@@ -231,34 +252,29 @@ export default function useGrid() {
         handleUpdateLastDraw(payload);
         break;
       default:
-        console.log('SOCKET message in useDraw', type, payload);
+        console.log('Socket --- Unhandled Message in useGrid:', type, payload);
         return null;
     };
-  }, [handleUpdateGrid, handleUpdateCel, handleUpdateLastDraw]);
+  }, [handleUpdateParams, handleUpdateGrid, handleUpdateCel, handleUpdateLastDraw]);
 
   const { active, post, username } = useSocket(handleSocketMessage);
 
 
-  useEffect(() => {   // get grid data from socket
-    const data = dataRef.current;
-    if (!data && active) {
-      post('get_grid');
-    };
-  }, [dataRef, active, post]);
 
+///////////////////////////////////////
+// Event handlers + registration
+///////////////////////////////////////
 
-
-/*
-    event handlers and registration
-*/
+  const colorRef = useRef(26);
 
   const handleGridClick = useCallback(e => {
     const { id } = e.target;
+    const color = colorRef.current;
     if (!id || !color) {
       return null;
     };
     post('set_cel', { id, color, t: Date.now() });
-  }, [post, color]);
+  }, [colorRef, post]);
 
 
   useEffect(() => {   //add click listener to grid element
@@ -276,9 +292,9 @@ export default function useGrid() {
 
 
 
-/*
-    WIP
-*/
+///////////////////////////////////////
+// Tooltip WIP
+///////////////////////////////////////
 
   // const tooltipRef = useRef({});
 
@@ -314,11 +330,23 @@ export default function useGrid() {
 
 
 
+///////////////////////////////////////
+// Initialization
+///////////////////////////////////////
+
+  useEffect(() => {   // get params data from socket
+    if (!params && active) {
+      post('get_params');
+    };
+  }, [params, active, post]);
 
 
-/*
-    Initial draw effect
-*/
+  useEffect(() => {   // get grid data from socket
+    if (!dataRef.current && params) {
+      post('get_grid');
+    };
+  }, [dataRef, params, post]);
+
 
   useEffect(() => {   // draw initial grid
     const data = dataRef.current;
@@ -329,12 +357,15 @@ export default function useGrid() {
   }, [dataRef, gridNodeRef, drawGrid]);
 
 
+
   return {
+    params,
     gridRef,
     canvasRef,
+    colorRef,
     username,
     lastDraw,
-    color,
-    setColor,
+    // color,
+    // setColor,
   };
 };
