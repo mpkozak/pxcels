@@ -4,6 +4,24 @@ import { palette } from '../global';
 import { useSocket } from './';
 
 
+const rgb = {
+  aqua: [0, 255, 255],
+  black: [0, 0, 0],
+  blue: [0, 0, 255],
+  fuchsia: [255, 0, 255],
+  gray: [128, 128, 128],
+  green: [0, 128, 0],
+  lime: [0, 255, 0],
+  maroon: [128, 0, 0],
+  navy: [0, 0, 128],
+  olive: [128, 128, 0],
+  purple: [128, 0, 128],
+  red: [255, 0, 0],
+  silver: [192, 192, 192],
+  teal: [0, 128, 128],
+  white: [255, 255, 255],
+  yellow: [255, 255, 0],
+};
 
 
 
@@ -15,6 +33,67 @@ export default function useGrid() {
   const gridNodeRef = useRef(null);
 
   const tooltipNodeRef = useRef(null);
+
+
+  const canvasRef = useRef(null);
+  const ctxRef = useRef(null);
+  const imageDataRef = useRef(null);
+
+
+
+
+
+  const drawCanvas = useCallback(() => {
+    const data = dataRef.current;
+    const ctx = ctxRef.current;
+    if (!ctx || !data) {
+      return null;
+    };
+
+    const arr = new Uint8ClampedArray(data.length * 4);
+
+    data.forEach((d, i) => {
+      let startI = i * 4;
+      const [r, g, b] = rgb[d.color];
+      arr[startI++] = r;
+      arr[startI++] = g;
+      arr[startI++] = b;
+      arr[startI++] = 255;
+    });
+
+    let imageData = new ImageData(arr, 128);
+
+    data.forEach((d, i) => {
+      let startI = i * 4;
+      const [r, g, b] = rgb[d.color];
+      arr[startI++] = r;
+      arr[startI++] = g;
+      arr[startI++] = b;
+      arr[startI++] = 255;
+    });
+
+    ctx.putImageData(imageData, 0, 0);
+  }, [dataRef, ctxRef]);
+
+
+
+  useEffect(() => {   // initialize canvas context
+    const canvas = canvasRef.current;
+    if (canvas && !ctxRef.current) {
+      ctxRef.current = canvas.getContext('2d');
+    };
+  }, [canvasRef, ctxRef]);
+
+
+  useEffect(() => {   // initialize imageData
+    const data = dataRef.current;
+    if (data && !imageDataRef.current) {
+      imageDataRef.current = new ImageData(128, 72);
+    };
+  }, [dataRef, imageDataRef]);
+
+
+  // drawCanvas()
 
 
 
@@ -119,14 +198,16 @@ export default function useGrid() {
   const handleUpdateGrid = useCallback(newGrid => {
     dataRef.current = newGrid;
     drawGrid();
-  }, [dataRef, drawGrid]);
+    drawCanvas();
+  }, [dataRef, drawGrid, drawCanvas]);
 
   const handleUpdateCel = useCallback(newCel => {
     const data = dataRef.current;
     const index = data.findIndex(a => a.id === newCel.id);
     data[index] = newCel;
     drawCel(data[index]);
-  }, [dataRef, drawCel]);
+    drawCanvas();
+  }, [dataRef, drawCel, drawCanvas]);
 
   const handleUpdateLastDraw = useCallback(timestamp => {
     setLastDraw(timestamp);
@@ -233,6 +314,8 @@ export default function useGrid() {
 
 
 
+
+
 /*
     Initial draw effect
 */
@@ -248,6 +331,7 @@ export default function useGrid() {
 
   return {
     gridRef,
+    canvasRef,
     username,
     lastDraw,
     color,
