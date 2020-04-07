@@ -118,12 +118,15 @@ app.get('/params', (req, res) => {
   };
 });
 // app.use('*', express.static(process.env.NODE_ENV === 'production' ? 'public' : 'client/build'));
-app.use('*', express.static(
-  process.env.NODE_ENV === 'production'
-    ? path.join(__dirname, 'client', 'build')
-    : path.join(__dirname, 'public')
-));
+// app.use('*', express.static(
+//   process.env.NODE_ENV === 'production'
+//     ? path.join(__dirname, 'client', 'build')
+//     : path.join(__dirname, 'public')
+// ));
 
+app.use('/', express.static(path.join(__dirname, 'client', 'build')));
+app.use('/*', express.static(path.join(__dirname, 'client', 'build')));
+app.use('*', express.static(path.join(__dirname, 'client', 'build')));
 
 
 // STARTUP
@@ -149,17 +152,16 @@ function shutdown(sig) {
   return Db.Close()
     .then(ok => {
       console.log('Close Server...');
-      server.close(() => {
+      return server.close(() => {
         console.log('Bye')
-        process.exit(0);
+        return process.exit(0);
       });
     })
     .catch(err => {
       console.error('Shutdown Error!!! ---', err);
       process.exit(1);
-      process.kill();
     });
 };
 
 process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+// process.on('SIGTERM', shutdown);
