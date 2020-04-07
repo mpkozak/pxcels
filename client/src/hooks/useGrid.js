@@ -6,12 +6,7 @@ import { useSocket } from './';
 
 
 
-export default function useGrid(params) {
-// console.log('useGrid')
-
-
-
-
+export default function useGrid(params, cursorMode) {
 
 ///////////////////////////////////////
 // D3 -- node assign
@@ -112,17 +107,20 @@ export default function useGrid(params) {
 // Color ref + click handler
 ///////////////////////////////////////
 
-  const colorRef = useRef(26);
+  const colorRef = useRef(11);
 
 
   const handleGridClick = useCallback(e => {
+    if (cursorMode !== 'paint') {
+      return null;
+    };
     const { id } = e.target;
     const color = colorRef.current;
     if (!id || !color) {
       return null;
     };
     post('set_cel', { id, color, t: Date.now() });
-  }, [colorRef, post]);
+  }, [cursorMode, colorRef, post]);
 
 
   useEffect(() => {   // add click listener to grid element
@@ -164,20 +162,18 @@ export default function useGrid(params) {
         .append('div')
         .attr('id', d => d.id)
         .attr('class', 'GridCel')
-        // .style('')
         // .style('left', d => d.col * 30 + 'px')
         // .style('top', d => d.row * 30 + 'px')
         .style('background-color', d => params.colors[d.color])
       .exit()
         .remove();
-
+        console.log(data[1])
     setRedrawFlag(false);
   }, [params, dataRef, gridNodeRef, setRedrawFlag]);
 
 
   const drawCel = useCallback((celIndex) => {
     // console.log('DRAW CEL')
-    // const params = paramsRef.current;
     const cel = dataRef.current[celIndex];
     const node = gridNodeRef.current;
     if (!cel || !node) {

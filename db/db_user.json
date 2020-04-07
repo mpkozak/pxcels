@@ -42,8 +42,8 @@
   "d85aeaf3-bf9c-4c04-a0df-ddd19b1b8282": {
     "name": "anonymous",
     "date_created": 1586196082886,
-    "last_draw": 1586235398647,
-    "last_login": 1586235250543,
+    "last_draw": 1586235810364,
+    "last_login": 1586236318664,
     "last_logout": 0,
     "history": []
   },
@@ -106,8 +106,16 @@
   "9581cab0-94d8-4a53-ace4-813aabc04283": {
     "name": "anonymous",
     "date_created": 1586234763054,
-    "last_draw": 1586234916014,
-    "last_login": 1586235250919,
+    "last_draw": 1586238864366,
+    "last_login": 1586239688674,
+    "last_logout": 0,
+    "history": []
+  },
+  "ca7b4823-e750-4afd-b6d0-80755004fcb4": {
+    "name": "anonymous",
+    "date_created": 1586237279971,
+    "last_draw": 1586239753490,
+    "last_login": 1586239689191,
     "last_logout": 0,
     "history": []
   }

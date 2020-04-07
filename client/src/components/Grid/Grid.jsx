@@ -5,7 +5,7 @@ import './Grid.css';
 
 
 
-export default memo(function Grid({ gridRef, dimen = {} } = {}) {
+export default memo(function Grid({ gridRef, dimen = {}, cursorMode } = {}) {
   const { width, height } = dimen;
   const [celScale, setCelScale] = useState(30);
   const celScaleRange = [5, 50];
@@ -38,8 +38,11 @@ export default memo(function Grid({ gridRef, dimen = {} } = {}) {
 
 
   const handleDragStart = useCallback(e => {
+    if (cursorMode === 'paint') {
+      return null;
+    };
     setDrag(true);
-  }, [setDrag]);
+  }, [cursorMode, setDrag]);
 
 
   const handleDragEnd = useCallback(e => {
@@ -65,20 +68,23 @@ export default memo(function Grid({ gridRef, dimen = {} } = {}) {
 
 
 
-  const gridStyle = {
+  const celboxStyle = {
     gridTemplateColumns: `repeat(${width}, ${celScale}px)`,
     gridTemplateRows: `repeat(${height}, ${celScale}px)`,
     gridGap: (celScale < 10) ? '0px' : '1px',
+    cursor: cursorMode === 'paint'
+      ? 'crosshair'
+      : (drag ? 'grabbing, grab' : 'grab'),
   };
 
 
   return (
     <div className="Grid">
       <div className="Grid--zoom" onClick={handleZoom}>
-        <div id="zoom-1" className="Grid--zoom-button">
+        <div id="zoom-1" className="Grid--zoom-button button">
           <h2>+</h2>
         </div>
-        <div id="zoom-0" className="Grid--zoom-button">
+        <div id="zoom-0" className="Grid--zoom-button button">
           <h2>−</h2>
         </div>
       </div>
@@ -86,14 +92,12 @@ export default memo(function Grid({ gridRef, dimen = {} } = {}) {
         className="Grid--wrap"
         ref={dragBoxRef}
         onMouseDown={handleDragStart}
-        // onMouseUp={handleDragEnd}
-        // onMouseLeave={handleDragEnd}
       >
         <div className="Grid--flex">
           <div
             className="Grid--celbox"
             ref={gridRef}
-            style={gridStyle}
+            style={celboxStyle}
           />
         </div>
       </div>

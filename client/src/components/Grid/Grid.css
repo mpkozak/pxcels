@@ -9,37 +9,22 @@
 .Grid--zoom {
   position: fixed;
   right: 2vh;
+  /*left: 19.5vh;*/
   bottom: 2vh;
   width: 4.5vh;
   height: 10vh;
-
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
   justify-content: space-between;
-
 }
 
 
 .Grid--zoom-button {
-  width: 4.5vh;
-  height: 4.5vh;
-  border-radius: .5vh;
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
   justify-content: center;
-  background-color: rgba(127, 127, 127, .5);
-  pointer-events: auto;
-  cursor: pointer;
-}
-
-.Grid--zoom-button:hover {
-  opacity: .5;
-}
-.Grid--zoom-button:active {
-  transform: scale(.95);
-  opacity: .5;
 }
 
 

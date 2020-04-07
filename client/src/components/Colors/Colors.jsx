@@ -10,7 +10,7 @@ export default memo(function Colors({ colorRef, palette = [] } = {}) {
   // console.log('colors render')
 
   const [activeColor, setActiveColor] = useState(colorRef.current);
-  const [showPalette, setShowPalette] = useState(true);
+  const [showPalette, setShowPalette] = useState(false);
 
 
   const handleClickSetColor = useCallback(color => {

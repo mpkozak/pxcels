@@ -15,6 +15,27 @@ body {
 
 
 
+div.button {
+  width: 4.5vh;
+  height: 4.5vh;
+  border-radius: .5vh;
+  background-color: rgba(192, 192, 192, .4);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+div.button:hover {
+  background-color: rgba(192, 192, 192, .8);
+}
+
+div.button:active {
+  transform: scale(.98);
+}
+
+
+
+
+
 div.tooltip {
     position: absolute;
     width: auto;
