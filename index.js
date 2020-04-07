@@ -117,16 +117,17 @@ app.get('/params', (req, res) => {
     return res.status(404).end();
   };
 });
-// app.use('*', express.static(process.env.NODE_ENV === 'production' ? 'public' : 'client/build'));
-// app.use('*', express.static(
-//   process.env.NODE_ENV === 'production'
-//     ? path.join(__dirname, 'client', 'build')
-//     : path.join(__dirname, 'public')
-// ));
 
-app.use('/', express.static(path.join(__dirname, 'client', 'build')));
-app.use('/*', express.static(path.join(__dirname, 'client', 'build')));
-app.use('*', express.static(path.join(__dirname, 'client', 'build')));
+const client = express.static(
+  process.env.NODE_ENV === 'production'
+    ? path.join(__dirname, 'public')
+    : path.join(__dirname, 'client', 'build')
+);
+
+app.use('/', client);
+app.use('/*', client);
+app.use('*', client);
+
 
 
 // STARTUP
@@ -149,19 +150,20 @@ Db.Connect()
 function shutdown(sig) {
   console.log(`\n${sig} signal received!`)
   console.log('Shutting down...');
-  return Db.Close()
+  clearTimeout(Grid.backupTimeout);
+  clearTimeout(User.backupTimeout);
+  Db.Close()
     .then(ok => {
       console.log('Close Server...');
-      return server.close(() => {
+      server.close(() => {
         console.log('Bye')
-        return process.exit(0);
+        process.exit(0);
       });
     })
     .catch(err => {
       console.error('Shutdown Error!!! ---', err);
       process.exit(1);
-    });
+    })
 };
 
-process.on('SIGINT', shutdown);
-// process.on('SIGTERM', shutdown);
+['SIGINT', 'SIGTERM', 'SIGQUIT'].forEach(signal => process.on(signal, shutdown));
