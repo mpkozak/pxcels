@@ -1,54 +1,52 @@
-const fs = require('fs').promises;
-const path = require('path');
+const Db = require('./Db.js');
 const UUID = require('uuid').v4;
 
 
 
 
 
-/*
-    Initialization
-*/
+const User = {};
 
-const Users = init();
 
-function init() {
+User.backupInterval = process.env.USER_BACKUP_INTERVAL * 1e3;
+User.backupFlag = false;
+
+User.backup = async () => {
   try {
-    var users = require('./db_user.json');
+    if (!User.backupFlag) {
+      return;
+    };
+    User.backupFlag = false;
+    const { users } = User;
+    await Db.update('users', { users });
+    // console.log('User.backup --- OK');
   } catch (err) {
-    console.error('No User backup available!');
-    users = {};
+    console.error('User.backup ---', err);
   } finally {
-    return users;
+    User.backupTimeout = setTimeout(User.backup, User.backupInterval);
+    return;
   };
 };
 
+User.backupTimeout = setTimeout(User.backup, User.backupInterval);
 
 
-
-
-/*
-    GET
-*/
-
-function exists(uuid) {
-  if (!uuid || !(uuid in Users)) {
+User.exists = (uuid) => {
+  if (!uuid || !(uuid in User.users)) {
     return false;
   };
   return true;
 };
 
-
-function get(uuid) {
-  if (!exists(uuid)) {
+User.get = (uuid) => {
+  if (!User.exists(uuid)) {
     return undefined;
   };
-  return Users[uuid];
+  return User.users[uuid];
 };
 
-
-function canDraw(uuid) {
-  const user = get(uuid);
+User.canDraw = (uuid) => {
+  const user = User.get(uuid);
   if (!user) {
     return false;
   };
@@ -60,9 +58,8 @@ function canDraw(uuid) {
   return true;
 };
 
-
-function getName(uuid) {
-  const user = get(uuid);
+User.getName = (uuid) => {
+  const user = User.get(uuid);
   if (!user) {
     return 'anonymous';
   };
@@ -70,13 +67,7 @@ function getName(uuid) {
 };
 
 
-
-
-/*
-    POST
-*/
-
-const protoUser = (t) => ({
+User.protoUser = (t) => ({
   name: 'anonymous',
   date_created: t,
   last_draw: 0,
@@ -85,42 +76,36 @@ const protoUser = (t) => ({
   history: [],
 });
 
-
-function create() {
+User.create = () => {
   const uuid = UUID();
-  if (exists(uuid)) {
+  if (User.exists(uuid)) {
     console.error('User already exists! ---', uuid);
-    return Users[uuid];
+    return User.users[uuid];
   };
-  const user = protoUser(Date.now());
-  Users[uuid] = user;
+  const user = User.protoUser(Date.now());
+  User.users[uuid] = user;
+  User.backupFlag = true;
   return uuid;
 };
 
 
-
-
-
-/*
-    PUT
-*/
-
-function didDraw(uuid) {
-  const user = get(uuid);
+User.didDraw = (uuid) => {
+  const user = User.get(uuid);
   if (!user) {
     return false;
   };
   user.last_draw = Date.now();
+  User.backupFlag = true;
   return user.last_draw;
 };
 
-
-function saveName(uuid, name) {
-  const user = get(uuid);
+User.saveName = (uuid, name) => {
+  const user = User.get(uuid);
   if (!user || (typeof name !== string)) {
     return null;
   };
   user.name = name;
+  User.backupFlag = true;
   return {
     uuid,
     name: user.name,
@@ -128,32 +113,25 @@ function saveName(uuid, name) {
 };
 
 
-
-
-
-/*
-    AUTH
-*/
-
-function login(clientUuid) {
+User.login = (clientUuid) => {
   let uuid = clientUuid;
-  if (!exists(clientUuid)) {
-    uuid = create();
+  if (!User.exists(clientUuid)) {
+    uuid = User.create();
   };
-  const user = get(uuid);
+  const user = User.get(uuid);
   user.last_login = Date.now();
+  User.backupFlag = true;
   return {
     uuid,
     name: user.name,
   };
 };
 
-
-function logout(clientUuid) {
-  if (!exists(clientUuid)) {
+User.logout = (clientUuid) => {
+  if (!User.exists(clientUuid)) {
     return null;
   };
-  const user = get(clientUuid);
+  const user = User.get(clientUuid);
   user.last_logout = Date.now();
   user.history.push([
     user.last_login,
@@ -166,32 +144,4 @@ function logout(clientUuid) {
 
 
 
-
-/*
-    Backup
-*/
-
-const backupInterval = process.env.USER_BACKUP_INTERVAL * 1e3;
-let backupTimeout = setTimeout(backup, backupInterval);
-
-async function backup() {
-  // console.log('user backup ran')
-  const dbFile = path.join(__dirname, 'db_user.json');
-  const data = JSON.stringify(Users, null, 2);
-  await fs.writeFile(dbFile, data, 'utf-8');
-  backupTimeout = setTimeout(backup, backupInterval);
-  return;
-};
-
-
-
-
-
-module.exports = {
-  login,
-  logout,
-  saveName,
-  getName,
-  canDraw,
-  didDraw,
-};
+module.exports = User;

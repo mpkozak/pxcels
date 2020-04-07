@@ -118,5 +118,21 @@
     "last_login": 1586239689191,
     "last_logout": 0,
     "history": []
+  },
+  "7099becb-df4c-42b6-96da-68d299f2cbc0": {
+    "name": "anonymous",
+    "date_created": 1586240244166,
+    "last_draw": 1586243528167,
+    "last_login": 1586243459643,
+    "last_logout": 0,
+    "history": []
+  },
+  "10937a69-356c-4f6a-a46e-534f9645bd3d": {
+    "name": "anonymous",
+    "date_created": 1586274039146,
+    "last_draw": 1586274660021,
+    "last_login": 1586274619641,
+    "last_logout": 0,
+    "history": []
   }
 }

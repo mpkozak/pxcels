@@ -61,7 +61,7 @@ export default function useGrid(params, cursorMode) {
   const handleUpdateCel = useCallback(newCel => {
     const { cel, celIndex } = newCel;
     dataRef.current[celIndex] = cel;
-    setCelQueue(celIndex);
+    setCelQueue(cel);
   }, [dataRef, setCelQueue]);
 
 
@@ -172,9 +172,8 @@ export default function useGrid(params, cursorMode) {
   }, [params, dataRef, gridNodeRef, setRedrawFlag]);
 
 
-  const drawCel = useCallback((celIndex) => {
+  const drawCel = useCallback((cel) => {
     // console.log('DRAW CEL')
-    const cel = dataRef.current[celIndex];
     const node = gridNodeRef.current;
     if (!cel || !node) {
       return null;

@@ -12,7 +12,12 @@ const WebSocket = require('ws');
 
 // DB
 
-const { Grid, User } = require('./db');
+const {
+  Db,
+  Grid,
+  User,
+  GlobalState,
+} = require('./db');
 
 
 
@@ -39,9 +44,9 @@ const socketServer = new WebSocket.Server({
 
 
 function socketDispatchAll(type, payload) {
-  socketServer.clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type, payload }));
+  socketServer.clients.forEach(socket => {
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type, payload }));
     };
   });
 };
@@ -50,7 +55,6 @@ function socketDispatchAll(type, payload) {
 function socketPostMessage(socket) {
   return (type, payload) => socket.send(JSON.stringify({ type, payload }));
 };
-
 
 
 function socketHandleConnection(socket) {
@@ -105,7 +109,6 @@ socketServer.on('connection', socketHandleConnection);
 
 // CLIENT ROUTES
 
-
 app.get('/params', (req, res) => {
   try {
     return res.status(200).json(Grid.params);
@@ -113,15 +116,47 @@ app.get('/params', (req, res) => {
     console.error('app.get(/params) --- ', err);
     return res.status(404).end();
   };
-})
+});
 app.use('/', express.static(path.join(__dirname, 'client', 'build')));
 app.use('/*', express.static(path.join(__dirname, 'client', 'build')));
 app.use('*', express.static(path.join(__dirname, 'client', 'build')));
 
 
 
-// LISTEN
+// STARTUP
 
-server.listen(port, '0.0.0.0', () => {
-  console.log('listening on', port);
-});
+console.log('Starting up...');
+Db.Connect()
+  // .then(ok => GlobalState.reset(false))
+  .then(ok => GlobalState.Init())
+  .then(ok => {
+    server.listen(port, '0.0.0.0', () => {
+      console.log('listening on', port);
+    });
+  })
+  .catch(err => console.error('Startup Error!!! ---', err));
+
+
+
+// SHUTDOWN
+
+function shutdown(sig) {
+  console.log(`\n${sig} signal received!`)
+  console.log('Shutting down...');
+  return Db.Close()
+    .then(ok => {
+      console.log('Close Server...');
+      server.close(() => {
+        console.log('Bye')
+        process.exit(0);
+      });
+    })
+    .catch(err => {
+      console.error('Shutdown Error!!! ---', err);
+      process.exit(1);
+      process.kill();
+    });
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
