@@ -117,9 +117,7 @@ app.get('/params', (req, res) => {
     return res.status(404).end();
   };
 });
-app.use('/', express.static(path.join(__dirname, 'client', 'build')));
-app.use('/*', express.static(path.join(__dirname, 'client', 'build')));
-app.use('*', express.static(path.join(__dirname, 'client', 'build')));
+app.use('*', express.static(process.env.NODE_ENV === 'production' ? 'public' : 'client/build'));
 
 
 
