@@ -6,41 +6,7 @@ import { useSocket } from './';
 
 
 
-export default function useGrid(params, cursorMode) {
-
-///////////////////////////////////////
-// D3 -- node assign
-///////////////////////////////////////
-
-  const gridRef = useRef(null);
-  const gridNodeRef = useRef(null);
-  const tooltipNodeRef = useRef(null);
-
-
-  useEffect(() => {   // assign grid ref to d3 node
-    // console.log('EFFECT 1')
-    const el = gridRef.current;
-    if (el && !gridNodeRef.current) {
-      // console.log('EFFECT 1 -- assign grid ref to d3 node')
-      gridNodeRef.current = d3.select(el);
-    };
-  }, [gridRef, gridNodeRef]);
-
-
-  useEffect(() => {   // assign tooltip ref to d3 node
-    // console.log('EFFECT 2')
-    if (!tooltipNodeRef.current) {
-      // console.log('EFFECT 2 -- assign grid ref to d3 node')
-      tooltipNodeRef.current = d3.select('body')
-        .append('div')
-          .attr('class', 'tooltip')
-          .style('opacity', 0);
-    };
-  }, [tooltipNodeRef]);
-
-
-
-
+export default function useGrid({ params, gridRef, activeColor, cursorMode } = {}) {
 
 ///////////////////////////////////////
 // Socket
@@ -92,94 +58,77 @@ export default function useGrid(params, cursorMode) {
 
 
   useEffect(() => {   // get grid data from socket
-    // console.log('EFFECT 3')
+    // console.log('EFFECT 1')
     if (params && active && !dataRef.current) {
-      // console.log('EFFECT 3 -- get grid data from socket')
+      // console.log('EFFECT 1 -- get grid data from socket')
       post('get_grid');
     };
   }, [dataRef, params, active, post]);
 
 
 
-
-
 ///////////////////////////////////////
-// Color ref + click handler
+// D3 Node assign
 ///////////////////////////////////////
 
-  const colorRef = useRef(11);
+  const gridNodeRef = useRef(null);
+  const tooltipNodeRef = useRef(null);
 
 
-  const handleGridClick = useCallback(e => {
-    if (cursorMode !== 'paint') {
-      return null;
-    };
-    const { id } = e.target;
-    const color = colorRef.current;
-    if (!id || !color) {
-      return null;
-    };
-    post('set_cel', { id, color, t: Date.now() });
-  }, [cursorMode, colorRef, post]);
-
-
-  useEffect(() => {   // add click listener to grid element
-    // console.log('EFFECT 4')
+  useEffect(() => {   // assign grid ref to d3 node
+    // console.log('EFFECT 2')
     const el = gridRef.current;
-    if (el) {
-      // console.log('EFFECT 4 -- add click listener to grid element')
-      el.addEventListener('click', handleGridClick);
+    if (el && !gridNodeRef.current) {
+      // console.log('EFFECT 2 -- assign grid ref to d3 node')
+      gridNodeRef.current = d3.select(el);
     };
+  }, [gridRef, gridNodeRef]);
 
-    return () => {
-      // console.log('EFFECT 4 return -- remove click listener to grid element')
-      if (el) {
-        el.removeEventListener('click', handleGridClick);
-      };
+
+  useEffect(() => {   // assign tooltip ref to d3 node
+    // console.log('EFFECT 3')
+    if (!tooltipNodeRef.current) {
+      // console.log('EFFECT 3 -- assign grid ref to d3 node')
+      tooltipNodeRef.current = d3.select('body')
+        .append('div')
+          .attr('class', 'tooltip')
+          .style('opacity', 0);
     };
-  }, [gridRef, handleGridClick]);
-
-
+  }, [tooltipNodeRef]);
 
 
 
 ///////////////////////////////////////
-// D3 -- Grid draw stack
+// D3 -- Draw stack
 ///////////////////////////////////////
 
   const drawGrid = useCallback(() => {
-    // console.log('DRAW GRID')
     const data = dataRef.current;
     const node = gridNodeRef.current;
     if (!data || !node) {
       return null;
     };
 
-    // console.log('DRAW GRID --- draw is happening')
     node.selectAll('div')
       .data(data, d => d.id)
       .enter()
         .append('div')
         .attr('id', d => d.id)
         .attr('class', 'GridCel')
-        // .style('left', d => d.col * 30 + 'px')
-        // .style('top', d => d.row * 30 + 'px')
         .style('background-color', d => params.colors[d.color])
       .exit()
         .remove();
-        console.log(data[1])
+
     setRedrawFlag(false);
   }, [params, dataRef, gridNodeRef, setRedrawFlag]);
 
 
   const drawCel = useCallback((cel) => {
-    // console.log('DRAW CEL')
     const node = gridNodeRef.current;
     if (!cel || !node) {
       return null;
     };
 
-    // console.log('DRAW CEL --- draw is happening')
     node.select(`#${cel.id}`)
       .datum(cel, d => d.id)
         .style('background-color', d => params.colors[d.color]);
@@ -188,81 +137,103 @@ export default function useGrid(params, cursorMode) {
   }, [params, gridNodeRef, setCelQueue]);
 
 
-
-
-
-
-
-
-///////////////////////////////////////
-// Tooltip WIP
-///////////////////////////////////////
-
-  const showTooltip = useCallback((e) => {
+  const drawTooltip = useCallback(({ x, y, name, time }) => {
     const node = tooltipNodeRef.current;
-    const data = dataRef.current;
-    if (!node || !data) {
+    if (!node) {
       return null;
     };
 
-    const { clientX, clientY, target: { id } } = e;
+    node
+      .html(`<h4>${name}</h4><h5>${time}</h5>`)
+      .style('left', x + 'px')
+      .style('top', y + 'px')
+      .style('opacity', 1);
+  }, [tooltipNodeRef]);
+
+
+  const undrawTooltip = useCallback(() => {
+    const node = tooltipNodeRef.current;
+    if (!node) {
+      return null;
+    };
+
+    node
+      .html('')
+      .style('opacity', 0)
+  }, [tooltipNodeRef]);
+
+
+
+///////////////////////////////////////
+// Event handlers + registration
+///////////////////////////////////////
+
+  const handleClick = useCallback(e => {
+    if (cursorMode !== 'paint') {
+      return null;
+    };
+    const { id } = e.target;
+    const color = activeColor;
+    if (!id || !~activeColor) {
+      return null;
+    };
+    post('set_cel', { id, color, t: Date.now() });
+  }, [cursorMode, activeColor, post]);
+
+
+  const handleMouseMove = useCallback(e => {
+    const data = dataRef.current;
+    if (!data) {
+      return null;
+    };
+    const { clientX: x, clientY: y, target: { id } } = e;
     const datum = data.find(a => a.id === id);
     if (!datum) {
       return null;
     };
     const { lastChangeAuthor, lastChangeTime } = datum;
-    const deltaTime = parse.time(Date.now() - lastChangeTime);
-    const displayText = lastChangeAuthor
-      ? `<h4>${lastChangeAuthor}</h4><h5>${deltaTime}</h5>`
-      : '<h4>blank</h4>';
-
-    node
-      .html(displayText)
-      .style('left', clientX + 'px')
-      .style('top', clientY + 'px')
-      .style('opacity', !!lastChangeAuthor ? 1 : 0);
-  }, [dataRef, tooltipNodeRef]);
-
-
-  // const hideTooltip = useCallback((d, e) => {
-  //   const node = tooltipNodeRef.current;
-  //   if (!node) {
-  //     return null;
-  //   };
-  // }, [tooltipNodeRef]);
+    if (!lastChangeAuthor) {
+      return undrawTooltip();
+    };
+    drawTooltip({
+      x,
+      y,
+      name: lastChangeAuthor,
+      time: parse.time(Date.now() - lastChangeTime),
+    });
+  }, [dataRef, drawTooltip, undrawTooltip]);
 
 
-  // const tooltipRef = useRef({});
-
-  // const updateTooltip = useCallback(currentId => {
-  //   const { id } = tooltipRef.current;
-  //   if (currentId === id) {
-  //     console.log('data is the same')
-  //     return null;
-  //   };
-
-
-  // }, [tooltipRef]);
-
-
-  // const handleMouseMove = useCallback(e => {
-  //   const { clientX, clientY, target: { id } } = e;
-  //   //
-  // })
-
-
-  useEffect(() => {   // add mousemove listener to grid element
+  useEffect(() => {   // add click listener to grid element
+    // console.log('EFFECT 4')
     const el = gridRef.current;
     if (el) {
-      el.addEventListener('mousemove', showTooltip, { passive: true });
+      // console.log('EFFECT 4 -- add click listener to grid element')
+      el.addEventListener('click', handleClick);
     };
 
     return () => {
-      el.removeEventListener('mousemove', showTooltip);
+      // console.log('EFFECT 4 return -- remove click listener from grid element')
+      if (el) {
+        el.removeEventListener('click', handleClick);
+      };
     };
-  }, [gridRef, showTooltip]);
+  }, [gridRef, handleClick]);
 
 
+  useEffect(() => {   // add mousemove listener to grid element
+    // console.log('EFFECT 5')
+    const el = gridRef.current;
+    if (el) {
+      // console.log('EFFECT 5 -- add mousemove listener to grid element')
+      el.addEventListener('mousemove', handleMouseMove, { passive: true });
+    };
+
+    return () => {
+      // console.log('EFFECT 5 -- remove mousemove listener from grid element')
+      el.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [gridRef, handleMouseMove]);
 
 
 
@@ -349,18 +320,22 @@ export default function useGrid(params, cursorMode) {
 
 
 ///////////////////////////////////////
-// Draw stack effects
+// Draw trigger effects
 ///////////////////////////////////////
 
-  useEffect(() => {
+  useEffect(() => {   // draw full grid
+    // console.log('EFFECT 6')
     if (redrawFlag) {
+      // console.log('EFFECT 6 -- draw full grid')
       drawGrid();
     };
   }, [redrawFlag, drawGrid]);
 
 
-  useEffect(() => {
+  useEffect(() => {   // draw single cel
+    // console.log('EFFECT 7')
     if (celQueue) {
+      // console.log('EFFECT 7 -- draw single cel')
       drawCel(celQueue);
     };
   }, [celQueue, drawCel]);
@@ -368,9 +343,6 @@ export default function useGrid(params, cursorMode) {
 
 
   return {
-    gridRef,
-    colorRef,
-    // canvasRef,
     username,
     lastDraw,
   };

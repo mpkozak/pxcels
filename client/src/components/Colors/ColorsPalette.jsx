@@ -1,23 +1,22 @@
 import React, { memo } from 'react';
-import './Colors.css';
 
 
 
 
 
-export default memo(function ColorsPalette({ palette = [], hidden = false, click = null } = {}) {
-  // console.log('ColorsPalette render')
+export default memo(function ColorsPalette({ palette = [], click = null } = {}) {
+
 
   return (
-      <div className="ColorsPalette">
-        {palette.map((hex, i) =>
-          <div
-            key={hex}
-            className="ColorsPalette--cel"
-            style={{ backgroundColor: hex }}
-            onClick={() => click(i)}
-          />
-        )}
-      </div>
+    <div className="ColorsPalette" onClick={click}>
+      {palette.map((hex, i) =>
+        <div
+          key={hex}
+          id={`color-${i}`}
+          className="ColorsPalette--cel"
+          style={{ backgroundColor: hex }}
+        />
+      )}
+    </div>
   );
 });

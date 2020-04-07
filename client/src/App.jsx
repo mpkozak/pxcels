@@ -1,20 +1,32 @@
-import React, { memo, useState, useCallback } from 'react';
+import React, { memo, useState, useRef, useCallback } from 'react';
 import './App.css';
 import { useGrid, useParams } from './hooks';
 import { Grid, Colors } from './components';
 
 
 
+
+
 export default memo(function App() {
   const params = useParams();
+  const gridRef = useRef(null);
+  const [activeColor, setActiveColor] = useState(11);
   const [cursorMode, setCursorMode] = useState('drag');
-  const {
-    gridRef,
-    colorRef,
-    // canvasRef,
-  } = useGrid(params, cursorMode);
+
+  useGrid({ gridRef, params, activeColor, cursorMode });
 
   const { colors, ...dimen } = params || {};
+
+
+  const handleColorClick = useCallback(e => {
+    const { id } = e.target;
+    if (!id) {
+      return null;
+    };
+    const color = +id.split('-')[1];
+    setActiveColor(color);
+    setCursorMode('paint');
+  }, [setActiveColor, setCursorMode]);
 
 
   const handleToolClick = useCallback(e => {
@@ -35,22 +47,18 @@ export default memo(function App() {
         cursorMode={cursorMode}
       />
       <Colors
-        colorRef={colorRef}
         palette={colors}
+        activeColor={activeColor}
+        setColor={handleColorClick}
       />
       <div className="Tools" onClick={handleToolClick}>
-        <div
-          id="tool-paint"
-          className={
-            'Tools--button button paint' + (cursorMode === 'paint' ? ' active' : '')
-          }
-        />
-        <div
-          id="tool-drag"
-          className={
-            'Tools--button button drag' + (cursorMode === 'drag' ? ' active' : '')
-          }
-        />
+        {['drag', 'paint'].map(d =>
+          <div
+            key={`tool-${d}`}
+            id={`tool-${d}`}
+            className={`Tools--button button ${d}${cursorMode === d ? ' active' : ''}`}
+          />
+        )}
       </div>
     </div>
   );

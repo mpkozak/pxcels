@@ -30,11 +30,11 @@
 }
 
 .Tools--button.paint {
-  background-image: url('./global/draw.png');
+  background-image: url('./_img/draw.png');
 }
 
 .Tools--button.drag {
-  background-image: url('./global/grab.png');
+  background-image: url('./_img/grab.png');
 }
 
 .Tools--button.active {

@@ -15,6 +15,7 @@ export default function useParams() {
       setParams(data);
     } catch (err) {
       console.error('Unable to fetch params ---', err);
+      return null;
     };
   }, [setParams]);
 

@@ -32,7 +32,6 @@ export default memo(function Grid({ gridRef, dimen = {}, cursorMode } = {}) {
   }, [celScaleRange, celScale, setCelScale]);
 
 
-
   const [drag, setDrag] = useState(false);
   const dragBoxRef = useRef(null);
 

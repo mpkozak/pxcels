@@ -6,36 +6,31 @@ import ColorsPalette from './ColorsPalette.jsx';
 
 
 
-export default memo(function Colors({ colorRef, palette = [] } = {}) {
-  // console.log('colors render')
-
-  const [activeColor, setActiveColor] = useState(colorRef.current);
-  const [showPalette, setShowPalette] = useState(false);
+export default memo(function Colors({ palette = [], activeColor = 0, setColor = null } = {}) {
+  const [hidePalette, setHidePalette] = useState(true);
 
 
-  const handleClickSetColor = useCallback(color => {
-    colorRef.current = color;
-    setActiveColor(color);
-    setShowPalette(false);
-  }, [colorRef, setActiveColor]);
+  const toggleHidePalette = useCallback(() => {
+    setHidePalette(!hidePalette);
+  }, [hidePalette, setHidePalette]);
 
 
-  const handleClickTogglePalette = useCallback(() => {
-    setShowPalette(!showPalette);
-  }, [showPalette, setShowPalette]);
+  const handleClickSetColor = useCallback((e) => {
+    setColor(e);
+    toggleHidePalette();
+  }, [setColor, toggleHidePalette]);
 
 
   return (
-    <div className={'Colors' + (showPalette ? ' active' : '')}>
+    <div className={'Colors' + (!hidePalette ? ' active' : '')}>
       <ColorsPalette
         palette={palette}
-        hidden={!showPalette}
         click={handleClickSetColor}
       />
       <div
-        className={'Colors--current' + (showPalette ? ' hidden' : '')}
+        className="Colors--current"
         style={{ backgroundColor: palette[activeColor] }}
-        onClick={handleClickTogglePalette}
+        onClick={toggleHidePalette}
       />
     </div>
   );

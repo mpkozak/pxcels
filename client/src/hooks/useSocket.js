@@ -82,10 +82,10 @@ export default function useSocket(cb = null) {
 
 
   useEffect(() => {
-    if (!client.current || !open) {
+    if (!open || !client.current) {
       startClient();
     };
-  }, [client, open, startClient]);
+  }, [open, client, startClient]);
 
 
   const postMessage = useCallback((type, payload) => {
