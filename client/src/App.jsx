@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import './App.css';
-import { useGrid } from './hooks';
+import { useGrid, useParams } from './hooks';
 import { Grid, Colors } from './components';
 
 
@@ -8,28 +8,27 @@ import { Grid, Colors } from './components';
 
 
 export default memo(function App() {
+  const params = useParams();
   const {
-    params,
     gridRef,
-    // canvasRef,
     colorRef,
-    // username,
-    // lastDraw,
-    // color,
-    // setColor,
-  } = useGrid();
+    // canvasRef,
+  } = useGrid(params);
 
+
+  const { colors, ...dimen } = params || {};
 
 
   return (
     <div className="App">
-      <Grid gridRef={gridRef} />
-      {!!params && (
-        <Colors
-          colorRef={colorRef}
-          palette={params.colors}
-        />
-      )}
+      <Grid
+        gridRef={gridRef}
+        dimen={dimen}
+      />
+      <Colors
+        colorRef={colorRef}
+        palette={colors}
+      />
     </div>
   );
 });

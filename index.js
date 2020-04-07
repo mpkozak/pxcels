@@ -52,6 +52,7 @@ function socketPostMessage(socket) {
 };
 
 
+
 function socketHandleConnection(socket) {
   const postMessage = socketPostMessage(socket);
 
@@ -71,9 +72,6 @@ function socketHandleConnection(socket) {
         if (userName) {
           postMessage('store_user', userName);
         };
-        break;
-      case 'get_params':
-        postMessage('update_params', Grid.params);
         break;
       case 'get_grid':
         postMessage('update_grid', Grid.current);
@@ -107,6 +105,15 @@ socketServer.on('connection', socketHandleConnection);
 
 // CLIENT ROUTES
 
+
+app.get('/params', (req, res) => {
+  try {
+    return res.status(200).json(Grid.params);
+  } catch (err) {
+    console.error('app.get(/params) --- ', err);
+    return res.status(404).end();
+  };
+})
 app.use('/', express.static(path.join(__dirname, 'client', 'build')));
 app.use('/*', express.static(path.join(__dirname, 'client', 'build')));
 app.use('*', express.static(path.join(__dirname, 'client', 'build')));

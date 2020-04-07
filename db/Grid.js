@@ -96,7 +96,8 @@ function reset() {
 */
 
 function update({ id, color, t, uuid, name }) {
-  const cel = current.find(a => a.id === id);
+  const celIndex = current.findIndex(a => a.id === id);
+  const cel = current[celIndex];
   if (!cel) {
     return null;
   };
@@ -105,7 +106,7 @@ function update({ id, color, t, uuid, name }) {
   cel.lastChangeAuthor = name;
   cel.lastChangeTime = t;
   history.push(cel);
-  return cel;
+  return { cel, celIndex };
 };
 
 
@@ -120,7 +121,7 @@ const backupInterval = process.env.GRID_BACKUP_INTERVAL * 1e3;
 let backupTimeout = setTimeout(backup, backupInterval);
 
 async function backup() {
-  console.log('grid backup ran')
+  // console.log('grid backup ran')
   const dbFile = path.join(__dirname, 'db_grid.json');
   const data = JSON.stringify({ current, history, ...params }, null, 2);
   await fs.writeFile(dbFile, data, 'utf-8');

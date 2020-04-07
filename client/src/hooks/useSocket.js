@@ -11,12 +11,12 @@ export default function useSocket(cb = null) {
   const [name, setName] = useState(null);
 
 
-
   const handleOpen = useCallback(() => {
     if (client.current.readyState === 1) {
       setOpen(true);
     };
   }, [client, setOpen]);
+
 
   const handleClose = useCallback(() => {
     if (client.current.readyState === 3) {
@@ -58,29 +58,34 @@ export default function useSocket(cb = null) {
   }, [handleRequestUuid, handleStoreUser, cb]);
 
 
-  useEffect(() => {
-    if (!client.current) {
-      const loc = window.location;
-      let socketURI;
-      if (loc.protocol === 'https:') {
-        socketURI = 'wss:';
-      } else {
-        socketURI = 'ws:';
-      };
-      if (process.env.NODE_ENV === 'development') {
-        const base = loc.host.split(':')[0];
-        socketURI += `//${base}:8080`
-      } else {
-        socketURI += '//' + loc.host;
-      };
-      socketURI += loc.pathname;
-
-      client.current = new WebSocket(socketURI);
-      client.current.onopen = handleOpen;
-      client.current.onclose = handleClose;
-      client.current.onmessage = handleMessage;
+  const startClient = useCallback(() => {
+    const loc = window.location;
+    let socketURI;
+    if (loc.protocol === 'https:') {
+      socketURI = 'wss:';
+    } else {
+      socketURI = 'ws:';
     };
+    if (process.env.NODE_ENV === 'development') {
+      const base = loc.host.split(':')[0];
+      socketURI += `//${base}:8080`
+    } else {
+      socketURI += '//' + loc.host;
+    };
+    socketURI += loc.pathname;
+
+    client.current = new WebSocket(socketURI);
+    client.current.onopen = handleOpen;
+    client.current.onclose = handleClose;
+    client.current.onmessage = handleMessage;
   }, [client, handleOpen, handleClose, handleMessage]);
+
+
+  useEffect(() => {
+    if (!client.current || !open) {
+      startClient();
+    };
+  }, [client, open, startClient]);
 
 
   const postMessage = useCallback((type, payload) => {
