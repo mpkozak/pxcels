@@ -26,25 +26,44 @@
   BUILD_VERSION="$VERSION--$t"
   sed -i '' -e "s/$VERSION/$BUILD_VERSION/" "$TOPLEVEL/package.json"
 
+# build client
+  cd "$TOPLEVEL/client"
+  npm run build
+
+# check for public dir
+  cd "$TOPLEVEL"
+  if [ ! -d "$TOPLEVEL/public" ]; then
+    mkdir "$TOPLEVEL/public"
+  fi
+
+# copy build into public dir
+  rm -rf "$TOPLEVEL/public/*"
+  cp -r "$TOPLEVEL/client/build/" "$TOPLEVEL/public"
+
 # commit changes
   git add .
   git commit -m "deploy to heroku $BUILD_VERSION"
 
+# deploy
+  git push --force heroku prod:master
 
+# switch back to master branch
+  git checkout master
 
+# delete deployment branch
+  git branch -D prod
 
-#   cd "$TOPLEVEL/client"
-#   npm run build
+# calculate runtime
+  convertsecs() {
+    ((h=${1}/3600))
+    ((m=(${1}%3600)/60))
+    ((s=${1}%60))
+    printf "%02d:%02d:%02d" $h $m $s
+  }
 
-# # check for public dir
-#   cd "$TOPLEVEL"
-#   if [ ! -d "$TOPLEVEL/public" ]; then
-#     mkdir "$TOPLEVEL/public"
-#   fi
+  s=$((`date +%s`-t))
+  RT=$(convertsecs $s)
 
-# # copy build into public dir
-#   rm -rf "$TOPLEVEL/public/*"
-#   cp -r "$TOPLEVEL/client/build/" "$TOPLEVEL/public"
-
-# # exit
-#   exit 0
+# report success
+  printf "\n\nDeployment successful! --- $RT elapsed\n\n\n"
+  exit 0
