@@ -26,8 +26,8 @@
   "5db15a50-d069-4a8c-8076-7556a06110c0": {
     "name": "anonymous",
     "date_created": 1586158456469,
-    "last_draw": 1586158490229,
-    "last_login": 1586158456469,
+    "last_draw": 1586229413576,
+    "last_login": 1586229396179,
     "last_logout": 0,
     "history": []
   },
@@ -35,15 +35,15 @@
     "name": "anonymous",
     "date_created": 1586158618894,
     "last_draw": 1586158642575,
-    "last_login": 1586158618894,
+    "last_login": 1586234760848,
     "last_logout": 0,
     "history": []
   },
   "d85aeaf3-bf9c-4c04-a0df-ddd19b1b8282": {
     "name": "anonymous",
     "date_created": 1586196082886,
-    "last_draw": 1586209308225,
-    "last_login": 1586209322803,
+    "last_draw": 1586235398647,
+    "last_login": 1586235250543,
     "last_logout": 0,
     "history": []
   },
@@ -100,6 +100,14 @@
     "date_created": 1586220281009,
     "last_draw": 1586220307144,
     "last_login": 1586226734358,
+    "last_logout": 0,
+    "history": []
+  },
+  "9581cab0-94d8-4a53-ace4-813aabc04283": {
+    "name": "anonymous",
+    "date_created": 1586234763054,
+    "last_draw": 1586234916014,
+    "last_login": 1586235250919,
     "last_logout": 0,
     "history": []
   }

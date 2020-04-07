@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback } from 'react';
+import React, { memo, useState, useEffect, useCallback, useRef } from 'react';
 import './Grid.css';
 
 
@@ -33,6 +33,38 @@ export default memo(function Grid({ gridRef, dimen = {} } = {}) {
 
 
 
+  const [drag, setDrag] = useState(false);
+  const dragBoxRef = useRef(null);
+
+
+  const handleDragStart = useCallback(e => {
+    setDrag(true);
+  }, [setDrag]);
+
+
+  const handleDragEnd = useCallback(e => {
+    setDrag(false);
+  }, [setDrag]);
+
+
+  const handleDragMove = useCallback(e => {
+    const el = dragBoxRef.current;
+    el.scrollBy(-e.movementX, -e.movementY);
+  }, [dragBoxRef]);
+
+
+  useEffect(() => {
+    if (drag) {
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+    } else {
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+    };
+  }, [drag, handleDragMove, handleDragEnd]);
+
+
+
   const gridStyle = {
     gridTemplateColumns: `repeat(${width}, ${celScale}px)`,
     gridTemplateRows: `repeat(${height}, ${celScale}px)`,
@@ -43,14 +75,20 @@ export default memo(function Grid({ gridRef, dimen = {} } = {}) {
   return (
     <div className="Grid">
       <div className="Grid--zoom" onClick={handleZoom}>
-        <div id="zoom-0" className="Grid--zoom-button">
-          <h2>−</h2>
-        </div>
         <div id="zoom-1" className="Grid--zoom-button">
           <h2>+</h2>
         </div>
+        <div id="zoom-0" className="Grid--zoom-button">
+          <h2>−</h2>
+        </div>
       </div>
-      <div className="Grid--wrap">
+      <div
+        className="Grid--wrap"
+        ref={dragBoxRef}
+        onMouseDown={handleDragStart}
+        // onMouseUp={handleDragEnd}
+        // onMouseLeave={handleDragEnd}
+      >
         <div className="Grid--flex">
           <div
             className="Grid--celbox"
