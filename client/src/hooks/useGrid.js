@@ -342,7 +342,21 @@ export default function useGrid({ params, gridRef, activeColor, cursorMode } = {
 
 
 
+// const [data, setData] = useState([]);
+
+//   useEffect(() => {
+//     if (dataRef.current && !data.length) {
+//       setData(dataRef.current)
+//     };
+//   }, [dataRef, data, setData]);
+
+
+
+
+
   return {
+    // dataRef,
+    // data,
     username,
     lastDraw,
   };

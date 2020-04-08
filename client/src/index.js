@@ -15,3 +15,19 @@ ReactDOM.render(
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
+
+
+
+// window.addEventListener('touchmove', e => e.preventDefault())
+
+
+window.addEventListener('touchstart', cancelTouch);
+window.addEventListener('touchmove', cancelTouch);
+
+
+
+function cancelTouch(e) {
+  console.log(e)
+  // e.preventDefault();
+  // e.stopPropagation();
+}

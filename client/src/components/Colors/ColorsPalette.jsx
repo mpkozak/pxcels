@@ -1,16 +1,20 @@
-import React, { memo } from 'react';
+import React, { memo, useRef } from 'react';
 
 
 
 
 
-export default memo(function ColorsPalette({ palette = [], hide = true, click = null } = {}) {
+export default memo(function ColorsPalette({ palette = [], show = '', click = null } = {}) {
+
+
   return (
     <div className="Colors--palette">
       <div
-        // className={'Colors--palette-celbox ' + (hide ? 'hide' : 'show')}
-        // className={'Colors--palette-celbox' + (hide ? ' hide' : '')}
-        className="Colors--palette-celbox"
+        className={
+          'Colors--palette-celbox' +
+          (show === '' ? ' notready' : '') +
+          (!show ? ' hide' : '')
+        }
         onClick={click}
       >
         {palette.map((hex, i) =>

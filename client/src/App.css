@@ -1,8 +1,29 @@
 .App {
   position: absolute;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  /*position: relative;*/
+  /*width: 100%;*/
+  /*height: 100%;*/
+  /*top: 0;*/
+  /*left: 0;*/
+  /*width: 100vw;*/
+  /*height: 100vh;*/
+  /*overflow: hidden;*/
+
+  background-color: green;
+}
+
+
+
+.test {
+
+  /*width: 100%;*/
+  /*height: 100%;*/
+
+  background-color: orange;
 }
 
 
@@ -10,8 +31,8 @@
 
 .Toolbar {
   position: fixed;
-  left: 0%;
-  bottom: 0%;
+  left: 0px;
+  bottom: 0px;
   width: 100%;
   height: 12vh;
   min-height: 90px;
@@ -22,7 +43,56 @@
   background-color: #1a1e1f;
   /*border-top: 1px solid #000000;*/
   z-index: 200;
+  background-color: brown;
 }
+
+
+.toolbox {
+  position: relative;
+  width: 12vh;
+  height: 100%;
+  min-width: 90px;
+  min-height: 90px;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background-color: red;
+}
+
+.toolbox--inner {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  pointer-events: auto;
+}
+
+
+
+
+
+
+
+
+.Grid {
+  position: fixed;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  /*height: 100%;*/
+  height: calc(100% - 12vh);
+  max-height: calc(100% - 90px);
+  z-index: 100;
+
+  /*opacity: .5;*/
+  background-color: yellow;
+}
+
+
 
 
 
@@ -51,59 +121,6 @@
 
 
 
-
-
-.Grid {
-  position: fixed;
-  left: 0%;
-  top: 0%;
-  width: 100%;
-  /*height: 100%;*/
-  height: calc(100% - 12vh);
-  max-height: calc(100% - 90px);
-  z-index: 100;
-
-  /*opacity: .5;*/
-  /*background-color: yellow;*/
-}
-
-
-
-
-
-
-
-.Tools {
-  position: fixed;
-  left: 14vh;
-  bottom: 2vh;
-  width: 4.5vh;
-  height: 10vh;
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: center;
-  justify-content: space-between;
-  pointer-events: none;
-}
-
-
-.Tools--button {
-  background-position: 50% 50%;
-  background-size: 70%;
-  background-repeat: no-repeat;
-}
-
-.Tools--button.paint {
-  background-image: url('./_img/draw.png');
-}
-
-.Tools--button.drag {
-  background-image: url('./_img/grab.png');
-}
-
-.Tools--button.active {
-  background-color: rgba(192, 192, 192, .8);
-}
 
 
 

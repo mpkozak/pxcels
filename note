@@ -9,6 +9,15 @@ NEED TO AD:
 
 
 
+tools:
+-color select
+-toggle grab
+-toggle paint
+-zoom in
+-zoom out
+
+
+
 for every change received
   -update local global state in runtime
   -enqueue update object to a 'backup' queue

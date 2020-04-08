@@ -1,0 +1,43 @@
+.Cursors {
+  width: auto;
+  height: 100%;
+  min-width: 30px;
+  min-height: 90px;
+
+
+  width: 12vh;
+  height: 100%;
+  min-width: 90px;
+  min-height: 90px;
+  padding: 10px;
+
+  /*background-color: green;*/
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+
+.Cursors--button {
+  width: calc(50% - 5px);
+  /*width: 50%;*/
+  height: calc(50% - 5px);
+  border-radius: 5%;
+  background-position: 50% 50%;
+  background-size: 70%;
+  background-repeat: no-repeat;
+}
+
+.Cursors--button.paint {
+  background-image: url('../../_img/draw.png');
+}
+
+.Cursors--button.drag {
+  background-image: url('../../_img/grab.png');
+}
+
+.Cursors--button.active {
+  background-color: rgba(192, 192, 192, .8);
+}
