@@ -1,13 +1,14 @@
 import React, { memo, useState, useCallback } from 'react';
 import './Colors.css';
-// import ColorsPalette from './ColorsPalette.jsx';
+import ColorsCurrent from './ColorsCurrent.jsx';
+import ColorsPalette from './ColorsPalette.jsx';
 
 
 
 
 
 export default memo(function Colors({ palette = [], activeColor = 0, setColor = null } = {}) {
-  const [hidePalette, setHidePalette] = useState(false);
+  const [hidePalette, setHidePalette] = useState(true);
 
 
   const toggleHidePalette = useCallback(() => {
@@ -15,33 +16,25 @@ export default memo(function Colors({ palette = [], activeColor = 0, setColor = 
   }, [hidePalette, setHidePalette]);
 
 
-  const handleClickSetColor = useCallback((e) => {
-    setColor(e);
-    toggleHidePalette();
-  }, [setColor, toggleHidePalette]);
+  // const handleClickSetColor = useCallback((e) => {
+  //   setColor(e);
+  //   toggleHidePalette();
+  // }, [setColor, toggleHidePalette]);
 
 
   return (
     <div className="Colors">
-      <div
-        className="Colors--current"
-        style={{ backgroundColor: palette[activeColor] }}
-        onClick={toggleHidePalette}
-      />
-      <div className="Colors--palette">
-        <div
-          className={'Colors--palette-celbox' + (hidePalette ? ' hide' : '')}
-          onClick={handleClickSetColor}
-        >
-          {palette.map((hex, i) =>
-            <div
-              key={hex}
-              id={`color-${i}`}
-              className="Colors--palette-cel"
-              style={{ backgroundColor: hex }}
-            />
-          )}
-        </div>
+      <div className={'Colors--inner' + (hidePalette ? ' hide' : '')}>
+        <ColorsCurrent
+          color={palette[activeColor]}
+          click={toggleHidePalette}
+        />
+        <ColorsPalette
+          // hide={hidePalette}
+          palette={palette}
+          // click={handleClickSetColor}
+          click={setColor}
+        />
       </div>
     </div>
   );

@@ -41,6 +41,7 @@ export default memo(function App() {
 
   return (
     <div className="App">
+
       <div className="Toolbar">
         <Colors
           palette={colors}
@@ -48,18 +49,26 @@ export default memo(function App() {
           setColor={handleColorClick}
         />
 
+
       </div>
 
-      <div className="Grid">
-        i am grid
-      </div>
+
     {/*
+
+        <div className="c">
+        </div>
+
 
       <Grid
         gridRef={gridRef}
         dimen={dimen}
         cursorMode={cursorMode}
       />
+
+      <div className="Grid">
+        i am grid
+      </div>
+
       <div className="Tools" onClick={handleToolClick}>
         {['drag', 'paint'].map(d =>
           <div
