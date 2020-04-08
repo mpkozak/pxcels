@@ -41,15 +41,24 @@ export default memo(function App() {
 
   return (
     <div className="App">
+      <div className="Toolbar">
+        <Colors
+          palette={colors}
+          activeColor={activeColor}
+          setColor={handleColorClick}
+        />
+
+      </div>
+
+      <div className="Grid">
+        i am grid
+      </div>
+    {/*
+
       <Grid
         gridRef={gridRef}
         dimen={dimen}
         cursorMode={cursorMode}
-      />
-      <Colors
-        palette={colors}
-        activeColor={activeColor}
-        setColor={handleColorClick}
       />
       <div className="Tools" onClick={handleToolClick}>
         {['drag', 'paint'].map(d =>
@@ -60,6 +69,10 @@ export default memo(function App() {
           />
         )}
       </div>
+
+
+
+    */}
     </div>
   );
 });

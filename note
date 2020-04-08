@@ -1,0 +1,20 @@
+
+
+NEED TO AD:
+-stats/counters:
+  -time alive
+  -total pixels drawn
+  -total unique users
+  -users currently active(?)
+
+
+
+for every change received
+  -update local global state in runtime
+  -enqueue update object to a 'backup' queue
+    -only one timeout for backups
+      -if queue is empty
+        -don't worry about it
+      -else
+        -update single entries in db
+
