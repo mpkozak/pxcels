@@ -1,4 +1,10 @@
 .Colors {
+  width: 12vh;
+  min-width: 90px;
+}
+
+
+.Colors--inner {
 
 }
 
@@ -51,10 +57,9 @@
   grid-auto-rows: 1fr;
   grid-gap: 5px;
   border-radius: calc(.4vh + 2px);
-  background-color: rgba(127, 127, 127, .4);
+  background-color: rgba(127, 127, 127, .5);
   opacity: 1;
   transform: translateY(0%);
-  /*transition: opacity 150ms ease-out, transform 150ms ease-out;*/
   animation-name: bounce-in;
   animation-duration: 400ms;
   animation-iteration-count: 1;
@@ -89,17 +94,16 @@
 }
 
 .Colors--palette-cel:hover {
-  opacity: .7;
+  opacity: .9;
   transform: scale(1);
-  transition: opacity 20ms ease, transform 10ms ease-out;
+  transition: opacity 50ms ease-out, transform 10ms ease-out;
 }
 
 .Colors--palette-cel:active {
-  opacity: .7;
+  opacity: .9;
   transform: scale(.97);
-  transition: opacity 20ms ease, transform 20ms ease-in;
+  transition: opacity 50ms ease, transform 20ms ease-in;
 }
-
 
 
 
@@ -120,15 +124,15 @@
 
 
 @keyframes bounce-in {
-    0%   { transform: translateY(100%); }
-    60%  { transform: translateY(0%); }
-    80%  { transform: translateY(1%); }
-    100% { transform: translateY(0%); }
+  0%   { transform: translateY(100%); }
+  60%  { transform: translateY(0%); }
+  70%  { transform: translateY(1%); }
+  100% { transform: translateY(0%); }
 }
 
 @keyframes bounce-out {
-    0%   { transform: translateY(0%); opacity: 1;}
-    60%  { transform: translateY(100%); opacity: .5 }
-    80%  { transform: translateY(99%);  opacity: .2;}
-    100% { transform: translateY(100%); opacity: 0;}
+  0%   { transform: translateY(0%); opacity: 1;}
+  60%  { transform: translateY(100%); opacity: .5 }
+  70%  { transform: translateY(99%);  opacity: .2;}
+  100% { transform: translateY(100%); opacity: 0;}
 }

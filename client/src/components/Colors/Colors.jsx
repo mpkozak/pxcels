@@ -9,22 +9,15 @@ import ColorsPalette from './ColorsPalette.jsx';
 
 export default memo(function Colors({ palette = [], activeColor = 0, setColor = null } = {}) {
   const [showPalette, setShowPalette] = useState('');
-console.log('test', !showPalette)
 
   const toggleHidePalette = useCallback(() => {
     setShowPalette(!showPalette);
   }, [showPalette, setShowPalette]);
 
 
-  // const handleClickSetColor = useCallback((e) => {
-  //   setColor(e);
-  //   toggleHidePalette();
-  // }, [setColor, toggleHidePalette]);
-
-
   return (
     <div className="Colors toolbox">
-      <div className="toolbox--inner">
+      <div className="Colors--inner toolbox--inner">
         <ColorsCurrent
           color={palette[activeColor]}
           click={toggleHidePalette}

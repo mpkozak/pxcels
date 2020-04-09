@@ -2,9 +2,7 @@ import React, { memo, useState, useRef, useCallback } from 'react';
 import './App.css';
 import { useGrid, useParams } from './hooks';
 import { Grid, Colors, Cursors } from './components';
-
-
-
+// import User from './User.jsx';
 
 
 
@@ -12,164 +10,85 @@ import { Grid, Colors, Cursors } from './components';
 
 export default memo(function App() {
   const params = useParams();
-  const gridRef = useRef(null);
+  const { colors, width, height } = params || {};
+
   const [activeColor, setActiveColor] = useState(11);
   const [cursorMode, setCursorMode] = useState('drag');
-  const [zoom, setZoom] = useState(1);
+  const [celScale, setCelScale] = useState(10);
+  const celScaleRange = [5, 50];
 
-  useGrid({ gridRef, params, activeColor, cursorMode });
+  const gridRef = useRef(null);
+  // const { username, postUsername } =
+    useGrid({ gridRef, params, activeColor, cursorMode });
 
-  const { colors, ...dimen } = params || {};
+
+  const updateZoom = useCallback((zoomIn) => {
+    const increment = Math.floor(Math.max(celScale / 5, 1));
+
+    const [min, max] = celScaleRange;
+    let newCelScale = celScale + (zoomIn ? increment : -increment);
+    if (newCelScale >= max) {
+      newCelScale = max;
+    };
+    if (newCelScale < min) {
+      newCelScale = min;
+    };
+
+    setCelScale(newCelScale);
+  }, [celScaleRange, celScale, setCelScale]);
 
 
-  const handleColorClick = useCallback(e => {
+  const handleClickColors = useCallback(e => {
     const { id } = e.target;
     if (!id) {
       return null;
     };
     const color = +id.split('-')[1];
     setActiveColor(color);
-    setCursorMode('paint');
-  }, [setActiveColor, setCursorMode]);
+  }, [setActiveColor]);
 
 
-  const handleToolClick = useCallback(e => {
+  const handleClickCursors = useCallback(e => {
     const { id } = e.target;
     if (!id) {
       return null;
     };
     const [setting, value] = id.split('-');
-      console.log('setting, cursor', setting, value)
     if (setting === 'cursor') {
-      console.log('set cursor', value)
       return setCursorMode(value);
-    } else if (setting === 'zoom') {
-      return setZoom(value)
-      console.log('set zoom', value)
     };
-    // setCursorMode(cursor);
-  }, [setCursorMode, setZoom]);
-
-
+    if (setting === 'zoom') {
+      return updateZoom(+value);
+    };
+  }, [setCursorMode, updateZoom]);
 
 
   return (
     <div className="App">
-
-
+      <Grid
+        gridRef={gridRef}
+        cursorMode={cursorMode}
+        width={width}
+        height={height}
+        celScale={celScale}
+      />
       <div className="Toolbar">
         <Colors
           palette={colors}
           activeColor={activeColor}
-          setColor={handleColorClick}
+          setColor={handleClickColors}
         />
         <Cursors
           cursorMode={cursorMode}
-          click={handleToolClick}
+          click={handleClickCursors}
         />
+      {/*
+        <User
+          username={username !== 'anonymous' ? username : ''}
+          post={postUsername}
+        />
+      */}
       </div>
-
-
-
-      <Grid
-        gridRef={gridRef}
-        dimen={dimen}
-        cursorMode={cursorMode}
-      />
-    {/*
-    <div className="test">
-    </div>
-
-
-
-        <div className="c">
-        </div>
-
-
-      <div className="Grid">
-        i am grid
-      </div>
-
-
-
-
-    */}
     </div>
   );
 });
-
-
-
-
-
-
-
-
-
-  // const ItemRenderer = ({ style, data, key, rowIndex, columnIndex } = {}) => {
-
-  //   const cel = data[rowIndex * width + columnIndex];
-  //   // const cel = data[rowIndex * width + columnIndex];
-  //   // console.log('cel', cel)
-  //   style = {
-  //     backgroundColor: colors[cel.color],
-  //     // backgroundColor: colors[data.color],
-  //     ...style,
-  //   };
-
-  //   return (
-  //     <div style={style}>
-  //     </div>
-  //   );
-  // };
-
-  // console.log('window.innerWidth', window.innerHeight)
-
-  // const gridProps = {
-  //   columnCount: dimen.width,
-  //   columnWidth: 50,
-  //   height: window.innerHeight,
-  //   rowCount: dimen.height,
-  //   rowHeight: 50,
-  //   width: window.innerWidth,
-  //   itemKey: itemKey,
-  //   itemData: data,
-  // };
-
-
-
-
-// import { FixedSizeGrid } from 'react-window';
-
-//   const { width, height } = dimen;
-
-
-
-// function itemKey({ columnIndex, data, rowIndex }) {
-//   // Find the item for the specified indices.
-//   // In this case "data" is an Array that was passed to Grid as "itemData".
-//   const item = data[rowIndex * width + columnIndex];
-
-//   // Return a value that uniquely identifies this item.
-//   // For a grid, this key must represent both the row and column.
-//   // Typically this will be something dynamic like a UID for the row,
-//   // Mixed with something more static like the incoming column index.
-//   return `${item.id}`;
-// }
-
-
-// {data.length && (
-
-//         <FixedSizeGrid {...gridProps}>
-//           {ItemRenderer}
-//         </FixedSizeGrid>
-
-
-// )}
-
-
-      // <canvas id="CANV"
-      //   ref={canvasRef}
-      //   width={128}
-      //   height={72}
-      // />

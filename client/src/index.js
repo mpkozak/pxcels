@@ -22,7 +22,7 @@ serviceWorker.unregister();
 
 
 window.addEventListener('touchstart', cancelTouch);
-window.addEventListener('touchmove', cancelTouch);
+// window.addEventListener('touchmove', cancelTouch);
 
 
 

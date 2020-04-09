@@ -3,37 +3,16 @@
   padding: 0;
   box-sizing: border-box;
   user-select: none;
-  font-family: 'helvetica';
 }
+
+
 
 body {
   background-color: #2a2e2f;
   overflow: hidden;
-  /*max-height: 100vh;*/
-  /*position: fixed;*/
-  /*width: 100%;*/
-  /*height: 100%;*/
-}
-
-
-
-
-
-div.button {
-  /*width: 4.5vh;*/
-  /*height: 4.5vh;*/
-  /*border-radius: .5vh;*/
-  background-color: rgba(192, 192, 192, .4);
-  pointer-events: auto;
-  cursor: pointer;
-}
-
-div.button:hover {
-  background-color: rgba(192, 192, 192, .8);
-}
-
-div.button:active {
-  transform: scale(.98);
+  font-family: 'helvetica';
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  /*-webkit-overflow-scrolling: touch;*/
 }
 
 
@@ -41,26 +20,25 @@ div.button:active {
 
 
 div.tooltip {
-    position: absolute;
-    width: auto;
-    height: auto;
-    padding: 5px 10px 8px 10px;
-    background: lightsteelblue;
-    border: 0px;
-    border-radius: 5px;
-    pointer-events: none;
-    transform: translateY(-60px);
+  position: absolute;
+  width: auto;
+  height: auto;
+  padding: 5px 10px 8px 10px;
+  background: lightsteelblue;
+  border: 0px;
+  border-radius: 5px;
+  pointer-events: none;
+  transform: translateY(-60px);
+  z-index: 500;
 }
 
 
 div.tooltip>h4 {
   font-size: 16px;
   line-height: 20px;
-  /*background-color: yellow;*/
 }
 
 div.tooltip>h5 {
   font-size: 12px;
   line-ight: 18px;
-  /*background-color: green;*/
 }

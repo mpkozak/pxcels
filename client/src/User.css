@@ -1,53 +1,45 @@
-#User {
-  width: 100%;
-  height: auto;
-  min-height: 8vh;
+.Username {
+  position: fixed;
+  left: 0%;
+  top: 35vh;
+  width: 100vw;
+  height: 20vh;
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
   justify-content: center;
-  transition: min-height 200ms ease;
-  /*background-color: yellow;*/
-}
-
-#User.showform {
-  min-height: 14vh;
+  z-index: 500;
 }
 
 
-
-#User>h1 {
-  padding: 2%;
-}
-
-
-
-#User>form {
-  display: none;
-}
-
-#User.showform>form {
-  width: 100%;
+.Username>form {
+  width: 60vmin;
   height: 100%;
-  padding: 8% 0;
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: column nowrap;
   align-items: center;
-  justify-content: space-around;
+  justify-content: center;
+  background-color: rgba(26, 30, 31, .95);
 }
 
 
-#User>form>input {
+.Username>form>input {
   width: 60%;
   padding: .4vh;
-  font-size: 3vh;
+  margin-bottom: 2vh;
+  font-size: calc(1vh + 12px);
   user-select: auto;
 }
 
 
-#User>form>button {
-  font-size: 2vh;
-  padding: 0 1vmin;
+.Username>form>button {
+  font-size: calc(1vh + 9px);
+  padding: 1vmin 1vmin;
   cursor: pointer;
   user-select: auto;
+}
+
+
+.Username>h1 {
+  padding: 2%;
 }

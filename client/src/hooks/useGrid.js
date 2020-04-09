@@ -54,7 +54,7 @@ export default function useGrid({ params, gridRef, activeColor, cursorMode } = {
   }, [handleUpdateGrid, handleUpdateCel, handleUpdateLastDraw]);
 
 
-  const { active, post, username } = useSocket(handleSocketMessage);
+  const { active, post, username, postUsername } = useSocket(handleSocketMessage);
 
 
   useEffect(() => {   // get grid data from socket
@@ -342,22 +342,11 @@ export default function useGrid({ params, gridRef, activeColor, cursorMode } = {
 
 
 
-// const [data, setData] = useState([]);
-
-//   useEffect(() => {
-//     if (dataRef.current && !data.length) {
-//       setData(dataRef.current)
-//     };
-//   }, [dataRef, data, setData]);
-
-
-
 
 
   return {
-    // dataRef,
-    // data,
     username,
-    lastDraw,
+    postUsername,
+    // lastDraw,
   };
 };

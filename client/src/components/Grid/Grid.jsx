@@ -5,32 +5,8 @@ import './Grid.css';
 
 
 
-export default memo(function Grid({ gridRef, dimen = {}, cursorMode } = {}) {
-  const { width, height } = dimen;
-  const [celScale, setCelScale] = useState(30);
-  const celScaleRange = [5, 50];
-
-
-  const handleZoom = useCallback((e) => {
-    const { id } = e.target;
-    if (!id) {
-      return null;
-    };
-    const zoomIn = +id.split('-')[1];
-    const increment = Math.floor(Math.max(celScale / 5, 1));
-
-    const [min, max] = celScaleRange;
-    let newCelScale = celScale + (zoomIn ? increment : -increment);
-    if (newCelScale >= max) {
-      newCelScale = max;
-    };
-    if (newCelScale < min) {
-      newCelScale = min;
-    };
-
-    setCelScale(newCelScale);
-  }, [celScaleRange, celScale, setCelScale]);
-
+export default memo(function Grid({ gridRef, cursorMode, ...dimen } = {}) {
+  const { width, height, celScale } = dimen;
 
   const [drag, setDrag] = useState(false);
   const dragBoxRef = useRef(null);
@@ -68,6 +44,11 @@ export default memo(function Grid({ gridRef, dimen = {}, cursorMode } = {}) {
 
 
   const celboxStyle = {
+    // transform: `scale(${celScale / 10})`,
+    // gridTemplateColumns: `repeat(${width}, ${50}px)`,
+    // gridTemplateRows: `repeat(${height}, ${50}px)`,
+    // border: (celScale < 10) ? '1px solid #000000' : 'none',
+
     gridTemplateColumns: `repeat(${width}, ${celScale}px)`,
     gridTemplateRows: `repeat(${height}, ${celScale}px)`,
     gridGap: (celScale < 10) ? '0px' : '1px',
@@ -78,27 +59,17 @@ export default memo(function Grid({ gridRef, dimen = {}, cursorMode } = {}) {
 
 
   return (
-    <div className="Grid">
-      <div className="Grid--zoom" onClick={handleZoom}>
-        <div id="zoom-1" className="Grid--zoom-button button">
-          <h2>+</h2>
-        </div>
-        <div id="zoom-0" className="Grid--zoom-button button">
-          <h2>−</h2>
-        </div>
-      </div>
-      <div
-        className="Grid--wrap"
-        ref={dragBoxRef}
-        onMouseDown={handleDragStart}
-      >
-        <div className="Grid--flex">
-          <div
-            className="Grid--celbox"
-            ref={gridRef}
-            style={celboxStyle}
-          />
-        </div>
+    <div
+      className="Grid--wrap"
+      ref={dragBoxRef}
+      onMouseDown={handleDragStart}
+    >
+      <div className="Grid--flex">
+        <div
+          className="Grid--celbox"
+          ref={gridRef}
+          style={celboxStyle}
+        />
       </div>
     </div>
   );

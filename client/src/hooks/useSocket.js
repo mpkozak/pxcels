@@ -8,7 +8,7 @@ export default function useSocket(cb = null) {
   const client = useRef(null);
   const [open, setOpen] = useState(false);
   const [uuid, setUuid] = useState(null);
-  const [name, setName] = useState(null);
+  const [name, setName] = useState('anonymous');
 
 
   const handleOpen = useCallback(() => {
@@ -96,9 +96,15 @@ export default function useSocket(cb = null) {
   }, [open, uuid, client]);
 
 
+  const postName = useCallback(str => {
+    postMessage('set_name', str);
+  }, [postMessage]);
+
+
   return {
     active: open && !!uuid,
     post: postMessage,
     username: name,
+    postUsername: postName,
   };
 };

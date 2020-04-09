@@ -1,12 +1,10 @@
-import React, { memo, useRef } from 'react';
+import React, { memo } from 'react';
 
 
 
 
 
 export default memo(function ColorsPalette({ palette = [], show = '', click = null } = {}) {
-
-
   return (
     <div className="Colors--palette">
       <div

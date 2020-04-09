@@ -1,37 +1,23 @@
-import React, { memo, useState, useCallback } from 'react';
+import React, { memo } from 'react';
 import './Cursors.css';
-// import ColorsCurrent from './ColorsCurrent.jsx';
-// import ColorsPalette from './ColorsPalette.jsx';
-
-
 
 
 
 export default memo(function Cursors({ cursorMode, click = null } = {}) {
 
-
   return (
     <div className="Cursors toolbox" onClick={click}>
-      <div className="toolbox--inner">
-      {['drag', 'paint'].map(d =>
-        <div
-          key={`cursor-${d}`}
-          id={`cursor-${d}`}
-          className={`Cursors--button button ${d}${cursorMode === d ? ' active' : ''}`}
-        />
-      )}
+      <div className="Cursors--inner toolbox--inner">
+        {['paint', 'drag'].map(d =>
+          <div
+            key={`cursor-${d}`}
+            id={`cursor-${d}`}
+            className={`Cursors--button ${d}${cursorMode === d ? ' active' : ''}`}
+          />
+        )}
+        <div id="zoom-0" className="Cursors--button zoom-out" />
+        <div id="zoom-1" className="Cursors--button zoom-in" />
       </div>
     </div>
   );
 });
-
-
-
-
-      // {['in', 'out'].map(d =>
-      //   <div
-      //     key={`zoom-${d}`}
-      //     id={`zoom-${d}`}
-      //     className={`Cursors--button button ${d}${cursorMode === d ? ' active' : ''}`}
-      //   />
-      // )}

@@ -5,15 +5,17 @@ import './User.css';
 
 
 
-export default memo(function User({ username = '', handleName = null } = {}) {
+export default memo(function User({ username = '', post = null } = {}) {
   const [name, setName] = useState(username);
 
 
   const handleSubmit = useCallback(e => {
     e.preventDefault();
-    handleName(name);
-    setName('');
-  }, [handleName, name, setName]);
+    if (!!name) {
+      post(name);
+      setName('');
+    };
+  }, [post, name, setName]);
 
 
   const handleChange = useCallback(e => {
@@ -23,18 +25,18 @@ export default memo(function User({ username = '', handleName = null } = {}) {
 
 
   return (
-    <div id="User" className={!username ? 'showform' : ''}>
+    <div className="Username">
       <form onSubmit={handleSubmit}>
         <input
           type="text"
           value={name}
           // defaultValue="Enter your name"
-          placeholder="Enter name"
+          placeholder="Your name"
           onChange={handleChange}
         />
-        <button>Submit</button>
+        <button onClick={e => e.preventDefault}>Sign your work!</button>
       </form>
-      {username && <h1>Hi {username}!</h1>}
+      {!!username && <h1>Hi {username}!</h1>}
     </div>
   );
 });
