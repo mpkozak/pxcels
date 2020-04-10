@@ -91,7 +91,7 @@ User.didDraw = async (uuid) => {
     return false;
   };
   const last_draw = Date.now();
-  await Db.updateOne('users', uuid, { last_draw });
+  const p = await Db.updateOne('users', uuid, { last_draw });
   user.last_draw = last_draw;
   return last_draw;
 };

@@ -15,12 +15,12 @@ const Db = {};
 
 Db._collections = {
   current: {
-    _coll: undefined,
+    _c: undefined,
     get: function() {
-      return this._coll.find().toArray();
+      return this._c.find().toArray();
     },
     getOne: function(id) {
-      return this._coll.findOne({ _id: id });
+      return this._c.findOne({ _id: id });
     },
     update: function(arr) {
       const queue = arr.map(d => ({
@@ -29,16 +29,16 @@ Db._collections = {
           update: { $set: { current: d.current } }
         }
       }));
-      return this._coll.bulkWrite(queue);
+      return this._c.bulkWrite(queue);
     },
   },
   history: {
-    _coll: undefined,
+    _c: undefined,
     get: function() {
-      return this._coll.find().toArray();
+      return this._c.find().toArray();
     },
     getOne: function(id) {
-      return this._coll.findOne({ _id: id });
+      return this._c.findOne({ _id: id });
     },
     insert: function(arr) {
       const queue = arr.map(d => {
@@ -51,31 +51,31 @@ Db._collections = {
         };
         return { insertOne: { document: { ...entry } } };
       });
-      return this._coll.bulkWrite(queue);
+      return this._c.bulkWrite(queue);
     },
   },
   params: {
-    _coll: undefined,
+    _c: undefined,
     get: function() {
-      return this._coll.findOne({ _id: 'data' }, { projection: { _id: 0 } });
+      return this._c.findOne({ _id: 'data' }, { projection: { _id: 0 } });
     },
   },
   users: {
-    _coll: undefined,
+    _c: undefined,
     get: function() {
-      return this._coll.find().toArray()
+      return this._c.find().toArray()
         .then(a => a
           .reduce((acc, { _id, ...data }) => ({ ...acc, [_id]: data }), {})
         );
     },
     getOne: function(id) {
-      return this._coll.findOne({ _id: id });
+      return this._c.findOne({ _id: id });
     },
     insertOne: function(obj) {
-      return this._coll.insertOne(obj);
+      return this._c.insertOne(obj);
     },
     updateOne: function(_id, obj) {
-      return this._coll.updateOne(
+      return this._c.updateOne(
         { _id: _id },
         { $set: { ...obj } }
       );
@@ -88,7 +88,7 @@ Db._collections = {
 Db.Mount = () => {    // add all remote collections to _collections object
   try {
     Object.keys(Db._collections).forEach(key => {
-      Db._collections[key]._coll = Db._db.collection(key);
+      Db._collections[key]._c = Db._db.collection(key);
     });
     return true;
   } catch (err) {

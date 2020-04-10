@@ -59,15 +59,18 @@
 
 
 
-/*#CANV {
+#CANV {
   position: fixed;
   top: 3vmin;
   right: 3vmin;
   border: 1px solid black;
   z-index: 500;
-  width: 192px;
-  height: 108px;
-}*/
+  width: 20vmin;
+  height: 20vmin;
+
+  /*width: 192px;*/
+  /*height: 108px;*/
+}
 
 
 

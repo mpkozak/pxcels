@@ -6,7 +6,7 @@ import { useSocket } from './';
 
 
 
-export default function useGrid({ params, gridRef, activeColor, cursorMode } = {}) {
+export default function useGrid({ params, gridRef, canvasRef, activeColor, cursorMode } = {}) {
 
 ///////////////////////////////////////
 // Socket
@@ -243,6 +243,66 @@ export default function useGrid({ params, gridRef, activeColor, cursorMode } = {
 ///////////////////////////////////////
 // CANVAS --- WIP
 ///////////////////////////////////////
+
+  const ctxRef = useRef(null);
+
+  useEffect(() => {
+    console.log('canvaseffect')
+    if (canvasRef.current && !ctxRef.current) {
+      console.log('have canvas', canvasRef.current)
+      ctxRef.current = canvasRef.current.getContext('2d');
+      ctxRef.current.imageSmoothingEnabled = false;
+    };
+  }, [canvasRef, ctxRef]);
+
+
+
+  const drawCanvas = useCallback(() => {
+    const data = dataRef.current;
+    const ctx = ctxRef.current;
+    if (!ctx || !data) {
+      return null;
+    };
+    const { colors } = params;
+    const rgba = colors.map(d => {
+      const hex = d.substr(1).split('').map(d => `${d}${d}`);
+      const [r, g, b] = hex.map(d => parseInt(d, 16));
+      return [r, g, b, 255];
+    });
+
+    const arr = new Uint8ClampedArray(data.length * 4);
+    data.forEach((d, i) => {
+      let startI = i * 4;
+      const [r, g, b, a] = rgba[d.current.color];
+      arr[startI++] = r;
+      arr[startI++] = g;
+      arr[startI++] = b;
+      arr[startI++] = a;
+    });
+
+    let imageData = new ImageData(arr, 128);
+    ctx.putImageData(imageData, 0, 0);
+
+
+    // console.log("colors", rgba)
+
+    // console.log('draw canvas')
+
+
+
+  }, [dataRef, ctxRef, params])
+
+
+
+  useEffect(() => {
+    if (redrawFlag) {
+      drawCanvas()
+    }
+
+
+  }, [redrawFlag, celQueue, drawCanvas])
+
+
 
   // const canvasRef = useRef(null);
   // const ctxRef = useRef(null);

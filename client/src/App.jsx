@@ -17,9 +17,11 @@ export default memo(function App() {
   const [celScale, setCelScale] = useState(10);
   const celScaleRange = [5, 50];
 
+
   const gridRef = useRef(null);
+  const canvasRef = useRef(null);
   const { username, postUsername } =
-    useGrid({ gridRef, params, activeColor, cursorMode });
+    useGrid({ params, gridRef, canvasRef, activeColor, cursorMode });
 
 
   const updateZoom = useCallback((zoomIn) => {
@@ -72,6 +74,7 @@ export default memo(function App() {
         height={height}
         celScale={celScale}
       />
+      <canvas id="CANV" ref={canvasRef} width={width} height={height} />
       <div className="Toolbar">
         <Colors
           palette={colors}

@@ -71,7 +71,7 @@ function socketHandleConnection(socket) {
               postMessage('store_user', userLogin);
             };
           })
-          .catch(err => console.log('check_uuid', err))
+          .catch(err => console.error('check_uuid', err))
         break;
       case 'set_name':
         User.saveName(uuid, payload)
@@ -79,7 +79,8 @@ function socketHandleConnection(socket) {
             if (userName) {
               postMessage('store_user', userName);
             };
-          });
+          })
+          .catch(err => console.error('set_name', err))
         break;
       case 'get_grid':
         postMessage('update_grid', Grid.current);
@@ -94,7 +95,8 @@ function socketHandleConnection(socket) {
         if (cel) {
           socketDispatchAll('update_cel', cel);
           User.didDraw(uuid)
-            .then(lastDraw => postMessage('update_last_draw', lastDraw));
+            .then(lastDraw => postMessage('update_last_draw', lastDraw))
+            .catch(err => console.error('set_cel', err))
         };
         break;
       default:
