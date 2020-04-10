@@ -2,7 +2,7 @@ import React, { memo, useState, useRef, useCallback } from 'react';
 import './App.css';
 import { useGrid, useParams } from './hooks';
 import { Grid, Colors, Cursors } from './components';
-// import User from './User.jsx';
+import User from './User.jsx';
 
 
 
@@ -18,7 +18,7 @@ export default memo(function App() {
   const celScaleRange = [5, 50];
 
   const gridRef = useRef(null);
-  // const { username, postUsername } =
+  const { username, postUsername } =
     useGrid({ gridRef, params, activeColor, cursorMode });
 
 
@@ -82,11 +82,11 @@ export default memo(function App() {
           cursorMode={cursorMode}
           click={handleClickCursors}
         />
-      {/*
         <User
           username={username !== 'anonymous' ? username : ''}
           post={postUsername}
         />
+      {/*
       */}
       </div>
     </div>

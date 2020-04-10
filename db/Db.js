@@ -9,9 +9,93 @@ const client = new MongoClient(uri, { useUnifiedTopology: true });
 
 
 
-
-
 const Db = {};
+
+
+
+Db._collections = {
+  current: {
+    _coll: undefined,
+    get: function() {
+      return this._coll.find().toArray();
+    },
+    getOne: function(id) {
+      return this._coll.findOne({ _id: id });
+    },
+    update: function(arr) {
+      const queue = arr.map(d => ({
+        updateOne: {
+          filter: { _id: d._id },
+          update: { $set: { current: d.current } }
+        }
+      }));
+      return this._coll.bulkWrite(queue);
+    },
+  },
+  history: {
+    _coll: undefined,
+    get: function() {
+      return this._coll.find().toArray();
+    },
+    getOne: function(id) {
+      return this._coll.findOne({ _id: id });
+    },
+    insert: function(arr) {
+      const queue = arr.map(d => {
+        const entry = {
+          cel_id: d.cel_id,
+          timestamp: d.timestamp,
+          color: d.color,
+          user_uuid: d.user_uuid,
+          user_name: d.user_name,
+        };
+        return { insertOne: { document: { ...entry } } };
+      });
+      return this._coll.bulkWrite(queue);
+    },
+  },
+  params: {
+    _coll: undefined,
+    get: function() {
+      return this._coll.findOne({ _id: 'data' }, { projection: { _id: 0 } });
+    },
+  },
+  users: {
+    _coll: undefined,
+    get: function() {
+      return this._coll.find().toArray()
+        .then(a => a
+          .reduce((acc, { _id, ...data }) => ({ ...acc, [_id]: data }), {})
+        );
+    },
+    getOne: function(id) {
+      return this._coll.findOne({ _id: id });
+    },
+    insertOne: function(obj) {
+      return this._coll.insertOne(obj);
+    },
+    updateOne: function(_id, obj) {
+      return this._coll.updateOne(
+        { _id: _id },
+        { $set: { ...obj } }
+      );
+    },
+  },
+};
+
+
+
+Db.Mount = () => {    // add all remote collections to _collections object
+  try {
+    Object.keys(Db._collections).forEach(key => {
+      Db._collections[key]._coll = Db._db.collection(key);
+    });
+    return true;
+  } catch (err) {
+    console.error('Db.Mount ---', err);
+    return false;
+  };
+};
 
 
 Db.Connect = async () => {
@@ -27,12 +111,14 @@ Db.Connect = async () => {
       });
     });
     Db._db = db;
+    Db.Mount();
     return true;
   } catch (err) {
     console.error('Connect Db ---', err);
     throw err;
   };
 };
+
 
 Db.Close = async () => {
   console.log('Close Db...');
@@ -46,62 +132,15 @@ Db.Close = async () => {
 };
 
 
-Db.get = async (collection) => {
-  try {
-    const src = Db._db.collection(collection);
-    const entries = await src.find().toArray();
-    const obj = entries.reduce((acc, { _id, data }) => {
-      acc[_id] = data;
-      return acc;
-    }, {});
-    return obj;
-  } catch (err) {
-    console.error('Db.getCollection ---', err);
-    return false;
-  };
-};
 
 
-Db.update = async (collection, data) => {
-  try {
-    const toUpdate = Db._db.collection(collection);
-    Object.entries(data).forEach(async ([key, data]) => {
-      await toUpdate.replaceOne({ _id: key }, { data });
-    });
-    return true;
-  } catch (err) {
-    console.error('Db.update ---', err);
-    return false;
-  };
-};
 
-
-Db.seed = async (collection, data) => {
-  try {
-    const toSeed = Db._db.collection(collection);
-    Object.entries(data).forEach(async ([key, data]) => {
-      await toSeed.insertOne({ _id: key, data });
-    });
-    console.log('Db.seed --- OK', collection);
-    return true;
-  } catch (err) {
-    console.error('Db.seed ---', err);
-    return false;
-  };
-};
-
-
-Db.purge = async (collection) => {
-  try {
-    const toDelete = Db._db.collection(collection);
-    await toDelete.deleteMany({});
-    console.log('Db.purge --- OK', collection);
-    return true;
-  } catch (err) {
-    console.error('Db.purge ---', err);
-    return false;
-  };
-};
+Db.get = (coll) => Db._collections[coll].get();
+Db.getOne = (coll, id) => Db._collections[coll].getOne(id);
+Db.update = (coll, arr) => Db._collections[coll].update(arr);
+Db.updateOne = (coll, id, obj) => Db._collections[coll].updateOne(id, obj);
+Db.insert = (coll, arr) => Db._collections[coll].insert(arr);
+Db.insertOne = (coll, obj) => Db._collections[coll].insertOne(obj);
 
 
 

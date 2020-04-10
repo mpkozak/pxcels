@@ -25,9 +25,8 @@ export default function useGrid({ params, gridRef, activeColor, cursorMode } = {
 
 
   const handleUpdateCel = useCallback(newCel => {
-    const { _id, current } = newCel;
-    const cel = dataRef.current[_id];
-    cel.current = current;
+    const { cel, celIndex } = newCel;
+    dataRef.current[celIndex] = cel;
     setCelQueue(cel);
   }, [dataRef, setCelQueue]);
 
@@ -111,12 +110,12 @@ export default function useGrid({ params, gridRef, activeColor, cursorMode } = {
     };
 
     node.selectAll('div')
-      .data(data, d => d.cel_id)
+      .data(data, d => d.id)
       .enter()
         .append('div')
-        .attr('id', d => d.cel_id)
+        .attr('id', d => d.id)
         .attr('class', 'GridCel')
-        .style('background-color', d => params.colors[d.current.color])
+        .style('background-color', d => params.colors[d.color])
       .exit()
         .remove();
 
@@ -130,9 +129,9 @@ export default function useGrid({ params, gridRef, activeColor, cursorMode } = {
       return null;
     };
 
-    node.select(`#${cel.cel_id}`)
-      .datum(cel, d => d.cel_id)
-        .style('background-color', d => params.colors[d.current.color]);
+    node.select(`#${cel.id}`)
+      .datum(cel, d => d.id)
+        .style('background-color', d => params.colors[d.color]);
 
     setCelQueue(null);
   }, [params, gridNodeRef, setCelQueue]);
@@ -178,7 +177,7 @@ export default function useGrid({ params, gridRef, activeColor, cursorMode } = {
     if (!id || !~activeColor) {
       return null;
     };
-    post('set_cel', { cel_id: id, color, t: Date.now() });
+    post('set_cel', { id, color, t: Date.now() });
   }, [cursorMode, activeColor, post]);
 
 
@@ -188,19 +187,19 @@ export default function useGrid({ params, gridRef, activeColor, cursorMode } = {
       return null;
     };
     const { clientX: x, clientY: y, target: { id } } = e;
-    const datum = data.find(a => a.cel_id === id);
+    const datum = data.find(a => a.id === id);
     if (!datum) {
       return null;
     };
-    const { user_name, timestamp } = datum.current;
-    if (!user_name) {
+    const { lastChangeAuthor, lastChangeTime } = datum;
+    if (!lastChangeAuthor) {
       return undrawTooltip();
     };
     drawTooltip({
       x,
       y,
-      name: user_name,
-      time: parse.time(Date.now() - timestamp),
+      name: lastChangeAuthor,
+      time: parse.time(Date.now() - lastChangeTime),
     });
   }, [dataRef, drawTooltip, undrawTooltip]);
 

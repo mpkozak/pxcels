@@ -20,7 +20,6 @@ const {
 } = require('./db');
 
 
-
 // SERVER + PORT
 
 const app = express();
@@ -66,16 +65,21 @@ function socketHandleConnection(socket) {
 
     switch (type) {
       case 'check_uuid':
-        const userLogin = User.login(payload);
-        if (userLogin) {
-          postMessage('store_user', userLogin);
-        };
+        User.login(payload)
+          .then(userLogin => {
+            if (userLogin) {
+              postMessage('store_user', userLogin);
+            };
+          })
+          .catch(err => console.log('check_uuid', err))
         break;
       case 'set_name':
-        const userName = User.saveName(payload);
-        if (userName) {
-          postMessage('store_user', userName);
-        };
+        User.saveName(uuid, payload)
+          .then(userName => {
+            if (userName) {
+              postMessage('store_user', userName);
+            };
+          });
         break;
       case 'get_grid':
         postMessage('update_grid', Grid.current);
@@ -89,8 +93,8 @@ function socketHandleConnection(socket) {
         const cel = Grid.update({ ...payload, uuid, name });
         if (cel) {
           socketDispatchAll('update_cel', cel);
-          const lastDraw = User.didDraw(uuid);
-          postMessage('update_last_draw', lastDraw);
+          User.didDraw(uuid)
+            .then(lastDraw => postMessage('update_last_draw', lastDraw));
         };
         break;
       default:
@@ -134,7 +138,6 @@ app.use('*', client);
 
 console.log('Starting up...');
 Db.Connect()
-  // .then(ok => GlobalState.reset(false))
   .then(ok => GlobalState.Init())
   .then(ok => {
     server.listen(port, '0.0.0.0', () => {

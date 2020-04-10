@@ -1,5 +1,5 @@
 .Username {
-  position: fixed;
+ /* position: fixed;
   left: 0%;
   top: 35vh;
   width: 100vw;
@@ -7,39 +7,46 @@
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
-  justify-content: center;
-  z-index: 500;
+  justify-content: center;*/
+  /*background-color: rgba(26, 30, 31, .95);*/
+  /*z-index: 500;*/
 }
 
 
-.Username>form {
-  width: 60vmin;
+.Username form {
+  width: 40vmin;
   height: 100%;
   display: flex;
-  flex-flow: column nowrap;
+  flex-flow: row nowrap;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
+  pointer-events: auto;
   background-color: rgba(26, 30, 31, .95);
+  border-radius: calc(.4vh + 2px);
+
 }
 
 
-.Username>form>input {
-  width: 60%;
-  padding: .4vh;
-  margin-bottom: 2vh;
+.Username form>input {
+  width: 20vmin;
+  padding: 1vmin;
   font-size: calc(1vh + 12px);
   user-select: auto;
 }
 
 
-.Username>form>button {
+.Username form>button {
   font-size: calc(1vh + 9px);
-  padding: 1vmin 1vmin;
+  padding: .5vmin;
   cursor: pointer;
   user-select: auto;
 }
 
 
-.Username>h1 {
+.Username h1 {
   padding: 2%;
+  pointer-events: auto;
+  color: rgba(26, 30, 31, .95);
+  cursor: pointer;
+  /*z-index: 500;*/
 }
