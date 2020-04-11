@@ -5,9 +5,7 @@ import './Grid.css';
 
 
 
-export default memo(function Grid({ gridRef, cursorMode, ...dimen } = {}) {
-  const { width, height, celScale } = dimen;
-
+export default memo(function Grid({ gridRef, cursorMode, width, height, celScale } = {}) {
   const [drag, setDrag] = useState(false);
   const dragBoxRef = useRef(null);
 
@@ -44,13 +42,10 @@ export default memo(function Grid({ gridRef, cursorMode, ...dimen } = {}) {
 
 
   const celboxStyle = {
-    // transform: `scale(${celScale / 10})`,
-    // gridTemplateColumns: `repeat(${width}, ${50}px)`,
-    // gridTemplateRows: `repeat(${height}, ${50}px)`,
-    // border: (celScale < 10) ? '1px solid #000000' : 'none',
-
     gridTemplateColumns: `repeat(${width}, ${celScale}px)`,
     gridTemplateRows: `repeat(${height}, ${celScale}px)`,
+    // gridAutoColumns: `${celScale}px`,
+    // gridAutoRows: `${celScale}px`,
     gridGap: (celScale < 10) ? '0px' : '1px',
     cursor: cursorMode === 'paint'
       ? 'crosshair'
@@ -69,8 +64,21 @@ export default memo(function Grid({ gridRef, cursorMode, ...dimen } = {}) {
           className="Grid--celbox"
           ref={gridRef}
           style={celboxStyle}
-        />
+        >
+        </div>
       </div>
     </div>
   );
 });
+
+
+
+
+
+          // <CelRender {...celView} />
+
+
+          // {rows}
+
+          // <CelRender {...celView} />
+

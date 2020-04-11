@@ -1,69 +1,6 @@
-import React, { Fragment, memo, useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { Fragment, memo, useState, useEffect, useRef, useCallback } from 'react';
 import { d3, parse } from '../libs';
 import { useSocket } from './';
-
-
-
-
-
-
-// const GridCel = memo(({ id, col, row, color }) => {
-//   return <div
-//     id={id}
-//     className={`GridCel c-${col} r-${row} f-${color}`}
-//   />
-// })
-
-
-
-
-
-
-
-// function makeGridCels(width, height) {
-//   return new Array(+height).fill(new Array(+width).fill(''));
-// };
-
-
-
-// function updateGridCels(data, cels) {
-//   data.forEach(d => {
-//     const { cel_id: id, col, row, current: { color } } = d;
-//     const props = { id, cl: `GridCel c-${col} r-${row} f-${color}`};
-//     cels[row][col] = <GridCel key={id} {...props} />
-//   });
-//   return cels;
-// };
-  // const gridCels = useRef([]);
-
-
-
-  // const makeGridCels = useCallback((width, height) => {
-  //   return new Array(+height).fill('').map(d => new Array(+width).fill(''));
-  // }, []);
-
-
-
-  // useEffect(() => {
-  //   console.log('first effect', params)
-  //   if (params && !gridCels.current.length) {
-  //     console.log('first effect made cels')
-  //     addGridClasses(params);
-  //     gridCels.current = makeGridCels(params.width, params.height);
-  //   }
-  // }, [params, makeGridCels]);
-
-
-
-
-
-
-
-
-
-
-const GridCel = memo(({ id, cl } = {}) => <div id={id} className={cl} />);
-
 
 
 
@@ -88,7 +25,67 @@ function addGridClasses(params) {
 
 
 
+
+
+// const GridCel = memo(({ id, col, row, color }) => {
+//   return <div
+//     id={id}
+//     className={`GridCel c-${col} r-${row} f-${color}`}
+//   />
+// })
+
+
+
+
+
+
+const GridCel = memo(({ id, cl } = {}) => <div id={id} className={cl} />);
+
+
+const GridChildren = ({ sliceRows = [], sliceCols = [], allChildren = [] } = {}) => {
+   return allChildren.slice(...sliceRows).map(d => d.slice(...sliceCols)).flat()
+};
+
+
+
+
+
+function makeGridCels(width, height) {
+  return new Array(+height).fill(new Array(+width).fill(''));
+};
+
+
+
+// function updateGridCels(data, cels) {
+//   data.forEach(d => {
+//     const { cel_id: id, col, row, current: { color } } = d;
+//     const props = { id, cl: `GridCel c-${col} r-${row} f-${color}`};
+//     cels[row][col] = <GridCel key={id} {...props} />
+//   });
+//   return cels;
+// };
+
+
+
+
+
+
+
 export default function useGrid({ params, gridRef, canvasRef, activeColor, cursorMode } = {}) {
+
+  const gridCels = useRef([]);
+
+
+  useEffect(() => {
+    console.log('first effect', params)
+    if (params && !gridCels.current.length) {
+      console.log('first effect made cels')
+      addGridClasses(params);
+      gridCels.current = makeGridCels(params.width, params.height)
+    }
+  }, [params, gridCels]);
+
+
 
 
 
@@ -98,79 +95,46 @@ export default function useGrid({ params, gridRef, canvasRef, activeColor, curso
 // Socket
 ///////////////////////////////////////
 
-  const [cels, setCels] = useState([]);
   const [redrawFlag, setRedrawFlag] = useState(false);
   const [celQueue, setCelQueue] = useState(null);
   const [lastDraw, setLastDraw] = useState(0);
   const dataRef = useRef(null);
-  const celsRef = useRef(null);
 
 
 
 
-
-  const populateGrid = useCallback((data, width, height) => {
-    const cels = new Array(+height).fill('').map(d => new Array(+width).fill(''));
+  const updateGridCels = useCallback((data) => {
     data.forEach(d => {
       const { cel_id: id, col, row, current: { color } } = d;
-      // const props = { id, cl: `GridCel c-${col} r-${row} f-${color}`};
-      // cels[row][col] = <GridCel key={id} {...props} />;
-      const cl = `GridCel c-${col} r-${row} f-${color}`;
-      cels[row][col] = <div key={`id`} id={id} className={cl} />;
+      const props = { id, cl: `GridCel c-${col} r-${row} f-${color}`};
+      gridCels.current[row][col] = <GridCel key={id} {...props} />;
     });
-    return cels;
-  }, []);
+  }, [gridCels]);
 
-
-  // const updateCel = useCallback((cel) => {
-
-
-  // }, [cels, setCels])
-
-
-  useEffect(() => {
-    if (redrawFlag && params && dataRef.current) {
-      addGridClasses(params);
-      // const cels = populateGrid(dataRef.current, params.width, params.height);
-      const cels = populateGrid(dataRef.current, params.width, params.height);
-      setCels(cels)
-      setRedrawFlag(false);
-    };
-  }, [redrawFlag, setRedrawFlag, params, dataRef, populateGrid, setCels]);
-
-
-  // useEffect(() => {   // draw single cel
-  //   // console.log('EFFECT 7')
-  //   if (celQueue) {
-  //     // console.log('EFFECT 7 -- draw single cel')
-  //     drawCel(celQueue);
-  //   };
-  // }, [celQueue, drawCel]);
 
 
   const handleUpdateGrid = useCallback(newGrid => {
-    dataRef.current = newGrid;
+    dataRef.current = newGrid
+    // gridCels.current = updateGridCels(dataRef.current, gridCels.current)
+    updateGridCels(dataRef.current);
     setRedrawFlag(true);
-  }, [dataRef, setRedrawFlag]);
+  }, [dataRef, updateGridCels, setRedrawFlag]);
+
+
+  // const handleUpdateGrid = useCallback(newGrid => {
+  //   dataRef.current = newGrid;
+  //   setRedrawFlag(true);
+  // }, [dataRef, setRedrawFlag]);
+
+
 
 
   const handleUpdateCel = useCallback(newCel => {
     const { _id, current } = newCel;
     const cel = dataRef.current[_id];
-    // console.log('cel', cel)
     cel.current = current;
-    // setCelQueue(cel);
-    setRedrawFlag(true);
-  }, [dataRef, setRedrawFlag]);
-
-
-  // const handleUpdateCel = useCallback(newCel => {
-  //   const { _id, current } = newCel;
-  //   const cel = dataRef.current[_id];
-  //   console.log('cel', cel)
-  //   cel.current = current;
-  //   setCelQueue(cel);
-  // }, [dataRef, setCelQueue]);
+    setCelQueue(cel);
+  }, [dataRef, setCelQueue]);
 
 
   const handleUpdateLastDraw = useCallback(timestamp => {
@@ -243,6 +207,47 @@ export default function useGrid({ params, gridRef, canvasRef, activeColor, curso
 ///////////////////////////////////////
 // D3 -- Draw stack
 ///////////////////////////////////////
+
+  const drawGrid = useCallback(() => {
+    const data = dataRef.current;
+    const node = gridNodeRef.current;
+    if (!data || !node) {
+      return null;
+    };
+
+
+// makeGridCels(data, params.width, params.height)
+
+
+    node.selectAll('div')
+      .data(data, d => d.cel_id)
+      .enter()
+        .append('div')
+        .attr('id', d => d.cel_id)
+        // .attr('class', 'GridCel')
+        .attr('class', d => `GridCel c-${d.col} r-${d.row} f-${d.current.color}`)
+        // .style('grid-column', d => d.col + 1)
+        // .style('grid-row', d => d.row + 1)
+        // .style('background-color', d => params.colors[d.current.color])
+      .exit()
+        .remove();
+
+    setRedrawFlag(false);
+  }, [params, dataRef, gridNodeRef, setRedrawFlag]);
+
+
+  const drawCel = useCallback((cel) => {
+    const node = gridNodeRef.current;
+    if (!cel || !node) {
+      return null;
+    };
+
+    node.select(`#${cel.cel_id}`)
+      .datum(cel, d => d.cel_id)
+        .style('background-color', d => params.colors[d.current.color]);
+
+    setCelQueue(null);
+  }, [params, gridNodeRef, setCelQueue]);
 
 
   const drawTooltip = useCallback(({ x, y, name, time }) => {
@@ -425,13 +430,35 @@ export default function useGrid({ params, gridRef, canvasRef, activeColor, curso
 
 
 
-  const RenderChildren = useCallback(({ rows = [], cols = [] } = {}) => {
-    return (
-      <Fragment>
-        {cels.slice(...rows).map(d => d.slice(...cols)).flat().map(d => d)}
-      </Fragment>
-    );
-  }, [cels]);
+
+  // const [children, setChildren] = useState([])
+
+
+  useEffect(() => {   // draw full grid
+    // console.log('EFFECT 6')
+    if (redrawFlag) {
+      // return setChildren();
+      // console.log('grid', )gridCels.current.forEach(d => console.log(d))
+      gridCels.current.forEach(d => console.log(d.key))
+      console.log(dataRef.current.length)
+
+      dataRef.current.reduce((acc, d, i) => {
+        const { cel_id } = d;
+        if (!acc.find(d => d === cel_id)) {
+          acc.push(cel_id)
+        } else {
+          console.error('DUPLICATE!!!', cel_id, i)
+        }
+        return acc;
+      }, []);
+
+      console.log(gridCels.current.length)
+      // console.log('EFFECT 6 -- draw full grid')
+      // drawGrid();
+    };
+  }, [redrawFlag, gridCels]);
+
+
 
 
 
@@ -439,9 +466,12 @@ export default function useGrid({ params, gridRef, canvasRef, activeColor, curso
   return {
     username,
     postUsername,
-    // RenderChildren,
-    dataRef,
-    // cels,
+    children: GridChildren({
+      sliceRows: [0, 5],
+      sliceCols: [0, 5],
+      allChildren: gridCels.current,
+    })
+    // gridCels: children,
     // lastDraw,
   };
 };

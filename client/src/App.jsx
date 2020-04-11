@@ -1,8 +1,15 @@
 import React, { memo, useState, useRef, useCallback } from 'react';
 import './App.css';
-import { useGrid, useParams } from './hooks';
+import { useGrid, useParams, useViewport } from './hooks';
 import { Grid, Colors, Cursors } from './components';
 import User from './User.jsx';
+
+
+
+
+
+
+
 
 
 
@@ -12,30 +19,29 @@ export default memo(function App() {
   const params = useParams();
   const { colors, width, height } = params || {};
 
-  const [activeColor, setActiveColor] = useState(11);
+  const [activeColor, setActiveColor] = useState(6);
   const [cursorMode, setCursorMode] = useState('drag');
-  const [celScale, setCelScale] = useState(10);
-  const celScaleRange = [5, 50];
+
+
+
+
+
 
 
   const gridRef = useRef(null);
   const canvasRef = useRef(null);
-  const { username, postUsername } =
+  // const { username, postUsername, dataRef } =
     useGrid({ params, gridRef, canvasRef, activeColor, cursorMode });
+
+  const celScaleRange = [2, 4, 8, 16, 32, 64, 128];
+  const [celScale, setCelScale] = useState(3);
 
 
   const updateZoom = useCallback((zoomIn) => {
-    const increment = Math.floor(Math.max(celScale / 5, 1));
-
-    const [min, max] = celScaleRange;
-    let newCelScale = celScale + (zoomIn ? increment : -increment);
-    if (newCelScale >= max) {
-      newCelScale = max;
+    const newCelScale = celScale + (zoomIn ? 1 : -1);
+    if (!celScaleRange[newCelScale]) {
+      return null;
     };
-    if (newCelScale < min) {
-      newCelScale = min;
-    };
-
     setCelScale(newCelScale);
   }, [celScaleRange, celScale, setCelScale]);
 
@@ -65,16 +71,62 @@ export default memo(function App() {
   }, [setCursorMode, updateZoom]);
 
 
+  const [showMap, setShowMap] = useState(false);
+
+  const handleClickMap = useCallback(e => {
+    if (showMap) {
+      console.log('is large', e)
+    }
+    setShowMap(!showMap);
+  }, [showMap, setShowMap])
+
+
   return (
     <div className="App">
+
       <Grid
         gridRef={gridRef}
         cursorMode={cursorMode}
         width={width}
         height={height}
-        celScale={celScale}
-      />
-      <canvas id="CANV" ref={canvasRef} width={width} height={height} />
+        celScale={celScaleRange[celScale]}
+      >
+      </Grid>
+
+
+      <div className="Minimap">
+        <div className="minimap toolbox">
+          <div className="toolbox--inner">
+            <canvas
+              className={'canvas' + (showMap ? ' large' : '')}
+              ref={canvasRef}
+              onClick={handleClickMap}
+            />
+          </div>
+        </div>
+      </div>
+
+{/*
+      <div className="canv-wrap">
+        <div className="canv-flex">
+          <canvas
+            id="CANV"
+            className="Canvas"
+            ref={canvasRef}
+            width={celScaleRange[celScale] * width || 1000}
+            height={celScaleRange[celScale] * height || 1000}
+            style={{
+              // position: 'absolute',
+              // width: (celScaleRange[celScale] * width) + 'px',
+              // height: (celScaleRange[celScale] * height) + 'px',
+            }}
+          />
+
+        </div>
+      </div>
+*/}
+
+
       <div className="Toolbar">
         <Colors
           palette={colors}
@@ -85,11 +137,11 @@ export default memo(function App() {
           cursorMode={cursorMode}
           click={handleClickCursors}
         />
+      {/*
         <User
           username={username !== 'anonymous' ? username : ''}
           post={postUsername}
         />
-      {/*
       */}
       </div>
     </div>
