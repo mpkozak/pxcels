@@ -10,7 +10,8 @@ export default function useParams() {
 
   const getParams = useCallback(async () => {
     try {
-      const res = await fetch('/params');
+      // const res = await fetch('/params');
+      const res = await fetch('https://pxcels.herokuapp.com/params')
       const data = await res.json();
       setParams(data);
     } catch (err) {
