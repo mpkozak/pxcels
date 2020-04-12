@@ -7,6 +7,7 @@
 
 # absolute path of repo
   TOPLEVEL=$(git rev-parse --show-toplevel)
+  BR=$(git rev-parse --abbrev-ref HEAD)
   cd "$TOPLEVEL"
 
 # create new branch
@@ -51,7 +52,7 @@
   git push --force heroku prod:master
 
 # switch back to master branch
-  git checkout master
+  git checkout "$BR"
 
 # delete deployment branch
   git branch -D prod
