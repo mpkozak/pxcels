@@ -20,7 +20,7 @@ export default function useSocket(cb = null) {
 
   const handleClose = useCallback(() => {
     if (client.current.readyState === 3) {
-      alert('socket closed!')
+      console.log('socket closed!')
       setOpen(false);
     };
   }, [client, setOpen]);

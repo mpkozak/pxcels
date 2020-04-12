@@ -23,7 +23,9 @@
   cp -r "$TOPLEVEL/client/build/" "$TOPLEVEL/public"
 
 # revert client homepage
+  sed -i '' -e "s/homepage_heroku/_heroku/" "$TOPLEVEL/client/package.json"
   sed -i '' -e "s/homepage/homepage_kozak/" "$TOPLEVEL/client/package.json"
+  sed -i '' -e "s/_heroku/homepage_heroku/" "$TOPLEVEL/client/package.json"
 
 # open build folder
   open "$TOPLEVEL/public"
