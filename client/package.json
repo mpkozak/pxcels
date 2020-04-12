@@ -16,7 +16,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "build_kozak": "REACT_APP_SOCKET_URL=wss://pxcels.herokuapp.com REACT_APP_API_URL=https://pxcels.herokuapp.com npm run build"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -34,6 +35,6 @@
     ]
   },
   "proxy": "http://localhost:8080",
-  "_homepage": ".",
-  "homepage": "https://kozak.digital/pxcels"
+  "homepage_heroku": ".",
+  "homepage_kozak": "/pxcels"
 }

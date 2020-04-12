@@ -60,21 +60,23 @@ export default function useSocket(cb = null) {
 
 
   const startClient = useCallback(() => {
-    // const loc = window.location;
-    // let socketURI;
-    // if (loc.protocol === 'https:') {
-    //   socketURI = 'wss:';
-    // } else {
-    //   socketURI = 'ws:';
-    // };
-    // if (process.env.NODE_ENV === 'development') {
-    //   const base = loc.host.split(':')[0];
-    //   socketURI += `//${base}:8080`
-    // } else {
-    //   socketURI += '//' + loc.host;
-    // };
-    // socketURI += loc.pathname;
-    const socketURI = 'wss://pxcels.herokuapp.com';
+    const loc = window.location;
+    let socketURI;
+    if (loc.protocol === 'https:') {
+      socketURI = 'wss:';
+    } else {
+      socketURI = 'ws:';
+    };
+    if (process.env.NODE_ENV === 'development') {
+      const base = loc.host.split(':')[0];
+      socketURI += `//${base}:8080`
+    } else {
+      socketURI += '//' + loc.host;
+    };
+    socketURI += loc.pathname;
+    if (process.env.REACT_APP_SOCKET_URL) {
+      socketURI = process.env.REACT_APP_SOCKET_URL;
+    };
 
     client.current = new WebSocket(socketURI);
     client.current.onopen = handleOpen;

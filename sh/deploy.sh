@@ -26,6 +26,9 @@
   BUILD_VERSION="$VERSION--$t"
   sed -i '' -e "s/$VERSION/$BUILD_VERSION/" "$TOPLEVEL/package.json"
 
+# change client homepage
+  sed -i '' -e "s/homepage_heroku/homepage/" "$TOPLEVEL/client/package.json"
+
 # build client
   cd "$TOPLEVEL/client"
   npm run build

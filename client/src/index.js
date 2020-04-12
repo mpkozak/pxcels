@@ -6,7 +6,7 @@ import * as serviceWorker from './serviceWorker';
 
 
 
-
+// console.log('env', process.env.PUBLIC_URL)
 
 // const isMobile = (() => {
 //   if (navigator.userAgent.match(/Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i)) {
