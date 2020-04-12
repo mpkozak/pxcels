@@ -26,6 +26,7 @@ export default memo(function Colors({ palette = [], activeColor = 0, setColor = 
           show={showPalette}
           palette={palette}
           click={setColor}
+          toggleHide={toggleHidePalette}
         />
       </div>
     </div>

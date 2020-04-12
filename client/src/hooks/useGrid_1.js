@@ -28,7 +28,7 @@ function addGridClasses(params) {
 
 
 
-export default function useGrid({ params, gridRef, canvasRef, activeColor, cursorMode } = {}) {
+export default function useGrid({ mobile, params, gridRef, canvasRef, activeColor, cursorMode } = {}) {
 
   useEffect(() => {
     if (params) {
@@ -273,7 +273,7 @@ export default function useGrid({ params, gridRef, canvasRef, activeColor, curso
         el.removeEventListener('mousemove', handleMouseMove);
       };
     };
-  }, [gridRef, handleMouseMove]);
+  }, [mobile, gridRef, handleMouseMove]);
 
 
 

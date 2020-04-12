@@ -40,14 +40,15 @@ export default memo(function Grid({ windowRef, gridRef, cursorMode, width, heigh
 
 
 
-  const celboxStyle = {
+  const gridStyle = {
     gridTemplateColumns: `repeat(${width}, ${celScale}px)`,
     gridTemplateRows: `repeat(${height}, ${celScale}px)`,
     gridGap: (celScale < 10) ? '0px' : '1px',
     cursor: cursorMode === 'paint'
       ? 'crosshair'
-      : (drag ? 'grabbing, grab' : 'grab'),
+      : (drag ? 'move' : 'grab'),
   };
+
 
 
   return (
@@ -56,12 +57,13 @@ export default memo(function Grid({ windowRef, gridRef, cursorMode, width, heigh
       ref={windowRef}
       onMouseDown={handleDragStart}
     >
-      <div className="Grid--flex">
-        <div
-          className="Grid--celbox"
-          ref={gridRef}
-          style={celboxStyle}
-        >
+      <div className="Grid--flex-wrap">
+        <div className="Grid--wrap">
+          <div
+            className="Grid"
+            ref={gridRef}
+            style={gridStyle}
+          />
         </div>
       </div>
     </div>
@@ -69,6 +71,16 @@ export default memo(function Grid({ windowRef, gridRef, cursorMode, width, heigh
 });
 
 
+
+
+      // <div className="Grid--flex">
+      //   <div
+      //     className="Grid--celbox"
+      //     ref={gridRef}
+      //     style={celboxStyle}
+      //   >
+      //   </div>
+      // </div>
 
 
 

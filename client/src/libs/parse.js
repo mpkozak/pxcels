@@ -25,8 +25,15 @@ function parseTime(ms) {
 
 
 
+function parsePct(val) {
+  return Math.floor(val * 100) + '%';
+};
+
+
+
 
 
 export default Object.freeze({
   time: parseTime,
+  pct: parsePct,
 });

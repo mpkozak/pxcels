@@ -29,16 +29,18 @@ div.tooltip {
   border-radius: 5px;
   pointer-events: none;
   transform: translateY(-60px);
-  z-index: 500;
+  z-index: 101;
 }
 
 
 div.tooltip>h4 {
   font-size: 16px;
   line-height: 20px;
+  white-space: nowrap;
 }
 
 div.tooltip>h5 {
   font-size: 12px;
   line-ight: 18px;
+  white-space: nowrap;
 }

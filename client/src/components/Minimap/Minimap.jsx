@@ -1,164 +1,142 @@
 import React, { memo, useState, useEffect, useCallback, useRef } from 'react';
 import './Minimap.css';
+import { parse } from '../../libs';
 
 
 
 
-function clampPct(val) {
-  return Math.floor(val * 100) + '%';
-};
 
-
-
-export default memo(function Minimap({ canvasRef = null, windowRef = null, pan = null } = {}) {
+export default memo(function Minimap({ canvasRef = null, windowRef = null, gridRef = null, pan = null } = {}) {
   const [bigMap, setBigMap] = useState(false);
   const [panning, setPanning] = useState(false);
   const viewboxRef = useRef(null);
 
 
+  const activateMap = useCallback(() => {
+    if (bigMap) {
+      return null;
+    };
+    if (windowRef.current && gridRef.current) {
+      setBigMap(true);
+    };
+  }, [windowRef, gridRef, bigMap, setBigMap]);
 
-
-
-  const toggleMap = useCallback(e => {
-    setBigMap(!bigMap);
-    // setBigMap(true);
-  }, [bigMap, setBigMap]);
-
-
-  const togglePanning = useCallback(e => {
-    // e.stopPropagation();
-    setPanning(!panning);
-  }, [panning, setPanning]);
+  const disableMap = useCallback(e => {
+    setBigMap(false);
+    setPanning(false);
+  }, [setBigMap, setPanning]);
 
 
   const positionViewbox = useCallback(() => {
     const elWindow = windowRef.current;
+    const elGrid = gridRef.current;
     const elViewer = viewboxRef.current;
-    if (elWindow && elViewer) {
-      const { clientWidth, clientHeight, scrollWidth, scrollHeight, scrollLeft, scrollTop } = elWindow;
-      const x = scrollLeft / scrollWidth;
-      const y = scrollTop / scrollHeight;
-      const w = clientWidth / scrollWidth;
-      const h = clientHeight / scrollHeight;
-
-      const { style } = elViewer;
-      style.left = clampPct(x);
-      style.top = clampPct(y);
-      style.width = clampPct(w);
-      style.height = clampPct(h);
+    if (!elWindow || !elGrid || !elViewer) {
+      return null;
     };
-  }, [windowRef, viewboxRef]);
+
+    const viewboxWidth = elWindow.clientWidth / elGrid.clientHeight;
+    const viewboxHeight = elWindow.clientHeight / elGrid.clientHeight;
+    const viewboxLeft = (elWindow.scrollLeft - elGrid.offsetLeft) / elGrid.clientWidth;
+    const viewboxTop = (elWindow.scrollTop - elGrid.offsetTop) / elGrid.clientHeight;
+
+    const { style } = elViewer;
+    style.left = parse.pct(viewboxLeft);
+    style.top = parse.pct(viewboxTop);
+    style.width = parse.pct(viewboxWidth);
+    style.height = parse.pct(viewboxHeight);
+  }, [windowRef, gridRef, viewboxRef]);
 
 
+  useEffect(() => {   // redraw viewbox
+    const el = windowRef.current;
+    if (el) {
+      el.addEventListener('scroll', positionViewbox, { passive: true });
+      window.addEventListener('resize', positionViewbox, { passive: true });
+    };
 
-  const handleMouseMove = useCallback((e) => {
-    const { clientX, clientY, target } = e;
-    console.log("mousemove", clientX, clientY)
+    return () => {
+      if (el) {
+        el.removeEventListener('scroll', positionViewbox);
+        window.removeEventListener('resize', positionViewbox);
+      };
+    };
+  }, [windowRef, positionViewbox]);
+
+
+  const handlePan = useCallback((x, y) => {
     const { left, top, width, height } = canvasRef.current.getBoundingClientRect();
-    const relX = (clientX - left) / width;
-    const relY = (clientY - top) / height;
-    positionViewbox();
+    const relX = (x - left) / width;
+    const relY = (y - top) / height;
     pan(relX, relY);
-  }, [canvasRef, positionViewbox, pan]);
+  }, [canvasRef, pan])
 
 
+  const handleMouseMove = useCallback(e => {
+    const { clientX, clientY } = e;
+    handlePan(clientX, clientY);
+  }, [handlePan]);
+
+  const handleTouchMove = useCallback(e => {
+    const { targetTouches } = e;
+    const { clientX, clientY } = targetTouches[0];
+    handlePan(clientX, clientY);
+  }, [handlePan]);
 
 
+  const handleMouseDown = useCallback(e => {
+    setPanning(true);
+    const { clientX, clientY } = e;
+    handlePan(clientX, clientY);
+  }, [setPanning, handlePan]);
 
-  const handleMouseUp = useCallback(e => {
+  const handleTouchStart = useCallback(e => {
+    setPanning(true);
+    const { targetTouches } = e;
+    const { clientX, clientY } = targetTouches[0];
+    handlePan(clientX, clientY);
+  }, [setPanning, handlePan]);
+
+
+  const disablePanning = useCallback(e => {
     setPanning(false);
   }, [setPanning]);
 
 
-
-
   useEffect(() => {
-    if (bigMap) {
-      positionViewbox();
-    };
-  }, [bigMap, positionViewbox]);
-
-
-  useEffect(() => {
-    console.log("panning effect")
     if (panning) {
-      console.log('add mousemve')
       window.addEventListener('mousemove', handleMouseMove, { passive: true });
-      window.addEventListener('mouseup', handleMouseUp)
+      window.addEventListener('mouseup', disablePanning);
+      window.addEventListener('touchcancel', disablePanning);
+      window.addEventListener('touchend', disablePanning);
     };
     return () => {
-      console.log('remove mousemve')
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mouseup', disablePanning);
+      window.removeEventListener('touchcancel', disablePanning);
+      window.removeEventListener('touchend', disablePanning);
     };
-  }, [panning, handleMouseMove, handleMouseUp]);
-
-
-
-
-
-
-
-  const handlePan = useCallback(e => {
-
-
-
-  })
-
-
-
-
-  const handleClickMap = useCallback(e => {
-    if (bigMap) {
-      const { clientX, clientY, target } = e;
-      const { left, top, width, height } = target.getBoundingClientRect();
-      const relX = (clientX - left) / width;
-      const relY = (clientY - top) / height;
-      pan(relX, relY)
-
-      // console.log(relX, relY)
-      // return
-    }
-    setBigMap(!bigMap);
-  }, [bigMap, setBigMap, pan]);
-
-
-
-
-  // useEffect(() => {
-  //   const elWindow = windowRef.current;
-  //   const elViewer = viewboxRef.current;
-  //   if (elWindow && elViewer) {
-
-  //     const { clientWidth, clientHeight, scrollWidth, scrollHeight, scrollLeft, scrollTop } = elWindow;
-  //     const w = clientWidth / scrollWidth;
-  //     const h = clientHeight / scrollHeight;
-
-  //     console.log('w, h', w, h)
-
-  //     // console.log(clientWidth, clientHeight, scrollLeft, scrollTop )
-  //   }
-  // }, [windowRef, viewboxRef])
-
-
+  }, [panning, handleMouseMove, disablePanning]);
 
 
 
   return (
     <div className="Tool--wrap Minimap">
+      <div
+        className={'Minimap--interceptor' + (!bigMap ? ' disabled' : '')}
+        onClick={disableMap}
+      />
       <div className="Tool Minimap--inner">
-        <div className="Minimap--mapbox" onClick={toggleMap}>
-          <canvas
-            className={'Minimap--map' + (!bigMap ? ' small' : '')}
-            ref={canvasRef}
-            // onClick={handleClickMap}
-          />
-          <div className={'Minimap--viewbox' + (!bigMap ? ' hide' : '')}>
-            <div
-              className="Minimap--viewbox-window"
-              ref={viewboxRef}
-              onMouseDown={togglePanning}
-            />
+        <div className="Minimap--togglebox" onClick={activateMap}>
+          <div className={'Minimap--mapbox' + (!bigMap ? ' small' : '')}>
+            <canvas className="Minimap--map" ref={canvasRef} />
+            <div className="Minimap--overlay"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onMouseDown={handleMouseDown}
+            >
+              <div className="Minimap--overlay-viewbox" ref={viewboxRef} />
+            </div>
           </div>
         </div>
       </div>

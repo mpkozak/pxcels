@@ -59,7 +59,7 @@
   border-radius: calc(.4vh + 2px);
   background-color: rgba(127, 127, 127, .5);
   opacity: 1;
-  transform: translateY(0%);
+  transform: translateX(0%);
   animation-name: bounce-in;
   animation-duration: 400ms;
   animation-iteration-count: 1;
@@ -70,7 +70,7 @@
 
 .Colors--palette-celbox.hide {
   opacity: 0;
-  transform: translateY(100%);
+  transform: translateX(-100%);
   animation-name: bounce-out;
   animation-duration: 400ms;
   animation-iteration-count: 1;
@@ -80,7 +80,7 @@
 
 .Colors--palette-celbox.notready {;
   opacity: 0;
-  transform: translateY(100%);
+  transform: translateX(-100%);
   animation-iteration-count: 0;
 }
 
@@ -124,15 +124,15 @@
 
 
 @keyframes bounce-in {
-  0%   { transform: translateY(100%); }
-  60%  { transform: translateY(0%); }
-  70%  { transform: translateY(1%); }
-  100% { transform: translateY(0%); }
+  0%   { transform: translateX(-100%); }
+  60%  { transform: translateX(-0%); }
+  70%  { transform: translateX(-1%); }
+  100% { transform: translateX(-0%); }
 }
 
 @keyframes bounce-out {
-  0%   { transform: translateY(0%); opacity: 1;}
-  60%  { transform: translateY(100%); opacity: .5 }
-  70%  { transform: translateY(99%);  opacity: .2;}
-  100% { transform: translateY(100%); opacity: 0;}
+  0%   { transform: translateX(-0%); opacity: 1;}
+  60%  { transform: translateX(-100%); opacity: .5 }
+  70%  { transform: translateX(-99%);  opacity: .2;}
+  100% { transform: translateX(-100%); opacity: 0;}
 }

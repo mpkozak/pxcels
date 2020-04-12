@@ -1,46 +1,62 @@
-import React, { memo, useState, useRef, useCallback } from 'react';
+import React, { memo, useLayoutEffect, useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
-import { useGrid, useParams, useViewport } from './hooks';
+import { useGrid, useParams } from './hooks';
 import { Grid, Colors, Cursors, Minimap } from './components';
-import User from './User.jsx';
+// import User from './User.jsx';
 
 
 
 
 
-
-
-
-
-
-
-
-export default memo(function App() {
+export default memo(function App({ mobile = false } = {}) {
   const params = useParams();
   const { colors, width, height } = params || {};
 
+  const celScaleRange = [2, 4, 8, 16, 32, 64, 128];
+  const [celScale, setCelScale] = useState(4);
   const [activeColor, setActiveColor] = useState(6);
-  const [cursorMode, setCursorMode] = useState('drag');
-
-
-
-
-
+  const [cursorMode, setCursorMode] = useState(mobile ? 'paint' : 'drag');
 
   const windowRef = useRef(null);
   const gridRef = useRef(null);
   const canvasRef = useRef(null);
-  // const { username, postUsername, dataRef } =
+
+
+  const panWindow = useCallback((x, y) => {
+    const el = windowRef.current;
+    if (el) {
+      const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = el;
+      const targetX = scrollWidth * x - clientWidth / 2;
+      const targetY = scrollHeight * y - clientHeight / 2;
+      const deltaX = targetX - scrollLeft;
+      const deltaY = targetY - scrollTop;
+      el.scrollBy(deltaX, deltaY);
+    };
+  }, [windowRef]);
+
+
+  // const { username, postUsername, lastDraw } =
   useGrid({
+    mobile,
     params,
     gridRef,
     canvasRef,
     activeColor,
-    cursorMode
+    cursorMode,
+    panWindow,
   });
 
-  const celScaleRange = [2, 4, 8, 16, 32, 64, 128];
-  const [celScale, setCelScale] = useState(3);
+
+  const [center, setCenter] = useState(null);
+
+  const storeCenter = useCallback(() => {
+    const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = windowRef.current;
+    const x = (scrollLeft + clientWidth / 2) / scrollWidth;
+    const y = (scrollTop + clientHeight / 2) / scrollHeight;
+    setCenter([x, y]);
+  }, [windowRef, setCenter]);
+
+
 
 
   const updateZoom = useCallback((zoomIn) => {
@@ -48,8 +64,23 @@ export default memo(function App() {
     if (!celScaleRange[newCelScale]) {
       return null;
     };
+    storeCenter();
     setCelScale(newCelScale);
-  }, [celScaleRange, celScale, setCelScale]);
+  }, [celScaleRange, celScale, setCelScale, storeCenter]);
+
+
+
+
+
+
+
+  // const updateZoom = useCallback((zoomIn) => {
+  //   const newCelScale = celScale + (zoomIn ? 1 : -1);
+  //   if (!celScaleRange[newCelScale]) {
+  //     return null;
+  //   };
+  //   setCelScale(newCelScale);
+  // }, [celScaleRange, celScale, setCelScale]);
 
 
   const handleClickColors = useCallback(e => {
@@ -78,27 +109,12 @@ export default memo(function App() {
 
 
 
-
-
-  const panWindow = useCallback((x, y) => {
-    const el = windowRef.current;
-    if (el) {
-      const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = el;
-
-
-
-
-      const targetX = scrollWidth * x - clientWidth / 2;
-      const targetY = scrollHeight * y - clientHeight / 2;
-      const deltaX = targetX - scrollLeft;
-      const deltaY = targetY - scrollTop;
-
-      el.scrollBy(deltaX, deltaY);
-      console.log(scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop )
-    }
-
-  }, [windowRef]);
-
+  useEffect(() => {
+    if (center) {
+      panWindow(...center);
+      setCenter(null);
+    };
+  }, [center, setCenter, panWindow]);
 
 
 
@@ -120,15 +136,18 @@ export default memo(function App() {
             activeColor={activeColor}
             setColor={handleClickColors}
           />
-          <Cursors
-            cursorMode={cursorMode}
-            click={handleClickCursors}
-          />
+          {!mobile && (
+            <Cursors
+              cursorMode={cursorMode}
+              click={handleClickCursors}
+            />
+          )}
         </div>
         <div className="Toolbar--toolbox right">
           <Minimap
             canvasRef={canvasRef}
             windowRef={windowRef}
+            gridRef={gridRef}
             pan={panWindow}
           />
         </div>
