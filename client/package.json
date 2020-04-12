@@ -34,5 +34,6 @@
     ]
   },
   "proxy": "http://localhost:8080",
-  "homepage": "."
+  "_homepage": ".",
+  "homepage": "https://kozak.digital/pxcels"
 }

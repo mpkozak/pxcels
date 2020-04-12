@@ -1,6 +1,7 @@
 require('dotenv').config();
 const path = require('path');
 const http = require('http');
+const cors = require('cors');
 const express = require('express');
 const compression = require('compression');
 const morgan = require('morgan');
@@ -30,6 +31,7 @@ const port = process.env.PORT || process.argv[2] || 8080;
 
 // MIDDLEWARE
 
+app.use(cors());
 app.use(compression());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'short' : 'dev'));
 
