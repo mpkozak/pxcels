@@ -1,0 +1,91 @@
+.Minimap {
+  width: 12vh;
+  min-width: 90px;
+}
+
+
+
+.Minimap--inner {
+  /*background-color: orange;*/
+}
+
+
+
+.Minimap--mapbox {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+
+
+.Minimap--map {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 400%;
+  height: 400%;
+  border-radius: 0;
+  box-shadow: 0 0 1.25vmin .25vmin rgba(0, 0, 0, .3);
+  opacity: 1;
+  transform: translate(0, 0)scale(1);
+  transform-origin: 100% 100%;
+  transition: transform 150ms ease, opacity 150ms ease, border-radius 150ms ease;
+}
+
+.Minimap--map.small {
+  border-radius: 5%;
+  transform: translate(0, 0)scale(.25);
+  transition: transform 40ms ease-out, opacity 40ms ease-out, border-radius 40ms ease-out;
+}
+
+.Minimap--map.small:hover {
+  opacity: .9;
+  transform: translate(-.25%, -.25%)scale(.255);
+}
+
+.Minimap--map.small:active {
+  opacity: .95;
+  transform: translate(0, 0)scale(.25);
+}
+
+
+
+.Minimap--viewbox {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 400%;
+  height: 400%;
+}
+
+.Minimap--viewbox.hide {
+  display: none;
+}
+
+
+.Minimap--viewbox-window {
+  position: absolute;
+  box-sizing: content-box;
+  border: 2px solid red;
+  cursor: grab;
+}
+
+
+.Minimap--viewbox-window:hover {
+  background-color: rgba(0, 0, 0, .3);
+}
+
+.Minimap--viewbox-window:active {
+  /*background-color: orange;*/
+  cursor: grabbing;
+}
+
+
+
+
+
+
+

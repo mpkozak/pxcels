@@ -16,26 +16,47 @@
   left: 0px;
   bottom: 0px;
   width: 100%;
-  width: auto;
   height: 12vh;
   min-height: 90px;
-  padding: 0 5px;
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
-  justify-content: flex-start;
-  /*background-color: #1a1e1f;*/
-  background-color: rgba(26, 30, 31, .95);
-  border-top-right-radius: calc(.4vh + 2px);
-  /*touch-action: none;*/
+  justify-content: space-between;
   z-index: 200;
 }
 
 
-.toolbox {
+.Toolbar--toolbox {
   position: relative;
   height: 100%;
   min-height: 90px;
+  width: auto;
+  /*padding: 0 5px;*/
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  background-color: rgba(26, 30, 31, .95);
+}
+
+.Toolbar--toolbox.left {
+  /*padding-left: 5px;*/
+  justify-content: flex-start;
+  border-top-right-radius: calc(.4vh + 2px);
+}
+
+.Toolbar--toolbox.right {
+  /*padding-right: 5px;*/
+  justify-content: flex-end;
+  border-top-left-radius: calc(.4vh + 2px);
+}
+
+
+
+
+
+.Tool--wrap {
+  position: relative;
+  height: 100%;
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
@@ -44,7 +65,7 @@
 }
 
 
-.toolbox--inner {
+.Tool {
   position: absolute;
   left: 0%;
   top: 0%;
@@ -57,30 +78,14 @@
 
 
 
-.Minimap {
-  position: fixed;
-  right: 0px;
-  bottom: 0px;
-  width: 100%;
-  width: auto;
-  height: 12vh;
-  min-height: 90px;
-  /*padding: 0 5px;*/
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  justify-content: flex-end;
-  /*background-color: #1a1e1f;*/
-  background-color: rgba(26, 30, 31, .95);
-  border-top-left-radius: calc(.4vh + 2px);
-  /*touch-action: none;*/
-  z-index: 200;
-}
 
-.minimap.toolbox {
-  width: 12vh;
-  min-width: 90px;
-}
+
+
+
+
+
+
+
 
 .canvas {
   backface-visibility: hidden;
@@ -118,12 +123,8 @@
 
 
 
-.Canvas {
 
-  /*position: absolute;*/
-  /*top: 0;*/
-  /*left: 0;*/
-}
+
 
 
 
@@ -163,32 +164,3 @@
 
 
 
-
-
-
-#CANV {
-  /*position: fixed;*/
-  /*width: 100vmin;*/
-  /*height: 100vmin;*/
-  /*bottom: 10px;*/
-  /*right: 3vmin;*/
-  /*width: 12vh;*/
-  /*height: 12vh;*/
-  /*min-width: 90px;*/
-  /*min-height: 90px;*/
-  /*border: 1px solid black;*/
-  /*z-index: 500;*/
-}
-
-
-
-/*.Grid {
-  position: fixed;
-  left: 0%;
-  top: 0%;
-  width: 100%;
-  height: 100%;
-  height: calc(100% - 12vh);
-  max-height: calc(100% - 90px);
-  z-index: 100;
-}*/

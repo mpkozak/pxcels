@@ -1,7 +1,7 @@
 import React, { memo, useState, useRef, useCallback } from 'react';
 import './App.css';
 import { useGrid, useParams, useViewport } from './hooks';
-import { Grid, Colors, Cursors } from './components';
+import { Grid, Colors, Cursors, Minimap } from './components';
 import User from './User.jsx';
 
 
@@ -27,11 +27,17 @@ export default memo(function App() {
 
 
 
-
+  const windowRef = useRef(null);
   const gridRef = useRef(null);
   const canvasRef = useRef(null);
   // const { username, postUsername, dataRef } =
-    useGrid({ params, gridRef, canvasRef, activeColor, cursorMode });
+  useGrid({
+    params,
+    gridRef,
+    canvasRef,
+    activeColor,
+    cursorMode
+  });
 
   const celScaleRange = [2, 4, 8, 16, 32, 64, 128];
   const [celScale, setCelScale] = useState(3);
@@ -71,78 +77,69 @@ export default memo(function App() {
   }, [setCursorMode, updateZoom]);
 
 
-  const [showMap, setShowMap] = useState(false);
 
-  const handleClickMap = useCallback(e => {
-    if (showMap) {
-      console.log('is large', e)
+
+
+  const panWindow = useCallback((x, y) => {
+    const el = windowRef.current;
+    if (el) {
+      const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = el;
+
+
+
+
+      const targetX = scrollWidth * x - clientWidth / 2;
+      const targetY = scrollHeight * y - clientHeight / 2;
+      const deltaX = targetX - scrollLeft;
+      const deltaY = targetY - scrollTop;
+
+      el.scrollBy(deltaX, deltaY);
+      console.log(scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop )
     }
-    setShowMap(!showMap);
-  }, [showMap, setShowMap])
+
+  }, [windowRef]);
+
+
+
 
 
   return (
     <div className="App">
-
       <Grid
+        windowRef={windowRef}
         gridRef={gridRef}
         cursorMode={cursorMode}
         width={width}
         height={height}
         celScale={celScaleRange[celScale]}
-      >
-      </Grid>
-
-
-      <div className="Minimap">
-        <div className="minimap toolbox">
-          <div className="toolbox--inner">
-            <canvas
-              className={'canvas' + (showMap ? ' large' : '')}
-              ref={canvasRef}
-              onClick={handleClickMap}
-            />
-          </div>
-        </div>
-      </div>
-
-{/*
-      <div className="canv-wrap">
-        <div className="canv-flex">
-          <canvas
-            id="CANV"
-            className="Canvas"
-            ref={canvasRef}
-            width={celScaleRange[celScale] * width || 1000}
-            height={celScaleRange[celScale] * height || 1000}
-            style={{
-              // position: 'absolute',
-              // width: (celScaleRange[celScale] * width) + 'px',
-              // height: (celScaleRange[celScale] * height) + 'px',
-            }}
-          />
-
-        </div>
-      </div>
-*/}
-
-
+      />
       <div className="Toolbar">
-        <Colors
-          palette={colors}
-          activeColor={activeColor}
-          setColor={handleClickColors}
-        />
-        <Cursors
-          cursorMode={cursorMode}
-          click={handleClickCursors}
-        />
+        <div className="Toolbar--toolbox left">
+          <Colors
+            palette={colors}
+            activeColor={activeColor}
+            setColor={handleClickColors}
+          />
+          <Cursors
+            cursorMode={cursorMode}
+            click={handleClickCursors}
+          />
+        </div>
+        <div className="Toolbar--toolbox right">
+          <Minimap
+            canvasRef={canvasRef}
+            windowRef={windowRef}
+            pan={panWindow}
+          />
+        </div>
+
       {/*
         <User
           username={username !== 'anonymous' ? username : ''}
           post={postUsername}
         />
       */}
+
       </div>
     </div>
   );

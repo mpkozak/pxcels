@@ -28,18 +28,13 @@ function addGridClasses(params) {
 
 
 
-
 export default function useGrid({ params, gridRef, canvasRef, activeColor, cursorMode } = {}) {
-
-
 
   useEffect(() => {
     if (params) {
       addGridClasses(params);
     }
   }, [params]);
-
-
 
 
 
@@ -105,6 +100,8 @@ export default function useGrid({ params, gridRef, canvasRef, activeColor, curso
 
 
 
+
+
 ///////////////////////////////////////
 // D3 Node assign
 ///////////////////////////////////////
@@ -133,6 +130,8 @@ export default function useGrid({ params, gridRef, canvasRef, activeColor, curso
           .style('opacity', 0);
     };
   }, [tooltipNodeRef]);
+
+
 
 
 
@@ -198,6 +197,8 @@ export default function useGrid({ params, gridRef, canvasRef, activeColor, curso
       .html('')
       .style('opacity', 0)
   }, [tooltipNodeRef]);
+
+
 
 
 

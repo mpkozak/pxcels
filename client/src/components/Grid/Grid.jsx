@@ -5,9 +5,8 @@ import './Grid.css';
 
 
 
-export default memo(function Grid({ gridRef, cursorMode, width, height, celScale } = {}) {
+export default memo(function Grid({ windowRef, gridRef, cursorMode, width, height, celScale } = {}) {
   const [drag, setDrag] = useState(false);
-  const dragBoxRef = useRef(null);
 
 
   const handleDragStart = useCallback(e => {
@@ -24,9 +23,9 @@ export default memo(function Grid({ gridRef, cursorMode, width, height, celScale
 
 
   const handleDragMove = useCallback(e => {
-    const el = dragBoxRef.current;
+    const el = windowRef.current;
     el.scrollBy(-e.movementX, -e.movementY);
-  }, [dragBoxRef]);
+  }, [windowRef]);
 
 
   useEffect(() => {
@@ -44,8 +43,6 @@ export default memo(function Grid({ gridRef, cursorMode, width, height, celScale
   const celboxStyle = {
     gridTemplateColumns: `repeat(${width}, ${celScale}px)`,
     gridTemplateRows: `repeat(${height}, ${celScale}px)`,
-    // gridAutoColumns: `${celScale}px`,
-    // gridAutoRows: `${celScale}px`,
     gridGap: (celScale < 10) ? '0px' : '1px',
     cursor: cursorMode === 'paint'
       ? 'crosshair'
@@ -55,8 +52,8 @@ export default memo(function Grid({ gridRef, cursorMode, width, height, celScale
 
   return (
     <div
-      className="Grid--wrap"
-      ref={dragBoxRef}
+      className="Grid--window"
+      ref={windowRef}
       onMouseDown={handleDragStart}
     >
       <div className="Grid--flex">

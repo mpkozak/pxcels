@@ -6,8 +6,8 @@ import './Cursors.css';
 export default memo(function Cursors({ cursorMode, click = null } = {}) {
 
   return (
-    <div className="Cursors toolbox" onClick={click}>
-      <div className="Cursors--inner toolbox--inner">
+    <div className="Tool--wrap Cursors" onClick={click}>
+      <div className="Tool Cursors--inner">
         {['paint', 'drag'].map(d =>
           <div
             key={`cursor-${d}`}

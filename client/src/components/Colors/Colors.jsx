@@ -16,8 +16,8 @@ export default memo(function Colors({ palette = [], activeColor = 0, setColor = 
 
 
   return (
-    <div className="Colors toolbox">
-      <div className="Colors--inner toolbox--inner">
+    <div className="Tool--wrap Colors">
+      <div className="Tool Colors--inner">
         <ColorsCurrent
           color={palette[activeColor]}
           click={toggleHidePalette}
