@@ -11,7 +11,7 @@ body {
   background-color: #2a2e2f;
   overflow: hidden;
   font-family: 'helvetica';
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   /*-webkit-overflow-scrolling: touch;*/
 }
 
@@ -19,28 +19,32 @@ body {
 
 
 
-div.tooltip {
+#tooltip {
   position: absolute;
   width: auto;
   height: auto;
   padding: 5px 10px 8px 10px;
-  background: lightsteelblue;
-  border: 0px;
+  /*background: lightsteelblue;*/
   border-radius: 5px;
-  pointer-events: none;
+  box-shadow: 0 0 1.25vmin .25vmin rgba(0, 0, 0, .3);
   transform: translateY(-60px);
   z-index: 101;
+  pointer-events: none;
 }
 
+#tooltip>* {
+  white-space: nowrap;
+  color: #FFFFFF;
+  text-shadow: 1px 1px 1px rgba(127, 127, 127, .7);
+  mix-blend-mode: difference;
+}
 
-div.tooltip>h4 {
+#tooltip>h4 {
   font-size: 16px;
   line-height: 20px;
-  white-space: nowrap;
 }
 
-div.tooltip>h5 {
+#tooltip>h5 {
   font-size: 12px;
   line-ight: 18px;
-  white-space: nowrap;
 }

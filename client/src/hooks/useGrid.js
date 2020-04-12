@@ -28,116 +28,6 @@ function addGridClasses(params) {
 
 
 
-function useDesktopGrid({ gridRef, dataRef } = {}) {
-
-
-
-
-///////////////////////////////////////
-// D3 Node assign
-///////////////////////////////////////
-
-  const tooltipNodeRef = useRef(null);
-
-  useEffect(() => {   // assign tooltip ref to d3 node
-    // console.log('EFFECT 3')
-    if (!tooltipNodeRef.current) {
-      // console.log('EFFECT 3 -- assign grid ref to d3 node')
-      tooltipNodeRef.current = d3.select('body')
-        .append('div')
-          .attr('class', 'tooltip')
-          .style('opacity', 0);
-    };
-  }, [tooltipNodeRef]);
-
-
-
-
-
-///////////////////////////////////////
-// D3 -- Draw stack
-///////////////////////////////////////
-
-  const drawTooltip = useCallback(({ x, y, name, time }) => {
-    const node = tooltipNodeRef.current;
-    if (!node) {
-      return null;
-    };
-
-    node
-      .html(`<h4>${name}</h4><h5>${time}</h5>`)
-      .style('left', x + 'px')
-      .style('top', y + 'px')
-      .style('opacity', 1);
-  }, [tooltipNodeRef]);
-
-
-  const undrawTooltip = useCallback(() => {
-    const node = tooltipNodeRef.current;
-    if (!node) {
-      return null;
-    };
-
-    node
-      .html('')
-      .style('opacity', 0);
-  }, [tooltipNodeRef]);
-
-
-
-
-
-///////////////////////////////////////
-// Event handlers + registration
-///////////////////////////////////////
-
-  const handleMouseMove = useCallback(e => {
-    const data = dataRef.current;
-    if (!data) {
-      return null;
-    };
-    const { clientX: x, clientY: y, target: { id } } = e;
-    const datum = data.find(a => a.cel_id === id);
-    if (!datum) {
-      return null;
-    };
-    const { user_name, timestamp } = datum.current;
-    if (!user_name) {
-      return undrawTooltip();
-    };
-    drawTooltip({
-      x,
-      y,
-      name: user_name,
-      time: parse.time(Date.now() - timestamp),
-    });
-  }, [dataRef, drawTooltip, undrawTooltip]);
-
-
-  useEffect(() => {   // add mousemove listener to grid element
-    // console.log('EFFECT 5')
-    const el = gridRef.current;
-    if (el) {
-      // console.log('EFFECT 5 -- add mousemove listener to grid element')
-      el.addEventListener('mousemove', handleMouseMove, { passive: true });
-    };
-
-    return () => {
-      // console.log('EFFECT 5 -- remove mousemove listener from grid element')
-      if (el) {
-        el.removeEventListener('mousemove', handleMouseMove);
-      };
-    };
-  }, [gridRef, handleMouseMove]);
-
-
-
-
-}
-
-
-
-
 export default function useGrid({ mobile, params, gridRef, canvasRef, activeColor, cursorMode, panWindow } = {}) {
 
   useEffect(() => {
@@ -230,7 +120,7 @@ export default function useGrid({ mobile, params, gridRef, canvasRef, activeColo
     if (!tooltipNodeRef.current) {
       tooltipNodeRef.current = d3.select('body')
         .append('div')
-          .attr('class', 'tooltip')
+          .attr('id', 'tooltip')
           .style('opacity', 0);
     };
   }, [tooltipNodeRef]);
@@ -277,7 +167,7 @@ export default function useGrid({ mobile, params, gridRef, canvasRef, activeColo
   }, [gridNodeRef, setCelQueue]);
 
 
-  const drawTooltip = useCallback(({ x, y, name, time }) => {
+  const drawTooltip = useCallback(({ x, y, color, name, time }) => {
     const node = tooltipNodeRef.current;
     if (!node) {
       return null;
@@ -287,6 +177,7 @@ export default function useGrid({ mobile, params, gridRef, canvasRef, activeColo
       .html(`<h4>${name}</h4><h5>${time}</h5>`)
       .style('left', x + 'px')
       .style('top', y + 'px')
+      .attr('class', `f-${color}`)
       .style('opacity', 1);
   }, [tooltipNodeRef]);
 
@@ -336,13 +227,14 @@ export default function useGrid({ mobile, params, gridRef, canvasRef, activeColo
     if (!datum) {
       return null;
     };
-    const { user_name, timestamp } = datum.current;
+    const { user_name, timestamp, color } = datum.current;
     if (!user_name) {
       return undrawTooltip();
     };
     drawTooltip({
       x,
       y,
+      color,
       name: user_name,
       time: parse.time(Date.now() - timestamp),
     });
@@ -491,6 +383,127 @@ export default function useGrid({ mobile, params, gridRef, canvasRef, activeColo
   return {
     username,
     postUsername,
-    // lastDraw,
+    lastDraw,
   };
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// function useDesktopGrid({ gridRef, dataRef } = {}) {
+
+
+
+
+// ///////////////////////////////////////
+// // D3 Node assign
+// ///////////////////////////////////////
+
+//   const tooltipNodeRef = useRef(null);
+
+//   useEffect(() => {   // assign tooltip ref to d3 node
+//     // console.log('EFFECT 3')
+//     if (!tooltipNodeRef.current) {
+//       // console.log('EFFECT 3 -- assign grid ref to d3 node')
+//       tooltipNodeRef.current = d3.select('body')
+//         .append('div')
+//           .attr('class', 'tooltip')
+//           .style('opacity', 0);
+//     };
+//   }, [tooltipNodeRef]);
+
+
+
+
+
+// ///////////////////////////////////////
+// // D3 -- Draw stack
+// ///////////////////////////////////////
+
+//   const drawTooltip = useCallback(({ x, y, name, time }) => {
+//     const node = tooltipNodeRef.current;
+//     if (!node) {
+//       return null;
+//     };
+
+//     node
+//       .html(`<h4>${name}</h4><h5>${time}</h5>`)
+//       .style('left', x + 'px')
+//       .style('top', y + 'px')
+//       .style('opacity', 1);
+//   }, [tooltipNodeRef]);
+
+
+//   const undrawTooltip = useCallback(() => {
+//     const node = tooltipNodeRef.current;
+//     if (!node) {
+//       return null;
+//     };
+
+//     node
+//       .html('')
+//       .style('opacity', 0);
+//   }, [tooltipNodeRef]);
+
+
+
+
+
+// ///////////////////////////////////////
+// // Event handlers + registration
+// ///////////////////////////////////////
+
+//   const handleMouseMove = useCallback(e => {
+//     const data = dataRef.current;
+//     if (!data) {
+//       return null;
+//     };
+//     const { clientX: x, clientY: y, target: { id } } = e;
+//     const datum = data.find(a => a.cel_id === id);
+//     if (!datum) {
+//       return null;
+//     };
+//     const { user_name, timestamp } = datum.current;
+//     if (!user_name) {
+//       return undrawTooltip();
+//     };
+//     drawTooltip({
+//       x,
+//       y,
+//       name: user_name,
+//       time: parse.time(Date.now() - timestamp),
+//     });
+//   }, [dataRef, drawTooltip, undrawTooltip]);
+
+
+//   useEffect(() => {   // add mousemove listener to grid element
+//     // console.log('EFFECT 5')
+//     const el = gridRef.current;
+//     if (el) {
+//       // console.log('EFFECT 5 -- add mousemove listener to grid element')
+//       el.addEventListener('mousemove', handleMouseMove, { passive: true });
+//     };
+
+//     return () => {
+//       // console.log('EFFECT 5 -- remove mousemove listener from grid element')
+//       if (el) {
+//         el.removeEventListener('mousemove', handleMouseMove);
+//       };
+//     };
+//   }, [gridRef, handleMouseMove]);
+
+
+
+
+// }
+

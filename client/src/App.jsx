@@ -1,4 +1,4 @@
-import React, { memo, useLayoutEffect, useState, useEffect, useRef, useCallback } from 'react';
+import React, { memo, useState, useLayoutEffect, useRef, useCallback } from 'react';
 import './App.css';
 import { useGrid, useParams } from './hooks';
 import { Grid, Colors, Cursors, Minimap } from './components';
@@ -58,7 +58,6 @@ export default memo(function App({ mobile = false } = {}) {
 
 
 
-
   const updateZoom = useCallback((zoomIn) => {
     const newCelScale = celScale + (zoomIn ? 1 : -1);
     if (!celScaleRange[newCelScale]) {
@@ -67,10 +66,6 @@ export default memo(function App({ mobile = false } = {}) {
     storeCenter();
     setCelScale(newCelScale);
   }, [celScaleRange, celScale, setCelScale, storeCenter]);
-
-
-
-
 
 
 
@@ -109,13 +104,12 @@ export default memo(function App({ mobile = false } = {}) {
 
 
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (center) {
       panWindow(...center);
       setCenter(null);
     };
   }, [center, setCenter, panWindow]);
-
 
 
 

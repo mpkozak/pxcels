@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect, useCallback, useRef } from 'react';
+import React, { memo, useState, useEffect, useCallback } from 'react';
 import './Grid.css';
 
 
@@ -69,25 +69,3 @@ export default memo(function Grid({ windowRef, gridRef, cursorMode, width, heigh
     </div>
   );
 });
-
-
-
-
-      // <div className="Grid--flex">
-      //   <div
-      //     className="Grid--celbox"
-      //     ref={gridRef}
-      //     style={celboxStyle}
-      //   >
-      //   </div>
-      // </div>
-
-
-
-          // <CelRender {...celView} />
-
-
-          // {rows}
-
-          // <CelRender {...celView} />
-

@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect, useCallback, useRef } from 'react';
+import React, { memo, useState, useEffect, useCallback } from 'react';
 
 
 
@@ -6,7 +6,6 @@ import React, { memo, useState, useEffect, useCallback, useRef } from 'react';
 
 export default memo(function ColorsPalette({ palette = [], show = '', click = null, toggleHide = null } = {}) {
   const [startX, setStartX] = useState(null);
-  // const touchRef = useRef(null);
 
 
   const handleTouchStart = useCallback(e => {
@@ -33,26 +32,6 @@ export default memo(function ColorsPalette({ palette = [], show = '', click = nu
   }, [startX, setStartX, toggleHide]);
 
 
-  // useEffect(() => {
-  //   const touchEl = touchRef.current;
-  //   if (touchEl && startX) {
-  //     touchEl.addEventListener('touchmove', handleTouchMove, { passive: true });
-  //     touchEl.addEventListener('touchend', handleTouchEnd);
-  //     touchEl.addEventListener('touchcancel', handleTouchEnd);
-  //   };
-
-  //   return () => {
-  //     if (touchEl) {
-  //       touchEl.removeEventListener('touchmove', handleTouchMove);
-  //       touchEl.removeEventListener('touchend', handleTouchEnd);
-  //       touchEl.removeEventListener('touchcancel', handleTouchEnd);
-  //     };
-  //   };
-  // }, [touchRef, startX, handleTouchMove, handleTouchEnd]);
-
-
-
-
   useEffect(() => {
     if (startX) {
       window.addEventListener('touchcancel', handleTouchEnd);
@@ -62,8 +41,6 @@ export default memo(function ColorsPalette({ palette = [], show = '', click = nu
       window.removeEventListener('touchcancel', handleTouchEnd);
     }
   }, [startX, handleTouchEnd]);
-
-
 
 
 
