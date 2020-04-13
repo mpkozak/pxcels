@@ -2,6 +2,7 @@
 node_modules
 
 .env
+.env-sh
 public
 client/build
 !client/public

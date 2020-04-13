@@ -2,8 +2,19 @@
 
 
 
+# start timestamp
+  t=`date +%s`
+
+# import environment variables
+  if [ -f sh/.env-sh ]; then
+    . sh/.env-sh
+  fi
+
 # absolute path of repo
   TOPLEVEL=$(git rev-parse --show-toplevel)
+
+# backup package.json
+  cp "$TOPLEVEL/client/package.json" "$TOPLEVEL/client/package.json.bak"
 
 # change client homepage
   sed -i '' -e "s/homepage_kozak/homepage/" "$TOPLEVEL/client/package.json"
@@ -12,24 +23,23 @@
   cd "$TOPLEVEL/client"
   npm run build_kozak
 
-# check for public dir
-  cd "$TOPLEVEL"
-  if [ ! -d "$TOPLEVEL/public" ]; then
-    mkdir "$TOPLEVEL/public"
-  else
-    rm -rf "$TOPLEVEL/public/"
-  fi
+# revert package.json
+  mv "$TOPLEVEL/client/package.json.bak" "$TOPLEVEL/client/package.json"
 
-# copy build into public dir
-  cp -r "$TOPLEVEL/client/build/" "$TOPLEVEL/public"
+# push to remote
+  rsync -avzPh --delete --exclude={'*.DS_Store','*precache-manifest*','service-worker.js'} "$TOPLEVEL/client/build/" "$SERVER:$DEST"
 
-# revert client homepage
-  sed -i '' -e "s/homepage_heroku/_heroku/" "$TOPLEVEL/client/package.json"
-  sed -i '' -e "s/homepage/homepage_kozak/" "$TOPLEVEL/client/package.json"
-  sed -i '' -e "s/_heroku/homepage_heroku/" "$TOPLEVEL/client/package.json"
+# calculate runtime
+  convertsecs() {
+    ((h=${1}/3600))
+    ((m=(${1}%3600)/60))
+    ((s=${1}%60))
+    printf "%02d:%02d:%02d" $h $m $s
+  }
 
-# open build folder
-  open "$TOPLEVEL/public"
+  s=$((`date +%s`-t))
+  RT=$(convertsecs $s)
 
-# exit
+# report success
+  printf "\n\nDeployment successful! --- $RT elapsed\n\n\n"
   exit 0
