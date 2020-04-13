@@ -15,8 +15,9 @@
 
 # modify gitignore
   sed -i '' -e "s/\!client\/public//" .gitignore
-  echo client >> .gitignore
-  echo !public >> .gitignore
+  sed -i '' -e "s/client\/build/client/" .gitignore
+  sed -i '' -e "s/public//" .gitignore
+  echo sh >> .gitignore
 
 # add build version to package.json
   VERSION=$(cat "$TOPLEVEL/package.json" \
