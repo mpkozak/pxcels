@@ -11,9 +11,10 @@
   cd "$TOPLEVEL"
 
 # create new branch
-  git checkout -b prod
+  git checkout -b heroku_deploy
 
 # modify gitignore
+  sed -i '' -e "s/\!client\/public//" .gitignore
   echo client >> .gitignore
   echo !public >> .gitignore
 
@@ -50,13 +51,13 @@
   git commit -m "deploy to heroku $BUILD_VERSION"
 
 # deploy
-  git push --force heroku prod:master
+  git push --force heroku heroku_deploy:master
 
 # switch back to master branch
   git checkout "$BR"
 
 # delete deployment branch
-  git branch -D prod
+  git branch -D heroku_deploy
 
 # calculate runtime
   convertsecs() {
