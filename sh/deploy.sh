@@ -38,10 +38,11 @@
   cd "$TOPLEVEL"
   if [ ! -d "$TOPLEVEL/public" ]; then
     mkdir "$TOPLEVEL/public"
+  else
+    rm -rf "$TOPLEVEL/public/"
   fi
 
 # copy build into public dir
-  rm -rf "$TOPLEVEL/public/*"
   cp -r "$TOPLEVEL/client/build/" "$TOPLEVEL/public"
 
 # commit changes
