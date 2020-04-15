@@ -8,23 +8,41 @@
 }
 
 #App.mouse {
-  background-color: green;
+  /*background-color: green;*/
 }
 
 #App.touch {
-  background-color: orange;
+  /*background-color: orange;*/
 }
 
 
 
 
 
-.Welcome {
+.Splash {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+
   min-width: 100px;
   min-height: 300px;
   padding: 30px;
-  background-color: purple;
+  background-color: #2a2e2f;
+  /*background-color: purple;*/
 }
+
+
+
+
+
+
 
 
 
@@ -34,8 +52,6 @@
   position: fixed;
   left: 0%;
   top: 0%;
-  /*right: 0%;*/
-  /*bottom: 0%;*/
   width: 100%;
   height: 100%;
   display: flex;
@@ -90,9 +106,8 @@
 
 .Grid--canvas-wrap {
   position: relative;
-  overflow: visible;
 
-
+  /*border: 10px yellow;*/
 }
 
 
@@ -103,9 +118,26 @@
   transform-origin: 0% 0%;
   image-rendering: crisp-edges;
   image-rendering: pixelated;
+  z-index: 100;
+
   /*background-color: yellow;*/
-  border: 1px solid brown;
+  /*border: 1px solid brown;*/
 }
+
+
+
+.Grid--lines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  z-index: 200;
+}
+
+.Grid--lines path {
+  stroke: rgba(0, 0, 0, .5);
+}
+
 
 
 
@@ -116,8 +148,8 @@
   position: fixed;
   left: 0;
   bottom: 0;
-  width: 50px;
-  height: 50px;
+  width: 150px;
+  height: 150px;
   z-index: 3000;
   background-color: blue;
 }

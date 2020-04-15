@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect, useMemo, useLayoutEffect, useRef, useCallback } from 'react';
 import './App2.css';
-import { useSocket, useParams } from './hooks';
+import { useParams, useTouchDetect, useTouchZoomOverride, useSocket,  } from './hooks';
 import { Grid, Colors, Cursors, Minimap } from './components';
 // import User from './User.jsx';
 
@@ -10,70 +10,6 @@ import { Grid, Colors, Cursors, Minimap } from './components';
 
 
 
-function useTouchDetect() {
-  // const [touch, setTouch] = useState(localStorage.getItem('touch_device'));
-  // const [mouse, setMouse] = useState(localStorage.getItem('mouse_device'));
-
-
-  const [touch, setTouch] = useState(false);
-  const [mouse, setMouse] = useState(false);
-
-
-  console.log('touch detect ran')
-
-  const handleTouch = useCallback(e => {
-    console.log('touch event', e)
-    setTouch(true);
-    localStorage.setItem('touch_device', true);
-  }, [setTouch]);
-
-
-
-  const handleMouse = useCallback(e => {
-    console.log('mouse event', e)
-    setMouse(true);
-    localStorage.setItem('mouse_device', true);
-  }, [setMouse]);
-
-
-  useEffect(() => {
-    console.log("effect ran")
-    if (!touch && !mouse) {
-    console.log("listeners added")
-      document.addEventListener('mousemove', handleMouse);
-      document.addEventListener('touchstart', handleTouch);
-    };
-    return () => {
-      console.log("listeners removed")
-      document.removeEventListener('mousemove', handleMouse);
-      document.removeEventListener('touchstart', handleTouch);
-    }
-  }, [touch, mouse, handleTouch, handleMouse]);
-
-  useTouchZoomOverride();
-
-  return touch ? 'touch' : (mouse ? 'mouse' : '');
-};
-
-
-
-
-
-
-
-
-
-function useTouchZoomOverride() {
-  useEffect(() => {
-    // const cancelTouch = e => e.preventDefault();
-    const cancelTouch = e => {
-      if (e.touches.length === 2) {
-        e.preventDefault();
-      };
-    };
-    window.addEventListener('touchmove', cancelTouch, { passive: false });
-  }, []);
-};
 
 
 
@@ -86,29 +22,27 @@ function useTouchZoomOverride() {
 
 
 
+function useGrid({ params, canvasRef, oversamplePx = 1 } = {}) {
 
-
-
-function useGrid({ params, canvasRef} = {}) {
-
-  const [redrawFlag, setRedrawFlag] = useState(false);
-  const [celQueue, setCelQueue] = useState(null);
+  const [redrawGridFlag, setRedrawGridFlag] = useState(false);
+  const [redrawCel, setRedrawCel] = useState(null);
   const [lastDraw, setLastDraw] = useState(0);
   const dataRef = useRef(null);
 
 
+
   const handleUpdateGrid = useCallback(newGrid => {
     dataRef.current = newGrid;
-    setRedrawFlag(true);
-  }, [dataRef, setRedrawFlag]);
+    setRedrawGridFlag(true);
+  }, [dataRef, setRedrawGridFlag]);
 
 
   const handleUpdateCel = useCallback(newCel => {
     const { _id, current } = newCel;
     const cel = dataRef.current[_id];
     cel.current = current;
-    setCelQueue(cel);
-  }, [dataRef, setCelQueue]);
+    setRedrawCel(cel);
+  }, [dataRef, setRedrawCel]);
 
 
   const handleUpdateLastDraw = useCallback(timestamp => {
@@ -134,114 +68,120 @@ function useGrid({ params, canvasRef} = {}) {
   }, [handleUpdateGrid, handleUpdateCel, handleUpdateLastDraw]);
 
 
-
   const { active, post, username, postUsername } = useSocket(handleSocketMessage);
 
 
   useEffect(() => {   // get grid data from socket
-    if (params && active && !dataRef.current) {
+    if (active) {
       post('get_grid');
     };
-  }, [dataRef, params, active, post]);
+  }, [active, post]);
 
 
+  const scalar = useMemo(() => window.devicePixelRatio * oversamplePx, [oversamplePx]);
 
-  const ctx = useRef(null);
-  // const scale = memo(() => window.devicePixelRatio * 4);
-  const scale = window.devicePixelRatio * 4;
-  // const offCanvas = useRef(null);
-  // const offCtx = useRef(null);
-
-
-  useEffect(() => {   // set the onscreen canvas dimensions to match its display size; get context
-    const canvas = canvasRef.current;
-    if (params && canvas && !ctx.current) {
-      const { width, height } = params;
-      canvas.width = width * scale;
-      canvas.height = height * scale;
-      ctx.current = canvas.getContext('2d');
-      // ctx.current.imageSmoothingEnabled = false;
-      ctx.current.scale(scale, scale);
-    };
-  }, [params, canvasRef, ctx, scale]);
-
-
-  // useEffect(() => {   // create offscreen rendering canvas
-  //   if (params && !offCanvas.current) {
-  //     const { width, height } = params;
-  //     const par = window.devicePixelRatio;
-  //     const targetW = width * par;
-  //     const targetH = height * par;
-  //     if (typeof OffscreenCanvas !== 'undefined') {
-  //       offCanvas.current = new OffscreenCanvas(targetW, targetH);
-  //     } else {
-  //       offCanvas.current = document.createElement('canvas');
-  //       offCanvas.current.width = targetW;
-  //       offCanvas.current.height = targetH;
-  //     };
-  //     offCtx.current = offCanvas.current.getContext('2d');
-  //     offCtx.current.scale(par, par);
-  //   };
-  // }, [params, offCanvas, offCtx]);
-
-
-
-  const readymades = useMemo(() => {
+  const canvasColorSquares = useMemo(() => {
     if (!params) return null;
     const { colors } = params;
     const colorSquares = colors.map(d => {
+      const scalar = 1;
       const canvas = document.createElement('canvas');
       canvas.width = 1;
       canvas.height = 1;
-      const ctx = canvas.getContext('2d')
+      const ctx = canvas.getContext('2d');
       ctx.fillStyle = d;
-      ctx.fillRect(0, 0, 1, 1)
+      ctx.fillRect(0, 0, 1, 1);
       return canvas;
     });
     return colorSquares;
   }, [params]);
 
 
-  const drawCanvas = useCallback(() => {
-    const { colors } = params;
-    const data = dataRef.current;
-    if (!data || !colors) return null;
+  const ctx = useRef(null);
+  const offCanvas = useRef(null);
+  const offCtx = useRef(null);
 
-    const cx = ctx.current;
-    // cx.imageSmoothingEnabled = false;
-    data.forEach(d => {
-      const { row, col, current: { color } } = d;
-      cx.fillStyle = colors[color];
-      cx.fillRect(col, row, 1, 1);
-    });
-  }, [params, dataRef, ctx]);
 
+
+
+  useEffect(() => {   // set the onscreen canvas dimensions to match its display size; get context; same for offscreen canvas
+    const canvas = canvasRef.current;
+    if (params && canvas && !ctx.current) {
+      const { width, height } = params;
+      const targetW = width * scalar;
+      const targetH = height * scalar;
+
+    // set main canvas
+      canvas.width = targetW;
+      canvas.height = targetH;
+      // canvas.style.width = targetW / window.devicePixelRatio;
+      // canvas.style.height = targetH / window.devicePixelRatio;
+
+      // canvas.style.width = width + 'px';
+      // canvas.style.height = height + 'px';
+
+      ctx.current = canvas.getContext('2d');
+      ctx.current.imageSmoothingEnabled = false;
+      // ctx.current.scale(scalar, scalar);
+
+    // set offscreen canvas
+      if (typeof OffscreenCanvas !== 'undefined') {
+        offCanvas.current = new OffscreenCanvas(targetW, targetH);
+      } else {
+        offCanvas.current = document.createElement('canvas');
+        offCanvas.current.width = targetW;
+        offCanvas.current.height = targetH;
+      };
+      offCtx.current = offCanvas.current.getContext('2d');
+      offCtx.current.imageSmoothingEnabled = false;
+      offCtx.current.scale(scalar, scalar);
+    };
+  }, [params, canvasRef, scalar, ctx, offCanvas, offCtx]);
 
 
 
   // const drawCanvas = useCallback(() => {
+  //   const { colors } = params;
   //   const data = dataRef.current;
-  //   if (!data) return null;
-
-  //   const offCx = offCtx.current;
-  //   data.forEach(d => {
-  //     const { row, col, current: { color } } = d;
-  //     offCx.drawImage(readymades[color], col, row, 1, 1);
-  //   });
+  //   if (!data || !colors) return null;
 
   //   const cx = ctx.current;
-  //   cx.drawImage(offCx.canvas, 0, 0, cx.canvas.width, cx.canvas.height);
-  // }, [dataRef, readymades, offCtx, ctx]);
+  //   data.forEach(d => {
+  //     const { row, col, current: { color } } = d;
+  //     cx.fillStyle = colors[color];
+  //     cx.fillRect(col, row, 1, 1);
+  //   });
+  // }, [params, dataRef, ctx]);
+
+
+
+
+  const drawCanvas = useCallback(() => {
+    const data = dataRef.current;
+    const cx = ctx.current;
+    const offCx = offCtx.current;
+
+    if (!data || !cx || !ctx) return null;
+
+    data.forEach(d => {
+      const { row, col, current: { color } } = d;
+      offCx.drawImage(canvasColorSquares[color], col, row, 1, 1);
+    });
+
+    cx.drawImage(offCx.canvas, 0, 0, cx.canvas.width, cx.canvas.height);
+    // cx.drawImage(offCx.canvas, 0, 0);
+
+  }, [dataRef, canvasColorSquares, offCtx, ctx]);
 
 
   useEffect(() => {   // draw canvas
-    if ((redrawFlag || celQueue) && ctx.current) {
+    if ((redrawGridFlag || redrawCel) && ctx.current && offCtx.current) {
       drawCanvas();
     };
-  }, [redrawFlag, celQueue, ctx, drawCanvas]);
+  }, [redrawGridFlag, redrawCel, ctx, offCtx, drawCanvas]);
 
 
-  return { scalar: scale };
+  return { scalar };
 
 
 };
@@ -250,30 +190,190 @@ function useGrid({ params, canvasRef} = {}) {
 
 
 
+const GridLines = memo(({ width, height, pxWidth, pxHeight } = {}) => {
+
+  const cols = useMemo(() => {
+    return (new Array(1 + width).fill('')).map((d, i) =>
+      <path key={`x${i}`} d={`M ${i} ${height} L ${i} 0`} />
+    );
+  }, [width, height]);
+
+  const rows = useMemo(() => {
+    return (new Array(1 + height).fill('')).map((d, i) =>
+      <path key={`y${i}`} d={`M 0 ${i} L ${width} ${i}`} />
+    );
+  }, [width, height]);
+
+  const strokeWidth = useMemo(() => {
+    const sw = (width / pxWidth);
+    if (isNaN(sw) || sw > .1) {
+      return 0;
+    };
+    return sw;
+  }, [width, pxWidth]);
+
+  if (!strokeWidth) return null;
+
+  return (
+    <svg
+      className="Grid--lines"
+      width={pxWidth}
+      height={pxHeight}
+      viewBox={`0 0 ${width} ${height}`}
+    >
+      <g strokeWidth={strokeWidth}>
+        {rows}
+        {cols}
+      </g>
+    </svg>
+  );
+})
+
+
+
+
+
+
+
+function useViewport({ width, height, scalar }) {
+
+  // const canvasScalar = window.devicePixelRatio * 4;
+
+  // const clampZoom =
+  // const [minScale, setMinScale] = useState(null);
+  // const [maxScale, setMaxScale] = useState(null);
+
+  const minScale = useMemo(() => {
+    const minViewportDimen = .5;
+    const minCelX = (window.innerWidth * minViewportDimen) / width;
+    const minCelY = (window.innerHeight * minViewportDimen) / height;
+    const minCelPx = Math.min(minCelX, minCelY);
+    return minCelPx / scalar;
+  }, [width, height, scalar]);
+
+
+  const maxScale = useMemo(() => {
+    const maxCelPx = 100;
+    return maxCelPx / scalar;
+  }, [scalar]);
+
+
+  // useEffect(() => {
+  //   if (width && height && scalar && (!minScale || !maxScale)) {
+  //   console.log('useviewport --- set Scale')
+  //     const minGridDimen = .5;
+  //     const minGridWidth = window.innerWidth * minGridDimen;
+  //     const minGridHeight = window.innerHeight * minGridDimen;
+
+  //     const minWidthOverBase = minGridWidth / width;
+  //     const minHeightOverBase = minGridHeight / height;
+  //     const minGridScale = Math.min(minWidthOverBase, minHeightOverBase);
+  //     const maxGridScale = 100;
+
+  //     // setMinScale(minGridScale / scalar);
+  //     setMinScale(minGridScale / scalar);
+  //     setMaxScale(maxGridScale / scalar);
+  //   };
+  // }, [minScale, setMinScale, maxScale, setMaxScale, width, height, scalar]);
+
+
+  const clampZoom = useCallback((val) => {
+    // if (!minScale || !maxScale) {
+    //   return null;
+    // };
+    // alert('clampzoom');
+
+    let out = val
+    if (val < minScale) {
+      out = minScale;
+    };
+    if (val > maxScale) {
+      out = maxScale;
+    };
+    return out.toFixed(2);
+  }, [minScale, maxScale]);
+
+// alert(minScale)
+  return {
+
+
+    // initialZoom: (window.innerWidth / (width * scalar)) * .5,
+    initialZoom: (minScale + maxScale) / 2,
+    // minScale,
+    clampZoom,
+  };
+
+
+};
+
+
+
+
+    // console.log(minGridWidth, minGridHeight)
+    // console.log(minWidthOverBase, minHeightOverBase)
+    // const minDimen = Math.min(window.innerWidth, window.innerHeight);
+    // const maxCels = Math.floor(minDimen / maxCelSize);
+
+
+
+    // const gridSizeAtMax = [width, height].map(d => d * maxCelSize);
+    // console.log('gridSizeAtMax', gridSizeAtMax)
+
+
+
+    // const maxCelsX = Math.floor(window.innerWidth / maxCelSize);
+    // const maxCelsY = Math.floor(window.innerHeight / maxCelSize);
+    // console.log('maxCels', maxCels)
+
+
+
+
+
+
+
+
+
+
 
 export default memo(function App({ mobile = false } = {}) {
-
-  const inputDevice = useTouchDetect();
-
   const params = useParams();
-  const { colors, width, height } = params || {};
+  const { width, height, colors } = params || {};
 
-  const canvasRef = useRef(null);
-
-  const { scalar } = useGrid({ params, canvasRef });
-
-
+  const { ready, hasTouch, hasMouse } = useTouchDetect();
+  useTouchZoomOverride(hasTouch);
 
   const windowRef = useRef(null);
-  const [zoom, setZoom] = useState(1);
-  const prevZoom = useRef(zoom);
-  const [scale, setScale] = useState(1);
+  const touchRef = useRef(null);
+  const canvasRef = useRef(null);
+  const oversamplePx = 4;
+  const { scalar } = useGrid({ params, canvasRef, oversamplePx });
+  const { initialZoom, clampZoom } = useViewport({ width, height, scalar });
 
 
+
+  // console.log('render', params, scalar, initialZoom)
 
 
   const [zoomActive, setZoomActive] = useState(null);
+  const [scale, setScale] = useState(1);
   const [center, setCenter] = useState(null);
+  const [zoom, setZoom] = useState(null);
+  const prevZoom = useRef(zoom);
+
+
+
+  const panWindow = useCallback((x, y) => {
+    const el = windowRef.current;
+    if (el) {
+      const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = el;
+      const targetX = scrollWidth * x - (clientWidth / 2);
+      const targetY = scrollHeight * y - (clientHeight / 2);
+      const deltaX = targetX - scrollLeft;
+      const deltaY = targetY - scrollTop;
+      el.scrollBy(deltaX, deltaY);
+    };
+  }, [windowRef]);
+
 
   const storeCenter = useCallback(() => {
     const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = windowRef.current;
@@ -283,49 +383,96 @@ export default memo(function App({ mobile = false } = {}) {
   }, [windowRef, setCenter]);
 
 
-  // const panWindow = useCallback((x, y) => {
-  //   const el = windowRef.current;
-  //   if (el) {
-  //     const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = el;
-  //     const targetX = scrollWidth * x - clientWidth / 2;
-  //     const targetY = scrollHeight * y - clientHeight / 2;
-  //     const deltaX = targetX - scrollLeft;
-  //     const deltaY = targetY - scrollTop;
-  //     el.scrollBy(deltaX, deltaY);
-  //   };
-  // }, [windowRef]);
 
+  useEffect(() => {
+    if (initialZoom && !zoom) {
 
-  const panWindow = useCallback((x, y) => {
-    const el = windowRef.current;
-    if (el) {
-      el.scrollLeft = el.scrollWidth * x;
-      el.scrollTop = el.scrollHeight * y;
-      // const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = el;
-      // const targetX = scrollWidth * x - clientWidth / 2;
-      // const targetY = scrollHeight * y - clientHeight / 2;
-      // const deltaX = targetX - scrollLeft;
-      // const deltaY = targetY - scrollTop;
-      // el.scrollBy(deltaX, deltaY);
+      // const paddedRandom = () => (Math.random() / 2) + .2;
+      const paddedRandom = () => (Math.random() + 1) * .5;
+
+      setZoom(initialZoom);
+      const zoomTarget = [paddedRandom(), paddedRandom()];
+      console.log(zoomTarget)
+      panWindow(...zoomTarget);
     };
-  }, [windowRef]);
+  }, [initialZoom, zoom, setZoom, panWindow])
 
 
-  const handleTouchStart = useCallback(e => {
-    const { touches } = e;
-    if (touches.length !== 2) {
+  // useLayoutEffect(() => {
+
+  // }, [])
+
+
+
+
+
+  const __handleTouchStart = useCallback(e => {
+    const { targetTouches } = e;
+    if (targetTouches.length !== 2) {
       return setZoomActive(false);
     };
     e.preventDefault();
     prevZoom.current = zoom;
+
     storeCenter();
     setZoomActive(true);
   }, [setZoomActive, prevZoom, zoom, storeCenter]);
 
 
+  const __handleTouchMove = useCallback(e => {
+    if (!zoomActive) {
+      return null;
+    };
+    const { scale, targetTouches } = e;
+    if (!scale || targetTouches.length !== 2) {
+      e.stopPropagation();
+      return setZoomActive(false);
+    };
+    e.preventDefault();
+    setScale(scale);
+  }, [zoomActive, setZoomActive, setScale]);
+
+
+
+
+
+  const makeNewCenter = useCallback((t1, t2) => {
+    const el = windowRef.current;
+    if (!el) return null;
+    const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = el;
+    const tX = ((t1.clientX + t2.clientX) / 2);
+    const tY = ((t1.clientY + t2.clientY) / 2);
+
+
+    const x = (scrollLeft + tX) / scrollWidth;
+    const y = (scrollTop + tY) / scrollHeight;
+    // alert(t1.target)
+    // console.log()
+    setCenter([x, y, t1.clientX, t1.clientY])
+    // alert(x)
+  }, [windowRef, setCenter])
+
+
+
+  const handleTouchStart = useCallback(e => {
+    const { targetTouches } = e;
+    if (targetTouches.length !== 2) {
+      return setZoomActive(false);
+    };
+    e.preventDefault();
+    prevZoom.current = zoom;
+
+
+    makeNewCenter(targetTouches[0], targetTouches[1]);
+    // storeCenter();
+    setZoomActive(true);
+  }, [setZoomActive, prevZoom, zoom, makeNewCenter]);
+
+
+
   const handleTouchMove = useCallback(e => {
-    const { scale, touches } = e;
-    if (!scale || touches.length !== 2) {
+    const { scale, targetTouches } = e;
+    if (!scale || targetTouches.length !== 2) {
       e.stopPropagation();
       return setZoomActive(false);
     };
@@ -333,35 +480,52 @@ export default memo(function App({ mobile = false } = {}) {
       return null;
     };
     e.preventDefault();
+    // setZoomActive(true)
     setScale(scale);
   }, [zoomActive, setZoomActive, setScale]);
 
 
   const handleTouchEnd = useCallback(e => {
     const { touches } = e;
+    setCenter(null);
     setZoomActive(touches.length === 2);
-    // storeCenter(null);
-    // setScale(1);
-    // prevZoom.current = zoom;
-    // if (touches.length = 2) {
-    //   return null;
-    // };
-  }, [setZoomActive]);
+  }, [setZoomActive, setCenter]);
 
 
 
-  useLayoutEffect(() => {
-    const el = windowRef.current;
-    if (el && zoomActive && center) {
-      const [x, y] = center;
-      const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = el;
-      const targetX = scrollWidth * x - clientWidth / 2;
-      const targetY = scrollHeight * y - clientHeight / 2;
-      const deltaX = targetX - scrollLeft;
-      const deltaY = targetY - scrollTop;
-      el.scrollBy(deltaX, deltaY);
-    };
-  }, [zoomActive, center, windowRef]);
+  // useEffect(() => {
+  //   const el = windowRef.current;
+  //   if (el && zoomActive) {
+  //     el.addEventListener('touchmove', handleTouchMove, { passive: true });
+  //     el.addEventListener('touchend', handleTouchEnd, { passive: true });
+  //     el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+  //   };
+  //   return () => {
+  //     if (el) {
+  //       el.removeEventListener('touchmove', handleTouchMove);
+  //       el.removeEventListener('touchend', handleTouchEnd);
+  //       el.removeEventListener('touchcancel', handleTouchEnd);
+  //     };
+  //   };
+  // }, [windowRef, zoomActive, handleTouchMove, handleTouchEnd]);
+
+
+  // useEffect(() => {
+  //   const el = touchRef.current;
+  //   if (el && zoomActive) {
+  //     el.addEventListener('touchmove', handleTouchMove, { passive: true });
+  //     el.addEventListener('touchend', handleTouchEnd, { passive: true });
+  //     el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+  //   };
+  //   return () => {
+  //     if (el) {
+  //       el.removeEventListener('touchmove', handleTouchMove);
+  //       el.removeEventListener('touchend', handleTouchEnd);
+  //       el.removeEventListener('touchcancel', handleTouchEnd);
+  //     };
+  //   };
+  // }, [touchRef, zoomActive, handleTouchMove, handleTouchEnd]);
+
 
 
   useEffect(() => {
@@ -371,97 +535,100 @@ export default memo(function App({ mobile = false } = {}) {
       setScale(1);
     };
     if (zoomActive) {
-      // const newZoom = prevZoom.current * scale;
-      const newZoom = (prevZoom.current * scale).toFixed(2);
-      storeCenter();
-      setZoom(newZoom);
+      const newZoom = clampZoom((prevZoom.current * scale));
+      if (newZoom) {
+        storeCenter();
+        setZoom(newZoom);
+      }
     };
-  }, [zoomActive, prevZoom, zoom, setZoom, scale, setScale, storeCenter, setCenter]);
+  }, [zoomActive, prevZoom, clampZoom, zoom, setZoom, scale, setScale, storeCenter, setCenter]);
 
 
-  useEffect(() => {
-    const el = windowRef.current;
-    if (el && zoomActive) {
-      el.addEventListener('touchmove', handleTouchMove, { passive: true });
-      el.addEventListener('touchend', handleTouchEnd, { passive: true });
-      el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+
+  useLayoutEffect(() => {   // recenter window
+    if (zoomActive && center) {
+      panWindow(...center);
     };
-    return () => {
-      if (el) {
-        el.removeEventListener('touchmove', handleTouchMove);
-        el.removeEventListener('touchend', handleTouchEnd);
-        el.removeEventListener('touchcancel', handleTouchEnd);
-      };
-    };
-  }, [windowRef, zoomActive, handleTouchMove, handleTouchEnd]);
+  }, [zoomActive, center, panWindow]);
 
 
 
 
 
-  // useEffect(() => {
-  //   if (zoomActive) {
-  //     const newZoom = prevZoom.current * scale;
-  //     setZoom(newZoom);
-  //   };
-  // }, [zoomActive, scale, prevZoom, setZoom]);
+  const handleClick = useCallback(e => {
+    const { clientX, clientY } = e;
+    const { x, y } = e.target.getBoundingClientRect();
+    const cX = Math.floor((clientX - x) / (scalar * zoom));
+    const cY = Math.floor((clientY - y) / (scalar * zoom));
+    // console.log(box)
+    console.log(cX, cY)
+    // console.dir(e)
+    // alert(`cel\n${cX}\n${cY}\n${zoom}`)
+  }, [scalar, zoom]);
 
 
 
 
-
-
-
-
-
-  // useEffect(() => {
-  //   if (zoomActive && center) {
-  //     panWindow(...center);
-  //     // setCenter(null);
-  //   };
-  // }, [zoomActive, center, setCenter, panWindow]);
-
-
-
+  const baseWidth = useMemo(() => scalar * width, [scalar, width]);
+  const baseHeight = useMemo(() => scalar * height, [scalar, height]);
 
 
 
 
 
   return (
-    <div id="App" className={inputDevice} >
+    <div id="App">
+      {!ready && (
+        <div className="Splash">
+          <h1>Click anywhere to continue.</h1>
+        </div>
+      )}
 
-      <div
-        className="Grid--window"
-        ref={windowRef}
-        style={{ backgroundColor: !zoomActive ? '' : 'blue' }}
-        onTouchStart={handleTouchStart}
-        // onMouseDown={handleDragStart}
-      >
-        <div className="Grid--flex-wrap">
-          <div className="Grid--wrap">
-            <div
-              className="Grid--canvas-wrap"
-              style={{
-                width: scalar * width * zoom + 'px',
-                height: scalar * height * zoom + 'px',
-              }}
-            >
-              <canvas
-                className="Grid"
-                style={{
-                  transform: `scale(${zoom})`,
-                  // imageRendering: '-webkit-optimize-contrast',
-                  imageRendering: 'pixelated',
-                }}
-                ref={canvasRef}
-              />
+      {params && (
+        <div
+          className="Grid--window"
+          ref={windowRef}
+          // onTouchStart={handleTouchStart}
+          // onTouchEnd={handleTouchEnd}
+          // onMouseDown={handleDragStart}
+        >
+          <div className="Grid--flex-wrap">
+            <div className="Grid--wrap">
+              {(initialZoom && (
+                <div
+                  ref={touchRef}
+                  className="Grid--canvas-wrap"
+                  style={{
+                    width: baseWidth * zoom + 'px',
+                    height: baseHeight * zoom + 'px',
+                  }}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <canvas
+                    className="Grid"
+                    ref={canvasRef}
+                    style={{ transform: `scale(${zoom})` }}
+                    onClick={handleClick}
+                  />
+                  <GridLines
+                    width={width}
+                    height={height}
+                    pxWidth={baseWidth * zoom}
+                    pxHeight={baseHeight * zoom}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div id="Anchor">
+      <div id="Anchor"
+
+          style={{ backgroundColor: zoomActive ? 'pink' : 'blue' }}
+      >
         {zoom}<br />
         {center ? `${center[0]}\n${center[1]}` : 'no center'}
       </div>
@@ -469,44 +636,11 @@ export default memo(function App({ mobile = false } = {}) {
   );
 });
 
-      // {!inputDevice && (
-      //   <div className="Welcome">
-      //     <h1>input device is:</h1>
-      //     <h3>{inputDevice}</h3>
-      //   </div>
-      // )}
+
+
+
+
+
 
       //   <h1>{scale}</h1>
-
-
-
-        // <div
-        //   id="Canvas--wrap"
-        //   style={{
-        //     width: width * zoom + 'px',
-        //     height: height * zoom + 'px',
-        //   }}
-        // >
-        //   <canvas
-        //     id="Canvas"
-        //     ref={canvasRef}
-        //     style={{
-        //       // width: width + 'px',
-        //       // height: height + 'px',
-        //       transform: `scale(${zoom})`
-        //     }}
-        //   />
-        // </div>
-
-
-
-
-
-
-
-
-
-
-
-
 
