@@ -25,21 +25,40 @@
   top: 0;
   bottom: 0;
   right: 0;
-  z-index: 200;
+  padding: 5vmin 8vmin;
   display: flex;
   flex-flow: column nowrap;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: space-between;
+  /*background-color: #2a2e2f;*/
+  background-color: rgba(42, 46, 47, .9);
+  transition: background-color 200ms ease-out;
+  opacity: 1;
+  z-index: 5000;
+}
 
-  min-width: 100px;
-  min-height: 300px;
-  padding: 30px;
-  background-color: #2a2e2f;
-  /*background-color: purple;*/
+.Splash>h1 {
+  color: rgba(255, 255, 255, .8);
+  transition: color 200ms ease-out;
+  font-size: 16vmin;
+  /*font-size: calc(16vmin - 10px);*/
+  white-space: nowrap;
+  /*font-size: 10vh;*/
+}
+
+.Splash>h2 {
+  font-size: 14vmin;
 }
 
 
+.Splash.ready {
+  background-color: rgba(255, 255, 255, .7);
+}
 
+
+.Splash.ready>h1 {
+  color: #2a2e2f;
+}
 
 
 
@@ -155,4 +174,59 @@
 }
 
 
+
+
+.Toolbar {
+  position: fixed;
+  left: 0px;
+  bottom: 0px;
+  width: 100%;
+  height: 12vh;
+  min-height: 90px;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 200;
+  pointer-events: none;
+}
+
+
+.Toolbar--toolbox {
+  position: relative;
+  height: 100%;
+  min-height: 90px;
+  width: auto;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  background-color: rgba(26, 30, 31, .95);
+  pointer-events: auto;
+}
+
+.Toolbar--toolbox.left {
+  justify-content: flex-start;
+  border-top-right-radius: calc(.4vh + 2px);
+}
+
+.Toolbar--toolbox.right {
+  justify-content: flex-end;
+  border-top-left-radius: calc(.4vh + 2px);
+}
+
+
+
+
+
+.Tool--wrap {
+  position: relative;
+  height: 100%;
+  padding: 10px;
+  pointer-events: none;
+}
+
+.Tool {
+  width: 100%;
+  height: 100%;
+}
 

@@ -1,28 +1,14 @@
 import React, { memo, useState, useEffect, useMemo, useLayoutEffect, useRef, useCallback } from 'react';
 import './App2.css';
-import { useParams, useTouchDetect, useTouchZoomOverride, useSocket,  } from './hooks';
-import { Grid, Colors, Cursors, Minimap } from './components';
+import { useParams, useTouchDetect, useTouchZoomOverride, useSocket } from './hooks';
+import { Colors, Cursors, Minimap } from './components';
 // import User from './User.jsx';
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function useGrid({ params, canvasRef, oversamplePx = 1 } = {}) {
+function useGrid({ params, activeColor, cursorMode, canvasRef, mapCanvasRef, oversamplePx = 1 } = {}) {
 
   const [redrawGridFlag, setRedrawGridFlag] = useState(false);
   const [redrawCel, setRedrawCel] = useState(null);
@@ -30,6 +16,10 @@ function useGrid({ params, canvasRef, oversamplePx = 1 } = {}) {
   const dataRef = useRef(null);
 
 
+
+///////////////////////////////////////
+// Socket
+///////////////////////////////////////
 
   const handleUpdateGrid = useCallback(newGrid => {
     dataRef.current = newGrid;
@@ -78,13 +68,50 @@ function useGrid({ params, canvasRef, oversamplePx = 1 } = {}) {
   }, [active, post]);
 
 
+
+///////////////////////////////////////
+// Paint click
+///////////////////////////////////////
+
+  const celLookupMatrix = useMemo(() => {
+    if (!params) return null;
+    const { width, height } = params;
+    // const makeId = (c, r) => `c${c}r${r}`;
+    const makeI = (c, r) => (r * width) + c;
+    const makeRow = (r) => (new Array(width).fill(''))
+      .map((d, c) => makeI(c, r));
+    const matrix = (new Array(height).fill(''))
+      .map((d, r) => makeRow(r));
+    return matrix;
+  }, [params]);
+
+
+  const clickCel = useCallback((c, r) => {
+    if (cursorMode !== 'paint' || !~activeColor ) {
+      return null;
+    };
+    const celI = celLookupMatrix[r][c];
+    const cel = dataRef.current[celI];
+    if (!cel) {
+      return null;
+    };
+    cel.current.color = activeColor;
+    setRedrawCel(cel);
+    post('set_cel', { cel_id: cel.cel_id, color: cel.current.color, t: Date.now() });
+  }, [cursorMode, activeColor, dataRef, celLookupMatrix, setRedrawCel, post]);
+
+
+
+///////////////////////////////////////
+// CANVAS
+///////////////////////////////////////
+
   const scalar = useMemo(() => window.devicePixelRatio * oversamplePx, [oversamplePx]);
 
   const canvasColorSquares = useMemo(() => {
     if (!params) return null;
     const { colors } = params;
     const colorSquares = colors.map(d => {
-      const scalar = 1;
       const canvas = document.createElement('canvas');
       canvas.width = 1;
       canvas.height = 1;
@@ -98,100 +125,125 @@ function useGrid({ params, canvasRef, oversamplePx = 1 } = {}) {
 
 
   const ctx = useRef(null);
-  const offCanvas = useRef(null);
+  const mapCtx = useRef(null);
+  const offscreenCanvas = useRef(null);
   const offCtx = useRef(null);
-
-
 
 
   useEffect(() => {   // set the onscreen canvas dimensions to match its display size; get context; same for offscreen canvas
     const canvas = canvasRef.current;
-    if (params && canvas && !ctx.current) {
+    if (params && canvas) {
       const { width, height } = params;
       const targetW = width * scalar;
       const targetH = height * scalar;
-
     // set main canvas
       canvas.width = targetW;
       canvas.height = targetH;
-      // canvas.style.width = targetW / window.devicePixelRatio;
-      // canvas.style.height = targetH / window.devicePixelRatio;
-
-      // canvas.style.width = width + 'px';
-      // canvas.style.height = height + 'px';
-
       ctx.current = canvas.getContext('2d');
       ctx.current.imageSmoothingEnabled = false;
-      // ctx.current.scale(scalar, scalar);
-
     // set offscreen canvas
       if (typeof OffscreenCanvas !== 'undefined') {
-        offCanvas.current = new OffscreenCanvas(targetW, targetH);
+        offscreenCanvas.current = new OffscreenCanvas(targetW, targetH);
       } else {
-        offCanvas.current = document.createElement('canvas');
-        offCanvas.current.width = targetW;
-        offCanvas.current.height = targetH;
+        offscreenCanvas.current = document.createElement('canvas');
+        offscreenCanvas.current.width = targetW;
+        offscreenCanvas.current.height = targetH;
       };
-      offCtx.current = offCanvas.current.getContext('2d');
+      offCtx.current = offscreenCanvas.current.getContext('2d');
       offCtx.current.imageSmoothingEnabled = false;
       offCtx.current.scale(scalar, scalar);
     };
-  }, [params, canvasRef, scalar, ctx, offCanvas, offCtx]);
+  }, [params, canvasRef, mapCanvasRef, scalar, ctx, offscreenCanvas, offCtx]);
 
 
-
-  // const drawCanvas = useCallback(() => {
-  //   const { colors } = params;
-  //   const data = dataRef.current;
-  //   if (!data || !colors) return null;
-
-  //   const cx = ctx.current;
-  //   data.forEach(d => {
-  //     const { row, col, current: { color } } = d;
-  //     cx.fillStyle = colors[color];
-  //     cx.fillRect(col, row, 1, 1);
-  //   });
-  // }, [params, dataRef, ctx]);
+  useEffect(() => {   // set minimap canvas
+    const mapCanvas = mapCanvasRef.current;
+    if (mapCanvas) {
+      const { clientWidth, clientHeight } = mapCanvas;
+      mapCanvas.width = clientWidth * 4;
+      mapCanvas.height = clientHeight * 4;
+      mapCtx.current = mapCanvas.getContext('2d');
+      mapCtx.current.imageSmoothingEnabled = false;
+    };
+  }, [mapCanvasRef, mapCtx]);
 
 
-
-
-  const drawCanvas = useCallback(() => {
-    const data = dataRef.current;
-    const cx = ctx.current;
-    const offCx = offCtx.current;
-
-    if (!data || !cx || !ctx) return null;
+  const drawOffscreen = useCallback((data = []) => {
+    const ctx = offCtx.current;
+    if (!ctx) return null;
 
     data.forEach(d => {
       const { row, col, current: { color } } = d;
-      offCx.drawImage(canvasColorSquares[color], col, row, 1, 1);
+      ctx.drawImage(canvasColorSquares[color], col, row, 1, 1);
     });
-
-    cx.drawImage(offCx.canvas, 0, 0, cx.canvas.width, cx.canvas.height);
-    // cx.drawImage(offCx.canvas, 0, 0);
-
-  }, [dataRef, canvasColorSquares, offCtx, ctx]);
+    return ctx.canvas;
+  }, [offCtx, canvasColorSquares]);
 
 
-  useEffect(() => {   // draw canvas
-    if ((redrawGridFlag || redrawCel) && ctx.current && offCtx.current) {
-      drawCanvas();
+  const drawGrid = useCallback((data  = []) => {
+    const c = ctx.current;
+    const mc = mapCtx.current;
+    if (!c || !mc) return null;
+
+    const offScreen = drawOffscreen(data);
+    c.drawImage(offScreen, 0, 0);
+    mc.drawImage(offScreen, 0, 0, mc.canvas.width, mc.canvas.height);
+    return null;
+  }, [ctx, mapCtx, drawOffscreen]);
+
+
+  const drawCel = useCallback((datum) => {
+    const c = ctx.current;
+    const mc = mapCtx.current;
+    if (!c || !mc) return null;
+
+    const offScreen = drawOffscreen([datum]);
+    c.drawImage(offScreen, 0, 0);
+    mc.drawImage(offScreen, 0, 0, mc.canvas.width, mc.canvas.height);
+    return null;
+  }, [ctx, mapCtx, drawOffscreen]);
+
+
+
+  useEffect(() => {
+    if (redrawGridFlag) {
+      const redrawn = drawGrid(dataRef.current);
+      setRedrawGridFlag(redrawn);
     };
-  }, [redrawGridFlag, redrawCel, ctx, offCtx, drawCanvas]);
+  }, [redrawGridFlag, setRedrawGridFlag, dataRef, drawGrid]);
 
 
-  return { scalar };
+  useEffect(() => {
+    if (redrawCel) {
+      const redrawn = drawCel(redrawCel);
+      setRedrawCel(redrawn);
+    };
+  }, [redrawCel, setRedrawCel, drawCel]);
 
 
+
+  const [gridStatus, setGridStatus] = useState(0);
+
+  useEffect(() => {
+    if (redrawGridFlag && !gridStatus) {
+      setGridStatus(1)
+    };
+  }, [redrawGridFlag, gridStatus, setGridStatus]);
+
+
+
+  return {
+    gridStatus,
+    scalar,
+    clickCel,
+  };
 };
 
 
 
 
 
-const GridLines = memo(({ width, height, pxWidth, pxHeight } = {}) => {
-
+const GridLines = memo(function GridLines({ width = 0, height = 0, pxWidth, pxHeight } = {}) {
   const cols = useMemo(() => {
     return (new Array(1 + width).fill('')).map((d, i) =>
       <path key={`x${i}`} d={`M ${i} ${height} L ${i} 0`} />
@@ -212,6 +264,7 @@ const GridLines = memo(({ width, height, pxWidth, pxHeight } = {}) => {
     return sw;
   }, [width, pxWidth]);
 
+
   if (!strokeWidth) return null;
 
   return (
@@ -227,7 +280,126 @@ const GridLines = memo(({ width, height, pxWidth, pxHeight } = {}) => {
       </g>
     </svg>
   );
-})
+});
+
+
+
+
+
+const Grid = memo(function Grid({
+  windowRef,
+  canvasRef,
+  touchRef,
+  cursorMode,
+  width,
+  height,
+  scalar,
+  zoom,
+  clickCel = null,
+  touchStart = null,
+} = {}) {
+
+
+/*
+    TOUCH EVENTS
+*/
+
+
+
+/*
+    MOUSE EVENTS
+*/
+
+  const [drag, setDrag] = useState(false);
+
+
+  const handleDragStart = useCallback(e => {
+    if (cursorMode === 'paint') {
+      return null;
+    };
+    setDrag(true);
+  }, [cursorMode, setDrag]);
+
+
+  const handleDragEnd = useCallback(e => {
+    setDrag(false);
+  }, [setDrag]);
+
+
+  const handleDragMove = useCallback(e => {
+    const el = windowRef.current;
+    el.scrollBy(-e.movementX, -e.movementY);
+  }, [windowRef]);
+
+
+  useEffect(() => {
+    if (drag) {
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+    } else {
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+    };
+  }, [drag, handleDragMove, handleDragEnd]);
+
+
+  const handleClickCel = useCallback(e => {
+    const { clientX, clientY } = e;
+    const { x, y } = e.target.getBoundingClientRect();
+    const cX = Math.floor((clientX - x) / (scalar * zoom));
+    const cY = Math.floor((clientY - y) / (scalar * zoom));
+    clickCel(cX, cY);
+  }, [scalar, zoom, clickCel]);
+
+
+
+  const baseWidth = useMemo(() => scalar * width, [scalar, width]);
+  const baseHeight = useMemo(() => scalar * height, [scalar, height]);
+  const pxWidth = baseWidth * zoom;
+  const pxHeight = baseHeight * zoom;
+
+  return (
+    <div
+      className="Grid--window"
+      ref={windowRef}
+      onMouseDown={handleDragStart}
+    >
+      <div className="Grid--flex-wrap">
+        <div className="Grid--wrap">
+            <div
+              ref={touchRef}
+              className="Grid--canvas-wrap"
+              style={{
+                width: pxWidth + 'px',
+                height: pxHeight + 'px',
+              }}
+              onTouchStart={touchStart}
+              // onTouchMove={handleTouchMove}
+              // onTouchEnd={handleTouchEnd}
+            >
+              <canvas
+                className="Grid"
+                ref={canvasRef}
+                style={{
+                  transform: `scale(${zoom})`,
+                  cursor: cursorMode === 'paint'
+                    ? 'crosshair'
+                    : (drag ? 'move' : 'grab'),
+                   }}
+                onClick={handleClickCel}
+              />
+              <GridLines
+                width={width}
+                height={height}
+                pxWidth={pxWidth}
+                pxHeight={pxHeight}
+              />
+            </div>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 
 
@@ -235,14 +407,10 @@ const GridLines = memo(({ width, height, pxWidth, pxHeight } = {}) => {
 
 
 
-function useViewport({ width, height, scalar }) {
 
-  // const canvasScalar = window.devicePixelRatio * 4;
 
-  // const clampZoom =
-  // const [minScale, setMinScale] = useState(null);
-  // const [maxScale, setMaxScale] = useState(null);
 
+function useViewportScalar({ width, height, scalar } = {}) {
   const minScale = useMemo(() => {
     const minViewportDimen = .5;
     const minCelX = (window.innerWidth * minViewportDimen) / width;
@@ -251,38 +419,12 @@ function useViewport({ width, height, scalar }) {
     return minCelPx / scalar;
   }, [width, height, scalar]);
 
-
   const maxScale = useMemo(() => {
     const maxCelPx = 100;
     return maxCelPx / scalar;
   }, [scalar]);
 
-
-  // useEffect(() => {
-  //   if (width && height && scalar && (!minScale || !maxScale)) {
-  //   console.log('useviewport --- set Scale')
-  //     const minGridDimen = .5;
-  //     const minGridWidth = window.innerWidth * minGridDimen;
-  //     const minGridHeight = window.innerHeight * minGridDimen;
-
-  //     const minWidthOverBase = minGridWidth / width;
-  //     const minHeightOverBase = minGridHeight / height;
-  //     const minGridScale = Math.min(minWidthOverBase, minHeightOverBase);
-  //     const maxGridScale = 100;
-
-  //     // setMinScale(minGridScale / scalar);
-  //     setMinScale(minGridScale / scalar);
-  //     setMaxScale(maxGridScale / scalar);
-  //   };
-  // }, [minScale, setMinScale, maxScale, setMaxScale, width, height, scalar]);
-
-
-  const clampZoom = useCallback((val) => {
-    // if (!minScale || !maxScale) {
-    //   return null;
-    // };
-    // alert('clampzoom');
-
+  const clampScale = useCallback((val) => {
     let out = val
     if (val < minScale) {
       out = minScale;
@@ -293,40 +435,12 @@ function useViewport({ width, height, scalar }) {
     return out.toFixed(2);
   }, [minScale, maxScale]);
 
-// alert(minScale)
+
   return {
-
-
-    // initialZoom: (window.innerWidth / (width * scalar)) * .5,
-    initialZoom: (minScale + maxScale) / 2,
-    // minScale,
-    clampZoom,
+    initialScale: (minScale + maxScale) / 2,
+    clampScale,
   };
-
-
 };
-
-
-
-
-    // console.log(minGridWidth, minGridHeight)
-    // console.log(minWidthOverBase, minHeightOverBase)
-    // const minDimen = Math.min(window.innerWidth, window.innerHeight);
-    // const maxCels = Math.floor(minDimen / maxCelSize);
-
-
-
-    // const gridSizeAtMax = [width, height].map(d => d * maxCelSize);
-    // console.log('gridSizeAtMax', gridSizeAtMax)
-
-
-
-    // const maxCelsX = Math.floor(window.innerWidth / maxCelSize);
-    // const maxCelsY = Math.floor(window.innerHeight / maxCelSize);
-    // console.log('maxCels', maxCels)
-
-
-
 
 
 
@@ -339,19 +453,30 @@ export default memo(function App({ mobile = false } = {}) {
   const params = useParams();
   const { width, height, colors } = params || {};
 
-  const { ready, hasTouch, hasMouse } = useTouchDetect();
+  const splashRef = useRef(null);
+  const { ready, hasTouch, hasMouse } = useTouchDetect(splashRef);
   useTouchZoomOverride(hasTouch);
 
+
+  const [activeColor, setActiveColor] = useState(6);
+  const [cursorMode, setCursorMode] = useState(null);
   const windowRef = useRef(null);
   const touchRef = useRef(null);
   const canvasRef = useRef(null);
+  const mapCanvasRef = useRef(null);
   const oversamplePx = 4;
-  const { scalar } = useGrid({ params, canvasRef, oversamplePx });
-  const { initialZoom, clampZoom } = useViewport({ width, height, scalar });
+  const { gridStatus, scalar, clickCel } = useGrid({ params, activeColor, cursorMode, canvasRef, mapCanvasRef, oversamplePx });
+  const { initialScale, clampScale } = useViewportScalar({ width, height, scalar });
 
 
-
-  // console.log('render', params, scalar, initialZoom)
+  const handleClickColors = useCallback(e => {
+    const { id } = e.target;
+    if (!id) {
+      return null;
+    };
+    const color = +id.split('-')[1];
+    setActiveColor(color);
+  }, [setActiveColor]);
 
 
   const [zoomActive, setZoomActive] = useState(null);
@@ -359,6 +484,46 @@ export default memo(function App({ mobile = false } = {}) {
   const [center, setCenter] = useState(null);
   const [zoom, setZoom] = useState(null);
   const prevZoom = useRef(zoom);
+
+
+  const storeCenter = useCallback(() => {
+    const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = windowRef.current;
+    const x = (scrollLeft + clientWidth / 2) / scrollWidth;
+    const y = (scrollTop + clientHeight / 2) / scrollHeight;
+    setCenter([x, y]);
+  }, [windowRef, setCenter]);
+
+
+  const updateZoom = useCallback((zoomIn) => {
+    const newZoom = clampScale(zoom * (zoomIn ? 1.2 : 0.8));
+    if (newZoom) {
+      storeCenter();
+      setZoom(newZoom);
+    };
+  }, [zoom, clampScale, storeCenter]);
+
+
+  const handleClickCursors = useCallback(e => {
+    const { id } = e.target;
+    if (!id) {
+      return null;
+    };
+    const [setting, value] = id.split('-');
+    if (setting === 'cursor') {
+      return setCursorMode(value);
+    };
+    if (setting === 'zoom') {
+      return updateZoom(+value);
+    };
+  }, [setCursorMode, updateZoom]);
+
+
+  useEffect(() => {
+    if (ready && !cursorMode) {
+      setCursorMode(hasTouch ? 'paint' : 'drag');
+    };
+  }, [ready, hasTouch, cursorMode, setCursorMode]);
+
 
 
 
@@ -375,32 +540,29 @@ export default memo(function App({ mobile = false } = {}) {
   }, [windowRef]);
 
 
-  const storeCenter = useCallback(() => {
-    const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = windowRef.current;
-    const x = (scrollLeft + clientWidth / 2) / scrollWidth;
-    const y = (scrollTop + clientHeight / 2) / scrollHeight;
-    setCenter([x, y]);
-  }, [windowRef, setCenter]);
+  // const storeCenter = useCallback(() => {
+  //   const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = windowRef.current;
+  //   const x = (scrollLeft + clientWidth / 2) / scrollWidth;
+  //   const y = (scrollTop + clientHeight / 2) / scrollHeight;
+  //   setCenter([x, y]);
+  // }, [windowRef, setCenter]);
 
 
 
   useEffect(() => {
-    if (initialZoom && !zoom) {
+    if (initialScale && !zoom) {
 
       // const paddedRandom = () => (Math.random() / 2) + .2;
       const paddedRandom = () => (Math.random() + 1) * .5;
 
-      setZoom(initialZoom);
+      setZoom(initialScale);
       const zoomTarget = [paddedRandom(), paddedRandom()];
-      console.log(zoomTarget)
+      // console.log(zoomTarget)
       panWindow(...zoomTarget);
     };
-  }, [initialZoom, zoom, setZoom, panWindow])
+  }, [initialScale, zoom, setZoom, panWindow])
 
 
-  // useLayoutEffect(() => {
-
-  // }, [])
 
 
 
@@ -439,18 +601,20 @@ export default memo(function App({ mobile = false } = {}) {
   const makeNewCenter = useCallback((t1, t2) => {
     const el = windowRef.current;
     if (!el) return null;
+
     const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = el;
     const tX = ((t1.clientX + t2.clientX) / 2);
     const tY = ((t1.clientY + t2.clientY) / 2);
-
-
     const x = (scrollLeft + tX) / scrollWidth;
     const y = (scrollTop + tY) / scrollHeight;
-    // alert(t1.target)
-    // console.log()
+
+
+
     setCenter([x, y, t1.clientX, t1.clientY])
-    // alert(x)
   }, [windowRef, setCenter])
+
+
+
 
 
 
@@ -510,21 +674,21 @@ export default memo(function App({ mobile = false } = {}) {
   // }, [windowRef, zoomActive, handleTouchMove, handleTouchEnd]);
 
 
-  // useEffect(() => {
-  //   const el = touchRef.current;
-  //   if (el && zoomActive) {
-  //     el.addEventListener('touchmove', handleTouchMove, { passive: true });
-  //     el.addEventListener('touchend', handleTouchEnd, { passive: true });
-  //     el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
-  //   };
-  //   return () => {
-  //     if (el) {
-  //       el.removeEventListener('touchmove', handleTouchMove);
-  //       el.removeEventListener('touchend', handleTouchEnd);
-  //       el.removeEventListener('touchcancel', handleTouchEnd);
-  //     };
-  //   };
-  // }, [touchRef, zoomActive, handleTouchMove, handleTouchEnd]);
+  useEffect(() => {
+    const el = touchRef.current;
+    if (el && zoomActive) {
+      el.addEventListener('touchmove', handleTouchMove, { passive: true });
+      el.addEventListener('touchend', handleTouchEnd, { passive: true });
+      el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    };
+    return () => {
+      if (el) {
+        el.removeEventListener('touchmove', handleTouchMove);
+        el.removeEventListener('touchend', handleTouchEnd);
+        el.removeEventListener('touchcancel', handleTouchEnd);
+      };
+    };
+  }, [touchRef, zoomActive, handleTouchMove, handleTouchEnd]);
 
 
 
@@ -535,18 +699,19 @@ export default memo(function App({ mobile = false } = {}) {
       setScale(1);
     };
     if (zoomActive) {
-      const newZoom = clampZoom((prevZoom.current * scale));
+      const newZoom = clampScale((prevZoom.current * scale));
       if (newZoom) {
         storeCenter();
         setZoom(newZoom);
-      }
+      };
     };
-  }, [zoomActive, prevZoom, clampZoom, zoom, setZoom, scale, setScale, storeCenter, setCenter]);
+  }, [zoomActive, prevZoom, clampScale, zoom, setZoom, scale, setScale, storeCenter, setCenter]);
 
 
 
   useLayoutEffect(() => {   // recenter window
-    if (zoomActive && center) {
+    // if (zoomActive && center) {
+    if (center) {
       panWindow(...center);
     };
   }, [zoomActive, center, panWindow]);
@@ -555,92 +720,64 @@ export default memo(function App({ mobile = false } = {}) {
 
 
 
-  const handleClick = useCallback(e => {
-    const { clientX, clientY } = e;
-    const { x, y } = e.target.getBoundingClientRect();
-    const cX = Math.floor((clientX - x) / (scalar * zoom));
-    const cY = Math.floor((clientY - y) / (scalar * zoom));
-    // console.log(box)
-    console.log(cX, cY)
-    // console.dir(e)
-    // alert(`cel\n${cX}\n${cY}\n${zoom}`)
-  }, [scalar, zoom]);
-
-
-
-
-  const baseWidth = useMemo(() => scalar * width, [scalar, width]);
-  const baseHeight = useMemo(() => scalar * height, [scalar, height]);
-
-
-
-
-
   return (
     <div id="App">
       {!ready && (
-        <div className="Splash">
-          <h1>Click anywhere to continue.</h1>
-        </div>
-      )}
-
-      {params && (
         <div
-          className="Grid--window"
-          ref={windowRef}
-          // onTouchStart={handleTouchStart}
-          // onTouchEnd={handleTouchEnd}
-          // onMouseDown={handleDragStart}
+          className={'Splash' + (gridStatus ? ' ready' : '')}
+          ref={splashRef}
         >
-          <div className="Grid--flex-wrap">
-            <div className="Grid--wrap">
-              {(initialZoom && (
-                <div
-                  ref={touchRef}
-                  className="Grid--canvas-wrap"
-                  style={{
-                    width: baseWidth * zoom + 'px',
-                    height: baseHeight * zoom + 'px',
-                  }}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                >
-                  <canvas
-                    className="Grid"
-                    ref={canvasRef}
-                    style={{ transform: `scale(${zoom})` }}
-                    onClick={handleClick}
-                  />
-                  <GridLines
-                    width={width}
-                    height={height}
-                    pxWidth={baseWidth * zoom}
-                    pxHeight={baseHeight * zoom}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          <h1>PxCels by<br />Kozak</h1>
+          {gridStatus && (<h2>Click to<br />continue.</h2>)}
         </div>
       )}
 
-      <div id="Anchor"
+      <Grid
+        windowRef={windowRef}
+        canvasRef={canvasRef}
+        touchRef={touchRef}
+        cursorMode={cursorMode}
+        width={width}
+        height={height}
+        scalar={scalar}
+        zoom={zoom}
+        clickCel={clickCel}
+        touchStart={handleTouchStart}
+      />
+      <div className="Toolbar">
+        <div className="Toolbar--toolbox left">
+          <Colors
+            palette={colors}
+            activeColor={activeColor}
+            setColor={handleClickColors}
+          />
+          {hasMouse && (
+            <Cursors
+              cursorMode={cursorMode}
+              click={handleClickCursors}
+            />
+          )}
+        </div>
+        <div className="Toolbar--toolbox right">
+          <Minimap
+            canvasRef={mapCanvasRef}
+            windowRef={windowRef}
+            gridRef={touchRef}
+            pan={panWindow}
+          />
+      {/*
+      */}
+        </div>
 
-          style={{ backgroundColor: zoomActive ? 'pink' : 'blue' }}
-      >
-        {zoom}<br />
-        {center ? `${center[0]}\n${center[1]}` : 'no center'}
       </div>
+
+
+      {/*
+        <User
+          username={username !== 'anonymous' ? username : ''}
+          post={postUsername}
+        />
+      */}
     </div>
   );
 });
-
-
-
-
-
-
-
-      //   <h1>{scale}</h1>
-

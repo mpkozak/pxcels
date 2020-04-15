@@ -8,25 +8,35 @@ import App from './App2.jsx';
 
 
 
-const isMobile = (() => {
-  const uaMatch = navigator.userAgent.match(/Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i);
-  const screenMatch = window.matchMedia('only screen and (max-width: 760px)').matches;
-  if (uaMatch || screenMatch) {
-    return true;
-  };
-  return false;
-})();
-
-
-
-
-
 ReactDOM.render(
   <React.StrictMode>
-    <App mobile={isMobile} />
+    <App />
   </React.StrictMode>,
   document.getElementById('root')
 );
+
+
+
+
+// const isMobile = (() => {
+//   const uaMatch = navigator.userAgent.match(/Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i);
+//   const screenMatch = window.matchMedia('only screen and (max-width: 760px)').matches;
+//   if (uaMatch || screenMatch) {
+//     return true;
+//   };
+//   return false;
+// })();
+
+
+
+
+
+// ReactDOM.render(
+//   <React.StrictMode>
+//     <App mobile={isMobile} />
+//   </React.StrictMode>,
+//   document.getElementById('root')
+// );
 
 
 
