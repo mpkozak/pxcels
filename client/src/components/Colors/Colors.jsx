@@ -7,7 +7,12 @@ import ColorsPalette from './ColorsPalette.jsx';
 
 
 
-export default memo(function Colors({ palette = [], activeColor = 0, setColor = null } = {}) {
+export default memo(function Colors({
+  palette = [],
+  activeColor = 0,
+  clickColor = null,
+} = {}) {
+
   const [showPalette, setShowPalette] = useState('');
 
   const toggleHidePalette = useCallback(() => {
@@ -25,7 +30,7 @@ export default memo(function Colors({ palette = [], activeColor = 0, setColor = 
         <ColorsPalette
           show={showPalette}
           palette={palette}
-          click={setColor}
+          click={clickColor}
           toggleHide={toggleHidePalette}
         />
       </div>

@@ -1,4 +1,4 @@
-.App {
+#App {
   position: absolute;
   left: 0;
   top: 0;
@@ -22,9 +22,32 @@
   flex-flow: row nowrap;
   align-items: center;
   justify-content: space-between;
+  opacity: 1;
+  transition: transform 200ms ease-out 150ms, opacity 200ms ease-out 200ms;
   z-index: 200;
   pointer-events: none;
 }
+
+.Toolbar.hide {
+  opacity: 0;
+  transform: translateY(200%);
+}
+
+
+
+.Toolbar.touch {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  /*background-color: orange;*/
+}
+
+.Toolbar.touch>.Toolbar--toolbox {
+  border-radius: calc(.4vh + 2px);
+  overflow: visible;
+  /*background-color: purple;*/
+}
+
 
 
 .Toolbar--toolbox {
@@ -50,17 +73,117 @@
 }
 
 
+/*
+.Toolbar.touch>.Toolbar--toolbox.left {
+  justify-content: flex-start;
+  border-top-right-radius: calc(.4vh + 2px);
+  border-bottom-right-radius: calc(.4vh + 2px);
+}
+
+.Toolbar.touch>.Toolbar--toolbox.right {
+  justify-content: flex-end;
+  border-top-left-radius: calc(.4vh + 2px);
+  border-bottom-left-radius: calc(.4vh + 2px);
+}*/
+
+
+
+
+.button {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+
+.button--big {
+  width: calc(12vh - 20px);
+  height: calc(12vh - 20px);
+  min-width: 90px;
+  min-height: 90px;
+  /*border-radius: calc(.4vh + 2px);*/
+  border-radius: 5%;
+  box-shadow: 0 0 1.25vmin .25vmin rgba(0, 0, 0, .3);
+}
+
+
+.button--big__mouse {
+  transform: scale(1);
+  transition: transform 20ms ease;
+}
+
+.button--big__mouse:hover {
+  transform: scale(1.01);
+}
+
+.button--big__mouse:active {
+  transform: scale(.99);
+}
+
+
+
+
+
+.button--small {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 5%;
+  background-origin: padding-box;
+  background-position: 50% 50%;
+  background-size: 70%;
+  background-repeat: no-repeat;
+  background-color: rgba(192, 192, 192, .4);
+}
+
+
+.button--small__mouse {
+  transform: scale(1);
+  transition: background-color 40ms ease, transform 40ms ease;
+}
+
+.button--small__mouse.enabled {
+  background-color: rgba(192, 192, 192, .8);
+}
+
+.button--small__mouse:hover {
+  background-color: rgba(192, 192, 192, .8);
+}
+
+.button--small__mouse:active {
+  background-color: rgba(192, 192, 192, .6);
+  transform: scale(.99);
+}
+
+
+
+
+
 
 
 
 .Tool--wrap {
   position: relative;
   height: 100%;
+  /*height: auto;*/
   padding: 10px;
+  /*margin: 10px;*/
   pointer-events: none;
+
+  /*background-color: green;*/
+  /*border: 2px solid yellow;*/
 }
 
 .Tool {
   width: 100%;
   height: 100%;
+  /*border: 5px solid black;*/
+
+  /*background-color: red;*/
 }
+
+
+
+
+
+
+

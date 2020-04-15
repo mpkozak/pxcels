@@ -12,7 +12,7 @@ export default memo(function Cursors({ cursorMode, click = null } = {}) {
           <div
             key={`cursor-${d}`}
             id={`cursor-${d}`}
-            className={`Cursors--button ${d}${cursorMode === d ? ' active' : ''}`}
+            className={`Cursors--button ${d}${cursorMode === d ? ' enabled' : ''}`}
           />
         )}
         <div id="zoom-0" className="Cursors--button zoom-out" />

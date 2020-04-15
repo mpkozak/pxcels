@@ -1,4 +1,10 @@
-import React, { memo, useState, useEffect, useCallback, useRef } from 'react';
+import React, {
+  memo,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
 import './Minimap.css';
 import { parse } from '../../libs';
 
@@ -6,7 +12,13 @@ import { parse } from '../../libs';
 
 
 
-export default memo(function Minimap({ canvasRef = null, windowRef = null, gridRef = null, pan = null } = {}) {
+export default memo(function Minimap({
+  mapCanvasRef = null,
+  windowRef = null,
+  gridRef = null,
+  pan = null,
+} = {}) {
+
   const [bigMap, setBigMap] = useState(false);
   const [panning, setPanning] = useState(false);
   const viewboxRef = useRef(null);
@@ -22,6 +34,8 @@ export default memo(function Minimap({ canvasRef = null, windowRef = null, gridR
   }, [windowRef, gridRef, bigMap, setBigMap]);
 
   const disableMap = useCallback(e => {
+    // e.preventDefault();
+    e.stopPropagation();
     setBigMap(false);
     setPanning(false);
   }, [setBigMap, setPanning]);
@@ -65,11 +79,16 @@ export default memo(function Minimap({ canvasRef = null, windowRef = null, gridR
 
 
   const handlePan = useCallback((x, y) => {
-    const { left, top, width, height } = canvasRef.current.getBoundingClientRect();
+    const {
+      left,
+      top,
+      width,
+      height,
+    } = mapCanvasRef.current.getBoundingClientRect();
     const relX = (x - left) / width;
     const relY = (y - top) / height;
     pan(relX, relY);
-  }, [canvasRef, pan])
+  }, [mapCanvasRef, pan]);
 
 
   const handleMouseMove = useCallback(e => {
@@ -129,8 +148,9 @@ export default memo(function Minimap({ canvasRef = null, windowRef = null, gridR
       <div className="Tool Minimap--inner">
         <div className="Minimap--togglebox" onClick={activateMap}>
           <div className={'Minimap--mapbox' + (!bigMap ? ' small' : '')}>
-            <canvas className="Minimap--map" ref={canvasRef} />
-            <div className="Minimap--overlay"
+            <canvas className="Minimap--map" ref={mapCanvasRef} />
+            <div
+              className="Minimap--overlay"
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onMouseDown={handleMouseDown}

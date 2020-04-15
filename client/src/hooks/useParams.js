@@ -8,7 +8,7 @@ export default function useParams() {
   const [params, setParams] = useState(null);
 
 
-  const parseParams = useCallback((data) => {
+  const parseAndSetParams = useCallback((data) => {
     setParams({
       width: +data.width,
       height: +data.height,
@@ -17,24 +17,25 @@ export default function useParams() {
   }, [setParams]);
 
 
-  const getParams = useCallback(async () => {
+  const fetchParams = useCallback(async () => {
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL || ''}/params`)
+      const url = `${process.env.REACT_APP_API_URL || ''}/params`;
+      const res = await fetch(url)
       const data = await res.json();
-      parseParams(data);
+      parseAndSetParams(data);
     } catch (err) {
       console.error('Unable to fetch params ---', err);
       return null;
     };
-  }, [parseParams]);
+  }, [parseAndSetParams]);
 
 
   useEffect(() => {
     if (!params) {
-      getParams();
+      fetchParams();
     };
-  }, [params, getParams]);
+  }, [params, fetchParams]);
 
 
-  return params;
+  return params || {};
 };

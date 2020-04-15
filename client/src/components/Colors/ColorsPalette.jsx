@@ -1,10 +1,25 @@
-import React, { memo, useState, useEffect, useCallback } from 'react';
+import React, {
+  // Fragment,
+  memo,
+  // useRef,
+  useMemo,
+  useState,
+  useEffect,
+  // useLayoutEffect,
+  useCallback,
+} from 'react';
 
 
 
 
 
-export default memo(function ColorsPalette({ palette = [], show = '', click = null, toggleHide = null } = {}) {
+export default memo(function ColorsPalette({
+  palette = [],
+  show = '',
+  click = null,
+  toggleHide = null
+} = {}) {
+
   const [startX, setStartX] = useState(null);
 
 
@@ -44,6 +59,18 @@ export default memo(function ColorsPalette({ palette = [], show = '', click = nu
 
 
 
+  // const celboxCl = useMemo(() => ())
+
+  const paletteCels = useMemo(() => palette.map((hex, i) =>
+    <div
+      key={hex}
+      id={`color-${i}`}
+      className="Colors--palette-cel"
+      style={{ backgroundColor: hex }}
+    />
+  ), [palette]);
+
+
   return (
     <div className="Colors--palette">
       <div
@@ -57,14 +84,7 @@ export default memo(function ColorsPalette({ palette = [], show = '', click = nu
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {palette.map((hex, i) =>
-          <div
-            key={hex}
-            id={`color-${i}`}
-            className="Colors--palette-cel"
-            style={{ backgroundColor: hex }}
-          />
-        )}
+        {paletteCels}
       </div>
     </div>
   );

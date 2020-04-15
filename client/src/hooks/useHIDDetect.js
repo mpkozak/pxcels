@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 
 
-export default function useTouchDetect(ref) {
+export default function useHIDDetect(ref) {
   // const [touch, setTouch] = useState(localStorage.getItem('touch_device') || false);
   // const [mouse, setMouse] = useState(localStorage.getItem('mouse_device') || false);
   const [touch, setTouch] = useState(false);
@@ -43,7 +43,7 @@ export default function useTouchDetect(ref) {
 
 
   return {
-    ready: mouse || touch,
+    hidStatus: +(mouse || touch),
     hasTouch: touch,
     hasMouse: mouse,
   };

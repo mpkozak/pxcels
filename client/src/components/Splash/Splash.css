@@ -1,0 +1,52 @@
+.Splash {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  padding: 5vmin 8vmin;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  background-color: rgba(255, 255, 255, .7);
+  transition: background-color 500ms ease-in 150ms;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.Splash.loading {
+  background-color: #2a2e2f;
+  /*cursor: progress;*/
+}
+
+
+
+.Splash>h1,
+.Splash>h2 {
+  white-space: nowrap;
+  color: #2a2e2f;
+}
+
+
+
+.Splash>h1 {
+  font-size: 16vmin;
+  transition: color 100ms ease-out 150ms;
+}
+
+.Splash.loading>h1 {
+  color: rgba(255, 255, 255, .8);
+}
+
+
+
+.Splash>h2 {
+  font-size: 14vmin;
+  opacity: 1;
+  transition: opacity 250ms ease-in 250ms;
+}
+
+.Splash.loading>h2 {
+  opacity: 0;
+}
