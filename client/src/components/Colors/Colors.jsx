@@ -19,6 +19,10 @@ export default memo(function Colors({
     setShowPalette(!showPalette);
   }, [showPalette, setShowPalette]);
 
+  const hidePalette = useCallback(() => {
+    setShowPalette(false);
+  }, [setShowPalette]);
+
 
   return (
     <div className="Colors">
@@ -31,7 +35,7 @@ export default memo(function Colors({
         show={showPalette}
         colors={colors}
         clickColor={clickColor}
-        togglePalette={togglePalette}
+        hidePalette={hidePalette}
         hasMouse={hasMouse}
       />
     </div>

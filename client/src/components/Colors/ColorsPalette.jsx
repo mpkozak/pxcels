@@ -14,7 +14,7 @@ export default memo(function ColorsPalette({
   colors = [],
   show = '',
   clickColor = null,
-  togglePalette = null,
+  hidePalette = null,
   hasMouse = false,
 } = {}) {
 
@@ -23,9 +23,9 @@ export default memo(function ColorsPalette({
   const handleClick = useCallback(e => {
     clickColor(e);
     if (!hasMouse && e.target.id) {
-      togglePalette();
+      hidePalette();
     };
-  }, [clickColor, togglePalette, hasMouse]);
+  }, [clickColor, hidePalette, hasMouse]);
 
   const handleTouchStart = useCallback(e => {
     const { targetTouches } = e;
@@ -38,15 +38,19 @@ export default memo(function ColorsPalette({
   }, [setTouchtouchStartX]);
 
   const handleTouchMove = useCallback(e => {
-    e.stopPropagation();
+    // e.stopPropagation();
+      e.preventDefault();
     const { targetTouches } = e;
     const { clientX } = targetTouches[0];
     const deltaX = touchStartX - clientX;
     if (deltaX > 10) {
+      // e.preventDefault();
+    e.stopPropagation();
+
       setTouchtouchStartX(null);
-      togglePalette();
+      hidePalette();
     };
-  }, [touchStartX, setTouchtouchStartX, togglePalette]);
+  }, [touchStartX, setTouchtouchStartX, hidePalette]);
 
 
   useEffect(() => {
@@ -76,7 +80,13 @@ export default memo(function ColorsPalette({
 
 
   return (
-    <div className={'Colors--palette' + (!hasMouse ? ' touch' : '')}>
+    <div
+      className={
+        'Colors--palette'
+        + (!hasMouse ? ' touch' : '')
+        + (show ? ' active' : '')
+      }
+    >
       <div
         className={
           'Colors--palette-celbox'

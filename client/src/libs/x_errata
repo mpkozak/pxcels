@@ -1,0 +1,95 @@
+
+  // useGlobalState,
+// import GlobalStateProvider from './GlobalState.js';
+
+  // const { state } = useGlobalState();
+  // console.log("app test gs", state)
+
+
+
+      {/*
+        <User
+          username={username !== 'anonymous' ? username : ''}
+          post={postUsername}
+        />
+      */}
+
+
+
+
+
+
+
+
+
+
+// function Preload() {
+//   const { state, setState } = useGlobalState();
+
+// // useParams();
+//   const params = useParams();
+
+
+  // const { active, post, username, postUsername } = useSocket(handleSocketMessage);
+
+
+
+
+
+
+
+//   // const {
+//   //   width,
+//   //   height,
+//   //   colors,
+//   // } = state;
+
+
+//   console.log("app test gs", state)
+
+//   const splashRef = useRef(null);
+//   const {
+//     hidStatus,
+//     hasTouch,
+//     hasMouse,
+//   } = useHIDDetect(splashRef);
+
+//   useTouchZoomOverride(hasTouch);
+
+//   return (
+
+
+//   );
+// };
+
+
+
+
+
+
+
+
+
+// export default function AppHOC() {
+
+//   return (
+//     <GlobalStateProvider>
+//       <App />
+//     </GlobalStateProvider>
+//   );
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

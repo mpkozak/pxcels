@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import './App.css';
 import {
-  // useGlobalState,
   useParams,
   useHIDDetect,
   useTouchZoomOverride,
@@ -22,7 +21,6 @@ import {
   Minimap,
   Splash,
 } from './components';
-// import GlobalStateProvider from './GlobalState.js';
 
 
 
@@ -35,9 +33,6 @@ export default memo(function App() {
   const gridCanvasRef = useRef(null);
   const mapCanvasRef = useRef(null);
   const oversamplePx = 4;
-
-  // const { state } = useGlobalState();
-  // console.log("app test gs", state)
 
   const {
     width,
@@ -111,17 +106,6 @@ export default memo(function App() {
     setCenter([x, y]);
   }, [windowRef, setCenter]);
 
-  // const storeDynamicCenter = useCallback((t1, t2) => {
-  //   const el = windowRef.current;
-  //   if (!el) return null;
-  //   const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = el;
-  //   const tX = ((t1.clientX + t2.clientX) / 2);
-  //   const tY = ((t1.clientY + t2.clientY) / 2);
-  //   const x = (scrollLeft + tX) / scrollWidth;
-  //   const y = (scrollTop + tY) / scrollHeight;
-  //   setCenter([x, y, t1.clientX, t1.clientY]);
-  // }, [windowRef, setCenter]);
-
   const updateZoom = useCallback((zoomIn) => {
     const newZoom = clampScale(zoom * (zoomIn ? 1.4 : 0.6));
     if (newZoom) {
@@ -169,8 +153,6 @@ export default memo(function App() {
       panWindow(paddedRandom(), paddedRandom());
     };
   }, [initialScale, zoom, setZoom, panWindow])
-
-
 
 
 
@@ -239,13 +221,24 @@ export default memo(function App() {
 
 
   useLayoutEffect(() => {   // recenter window
-    // if (zoomActive && center) {
     if (center) {
       panWindow(...center);
     };
-  }, [zoomActive, center, panWindow]);
+  }, [center, panWindow]);
 
 
+
+
+  // const storeDynamicCenter = useCallback((t1, t2) => {
+  //   const el = windowRef.current;
+  //   if (!el) return null;
+  //   const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = el;
+  //   const tX = ((t1.clientX + t2.clientX) / 2);
+  //   const tY = ((t1.clientY + t2.clientY) / 2);
+  //   const x = (scrollLeft + tX) / scrollWidth;
+  //   const y = (scrollTop + tY) / scrollHeight;
+  //   setCenter([x, y, t1.clientX, t1.clientY]);
+  // }, [windowRef, setCenter]);
 
   // const handleTouchStart = useCallback(e => {
   //   storeCenter();
@@ -339,7 +332,6 @@ export default memo(function App() {
           />
         </div>
       </div>
-
       <Grid
         windowRef={windowRef}
         touchRef={touchRef}
@@ -351,100 +343,8 @@ export default memo(function App() {
         cursorMode={cursorMode}
         clickCel={clickCel}
         touchStart={handleTouchStart}
+        hasMouse={hasMouse}
       />
-      {/*
-        <User
-          username={username !== 'anonymous' ? username : ''}
-          post={postUsername}
-        />
-      */}
     </div>
   );
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// function Preload() {
-//   const { state, setState } = useGlobalState();
-
-// // useParams();
-//   const params = useParams();
-
-
-  // const { active, post, username, postUsername } = useSocket(handleSocketMessage);
-
-
-
-
-
-
-
-//   // const {
-//   //   width,
-//   //   height,
-//   //   colors,
-//   // } = state;
-
-
-//   console.log("app test gs", state)
-
-//   const splashRef = useRef(null);
-//   const {
-//     hidStatus,
-//     hasTouch,
-//     hasMouse,
-//   } = useHIDDetect(splashRef);
-
-//   useTouchZoomOverride(hasTouch);
-
-//   return (
-
-
-//   );
-// };
-
-
-
-
-
-
-
-
-
-// export default function AppHOC() {
-
-//   return (
-//     <GlobalStateProvider>
-//       <App />
-//     </GlobalStateProvider>
-//   );
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import './Grid.css';
-import GridLines from './GridLines.jsx';
+import { GridLines } from './';
 
 
 
@@ -23,6 +23,7 @@ export default memo(function Grid({
   cursorMode,
   clickCel = null,
   touchStart = null,
+  hasMouse = false,
 } = {}) {
 
   const baseWidth = useMemo(() => scalar * width, [scalar, width]);
@@ -48,7 +49,6 @@ export default memo(function Grid({
 /*
     MOUSE EVENTS
 */
-
 
   const handleDragStart = useCallback(e => {
     if (cursorMode === 'paint') {
@@ -89,8 +89,6 @@ export default memo(function Grid({
   }, [scalar, zoom, clickCel]);
 
 
-
-
   const gridStyle = useMemo(() => ({
     width: pxWidth + 'px',
     height: pxHeight + 'px',
@@ -107,7 +105,7 @@ export default memo(function Grid({
   return (
     <div className="Grid--window"
       ref={windowRef}
-      onMouseDown={handleDragStart}
+      onMouseDown={hasMouse ? handleDragStart : null}
     >
       <div className="Grid--flex-wrap">
         <div className="Grid--flex">
