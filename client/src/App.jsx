@@ -14,6 +14,7 @@ import {
   useGrid,
   useViewportScalar,
 } from './hooks';
+import { parse } from './libs';
 import {
   Colors,
   Cursors,
@@ -90,11 +91,8 @@ export default memo(function App() {
       el.scrollTo(scrollLeft, scrollTop);
       const targetX = scrollWidth * x - (clientWidth / 2);
       const targetY = scrollHeight * y - (clientHeight / 2);
-      if (targetX >= scrollWidth || targetY >= scrollHeight || targetX <= 0 || targetY <= 0) {
-        return null;
-      };
-      const deltaX = targetX - scrollLeft;
-      const deltaY = targetY - scrollTop;
+      const deltaX = parse.clamp(targetX, [0, scrollWidth]) - scrollLeft;
+      const deltaY = parse.clamp(targetY, [0, scrollHeight]) - scrollTop;
       el.scrollBy(deltaX, deltaY);
     };
   }, [windowRef]);

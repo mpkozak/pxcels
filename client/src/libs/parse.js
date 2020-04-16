@@ -31,9 +31,20 @@ function parsePct(val) {
 
 
 
+function clampToRange(val, [min, max]) {
+  if (val < min) {
+    return min;
+  };
+  if (val > max) {
+    return max;
+  };
+  return val;
+};
+
 
 
 export default Object.freeze({
   time: parseTime,
   pct: parsePct,
+  clamp: clampToRange,
 });
