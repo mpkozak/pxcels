@@ -4,13 +4,23 @@ import React, { memo } from 'react';
 
 
 
-export default memo(function ColorsCurrent({ color = '#000', click = null } = {}) {
+export default memo(function ColorsCurrent({
+  color = '#000',
+  togglePalette = null,
+  hasMouse = false,
+} = {}) {
+
+
   return (
     <div
-      className="Colors--current"
-      // className="button button--big button--big__mouse"
+      className={
+        'Colors--current'
+        + ' button'
+        + ' button--big'
+        + (hasMouse ? ' button--big__mouse' : '')
+      }
       style={{ backgroundColor: color }}
-      onClick={click}
+      onClick={togglePalette}
     />
   );
 });

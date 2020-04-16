@@ -4,7 +4,14 @@ import { useMemo, useCallback } from 'react';
 
 
 
-export default function useViewportScalar({ width, height, scalar } = {}) {
+export default function useViewportScalar({
+  width,
+  height,
+  oversamplePx,
+} = {}) {
+
+  const scalar = useMemo(() => window.devicePixelRatio * oversamplePx, [oversamplePx]);
+
   const minScale = useMemo(() => {
     const minViewportDimen = .5;
     const minCelX = (window.innerWidth * minViewportDimen) / width;
@@ -31,6 +38,7 @@ export default function useViewportScalar({ width, height, scalar } = {}) {
 
 
   return {
+    scalar,
     initialScale: (minScale + maxScale) / 2,
     clampScale,
   };

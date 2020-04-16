@@ -1,1 +1,1 @@
-export { default as Minimap } from './Minimap.jsx';
+export { default } from './Minimap.jsx';

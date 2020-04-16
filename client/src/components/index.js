@@ -1,5 +1,5 @@
-export { Grid } from './Grid';
-export { Colors } from './Colors';
-export { Cursors } from './Cursors';
-export { Minimap } from './Minimap';
-export { Splash } from './Splash';
+export { default as Grid } from './Grid';
+export { default as Colors } from './Colors';
+export { default as Cursors } from './Cursors';
+export { default as Minimap } from './Minimap';
+export { default as Splash } from './Splash';

@@ -1,23 +1,42 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import './Cursors.css';
 
 
 
-export default memo(function Cursors({ cursorMode, click = null } = {}) {
+
+
+export default memo(function Cursors({
+  cursorMode,
+  clickCursor = null,
+  hasMouse = false,
+} = {}) {
+
+  const cursorButtons = useMemo(() => {
+    return [
+      ['cursor-paint', cursorMode === 'paint'],
+      ['cursor-drag', cursorMode === 'drag'],
+      ['zoom-0'],
+      ['zoom-1'],
+    ];
+  }, [cursorMode]);
+
 
   return (
-    <div className="Tool--wrap Cursors" onClick={click}>
-      <div className="Tool Cursors--inner">
-        {['paint', 'drag'].map(d =>
-          <div
-            key={`cursor-${d}`}
-            id={`cursor-${d}`}
-            className={`Cursors--button ${d}${cursorMode === d ? ' enabled' : ''}`}
-          />
-        )}
-        <div id="zoom-0" className="Cursors--button zoom-out" />
-        <div id="zoom-1" className="Cursors--button zoom-in" />
-      </div>
+    <div className="Cursors" onClick={clickCursor}>
+      {cursorButtons.map(([id, enabled]) =>
+        <div
+          key={id}
+          id={id}
+          className={
+            `Cursors--button ${id}`
+            + ' button'
+            + ' button--small'
+            + ' button--small-icon'
+            + (hasMouse ? ' button--small-icon__mouse' : '')
+            + (enabled ? ' enabled' : '')
+          }
+        />
+      )}
     </div>
   );
 });

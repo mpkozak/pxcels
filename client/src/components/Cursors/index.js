@@ -1,1 +1,1 @@
-export { default as Cursors } from './Cursors.jsx';
+export { default } from './Cursors.jsx';

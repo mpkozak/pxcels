@@ -17,7 +17,7 @@
 
 .Splash.loading {
   background-color: #2a2e2f;
-  /*cursor: progress;*/
+  cursor: default;
 }
 
 
@@ -42,7 +42,7 @@
 
 
 .Splash>h2 {
-  font-size: 14vmin;
+  font-size: 12vmin;
   opacity: 1;
   transition: opacity 250ms ease-in 250ms;
 }

@@ -15,14 +15,13 @@ export default function useGrid({
   width,
   height,
   colors,
+  scalar,
   gridCanvasRef,
   mapCanvasRef,
   oversamplePx = 1,
   cursorMode,
   activeColor,
 } = {}) {
-
-  const scalar = useMemo(() => window.devicePixelRatio * oversamplePx, [oversamplePx]);
 
   const dataRef = useRef(null);
   const gridCtx = useRef(null);

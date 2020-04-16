@@ -1,8 +1,6 @@
 import React, {
-  // Fragment,
   memo,
   useRef,
-  // useMemo,
   useState,
   useEffect,
   useLayoutEffect,
@@ -10,6 +8,7 @@ import React, {
 } from 'react';
 import './App.css';
 import {
+  // useGlobalState,
   useParams,
   useHIDDetect,
   useTouchZoomOverride,
@@ -23,6 +22,7 @@ import {
   Minimap,
   Splash,
 } from './components';
+// import GlobalStateProvider from './GlobalState.js';
 
 
 
@@ -35,6 +35,9 @@ export default memo(function App() {
   const gridCanvasRef = useRef(null);
   const mapCanvasRef = useRef(null);
   const oversamplePx = 4;
+
+  // const { state } = useGlobalState();
+  // console.log("app test gs", state)
 
   const {
     width,
@@ -50,6 +53,17 @@ export default memo(function App() {
 
   useTouchZoomOverride(hasTouch);
 
+  const {
+    scalar,
+    initialScale,
+    clampScale,
+  } = useViewportScalar({
+        width,
+        height,
+        oversamplePx,
+      });
+
+
   const [cursorMode, setCursorMode] = useState(null);
   const [activeColor, setActiveColor] = useState(6);
   const [zoomActive, setZoomActive] = useState(null);
@@ -60,12 +74,12 @@ export default memo(function App() {
 
   const {
     gridStatus,
-    scalar,
-    clickCel
+    clickCel,
   } = useGrid({
         width,
         height,
         colors,
+        scalar,
         gridCanvasRef,
         mapCanvasRef,
         oversamplePx,
@@ -73,27 +87,22 @@ export default memo(function App() {
         activeColor,
       });
 
-  const {
-    initialScale,
-    clampScale,
-  } = useViewportScalar({
-        width,
-        height,
-        scalar,
-      });
 
-
-  const handleClickColors = useCallback(e => {
-    const { id } = e.target;
-    if (!id) {
-      return null;
+  const panWindow = useCallback((x, y) => {
+    const el = windowRef.current;
+    if (el) {
+      const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = el;
+      el.scrollTo(scrollLeft, scrollTop);
+      const targetX = scrollWidth * x - (clientWidth / 2);
+      const targetY = scrollHeight * y - (clientHeight / 2);
+      if (targetX >= scrollWidth || targetY >= scrollHeight || targetX <= 0 || targetY <= 0) {
+        return null;
+      };
+      const deltaX = targetX - scrollLeft;
+      const deltaY = targetY - scrollTop;
+      el.scrollBy(deltaX, deltaY);
     };
-    const color = +id.split('-')[1];
-    setActiveColor(color);
-  }, [setActiveColor]);
-
-
-
+  }, [windowRef]);
 
   const storeCenter = useCallback(() => {
     const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = windowRef.current;
@@ -102,9 +111,19 @@ export default memo(function App() {
     setCenter([x, y]);
   }, [windowRef, setCenter]);
 
+  // const storeDynamicCenter = useCallback((t1, t2) => {
+  //   const el = windowRef.current;
+  //   if (!el) return null;
+  //   const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = el;
+  //   const tX = ((t1.clientX + t2.clientX) / 2);
+  //   const tY = ((t1.clientY + t2.clientY) / 2);
+  //   const x = (scrollLeft + tX) / scrollWidth;
+  //   const y = (scrollTop + tY) / scrollHeight;
+  //   setCenter([x, y, t1.clientX, t1.clientY]);
+  // }, [windowRef, setCenter]);
 
   const updateZoom = useCallback((zoomIn) => {
-    const newZoom = clampScale(zoom * (zoomIn ? 1.2 : 0.8));
+    const newZoom = clampScale(zoom * (zoomIn ? 1.4 : 0.6));
     if (newZoom) {
       storeCenter();
       setZoom(newZoom);
@@ -112,11 +131,16 @@ export default memo(function App() {
   }, [zoom, clampScale, storeCenter]);
 
 
+  const handleClickColors = useCallback(e => {
+    const { id } = e.target;
+    if (!id) return null;
+    const color = +id.split('-')[1];
+    setActiveColor(color);
+  }, [setActiveColor]);
+
   const handleClickCursors = useCallback(e => {
     const { id } = e.target;
-    if (!id) {
-      return null;
-    };
+    if (!id) return null;
     const [setting, value] = id.split('-');
     if (setting === 'cursor') {
       return setCursorMode(value);
@@ -127,101 +151,24 @@ export default memo(function App() {
   }, [setCursorMode, updateZoom]);
 
 
-  useEffect(() => {
+  useEffect(() => {   // set initial cursor mode
+    // console.log('App ef-1')
     if (hidStatus && !cursorMode) {
-      setCursorMode(hasTouch ? 'paint' : 'drag');
+      // console.log('App ef-1 --- set initial cursor mode')
+      setCursorMode(hasMouse ? 'drag' : 'paint');
     };
-  }, [hidStatus, hasTouch, cursorMode, setCursorMode]);
+  }, [hidStatus, cursorMode, setCursorMode, hasMouse]);
 
 
-
-
-  const panWindow = useCallback((x, y) => {
-    const el = windowRef.current;
-    if (el) {
-      const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = el;
-      const targetX = scrollWidth * x - (clientWidth / 2);
-      const targetY = scrollHeight * y - (clientHeight / 2);
-      const deltaX = targetX - scrollLeft;
-      const deltaY = targetY - scrollTop;
-      el.scrollBy(deltaX, deltaY);
-    };
-  }, [windowRef]);
-
-
-  // const storeCenter = useCallback(() => {
-  //   const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = windowRef.current;
-  //   const x = (scrollLeft + clientWidth / 2) / scrollWidth;
-  //   const y = (scrollTop + clientHeight / 2) / scrollHeight;
-  //   setCenter([x, y]);
-  // }, [windowRef, setCenter]);
-
-
-
-  useEffect(() => {
+  useEffect(() => {   // set initial zoom and scroll to random spot
+    // console.log('App ef-2')
     if (initialScale && !zoom) {
-
-      // const paddedRandom = () => (Math.random() / 2) + .2;
+      // console.log('App ef-2 --- set initial zoom and scroll to random spot')
       const paddedRandom = () => (Math.random() + 1) * .5;
-
       setZoom(initialScale);
-      const zoomTarget = [paddedRandom(), paddedRandom()];
-      // console.log(zoomTarget)
-      panWindow(...zoomTarget);
+      panWindow(paddedRandom(), paddedRandom());
     };
   }, [initialScale, zoom, setZoom, panWindow])
-
-
-
-
-
-
-
-  const __handleTouchStart = useCallback(e => {
-    const { targetTouches } = e;
-    if (targetTouches.length !== 2) {
-      return setZoomActive(false);
-    };
-    e.preventDefault();
-    prevZoom.current = zoom;
-
-    storeCenter();
-    setZoomActive(true);
-  }, [setZoomActive, prevZoom, zoom, storeCenter]);
-
-
-  const __handleTouchMove = useCallback(e => {
-    if (!zoomActive) {
-      return null;
-    };
-    const { scale, targetTouches } = e;
-    if (!scale || targetTouches.length !== 2) {
-      e.stopPropagation();
-      return setZoomActive(false);
-    };
-    e.preventDefault();
-    setScale(scale);
-  }, [zoomActive, setZoomActive, setScale]);
-
-
-
-
-
-  const makeNewCenter = useCallback((t1, t2) => {
-    const el = windowRef.current;
-    if (!el) return null;
-
-    const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = el;
-    const tX = ((t1.clientX + t2.clientX) / 2);
-    const tY = ((t1.clientY + t2.clientY) / 2);
-    const x = (scrollLeft + tX) / scrollWidth;
-    const y = (scrollTop + tY) / scrollHeight;
-
-
-
-    setCenter([x, y, t1.clientX, t1.clientY])
-  }, [windowRef, setCenter])
-
 
 
 
@@ -234,53 +181,28 @@ export default memo(function App() {
     };
     e.preventDefault();
     prevZoom.current = zoom;
-
-
-    makeNewCenter(targetTouches[0], targetTouches[1]);
-    // storeCenter();
+    storeCenter();
     setZoomActive(true);
-  }, [setZoomActive, prevZoom, zoom, makeNewCenter]);
-
-
+  }, [setZoomActive, prevZoom, zoom, storeCenter]);
 
   const handleTouchMove = useCallback(e => {
     const { scale, targetTouches } = e;
     if (!scale || targetTouches.length !== 2) {
-      e.stopPropagation();
+      // e.stopPropagation();
       return setZoomActive(false);
     };
     if (!zoomActive) {
       return null;
     };
     e.preventDefault();
-    // setZoomActive(true)
+    storeCenter();
     setScale(scale);
-  }, [zoomActive, setZoomActive, setScale]);
-
+  }, [zoomActive, setZoomActive, storeCenter, setScale]);
 
   const handleTouchEnd = useCallback(e => {
-    const { touches } = e;
     setCenter(null);
-    setZoomActive(touches.length === 2);
+    setZoomActive(false);
   }, [setZoomActive, setCenter]);
-
-
-
-  // useEffect(() => {
-  //   const el = windowRef.current;
-  //   if (el && zoomActive) {
-  //     el.addEventListener('touchmove', handleTouchMove, { passive: true });
-  //     el.addEventListener('touchend', handleTouchEnd, { passive: true });
-  //     el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
-  //   };
-  //   return () => {
-  //     if (el) {
-  //       el.removeEventListener('touchmove', handleTouchMove);
-  //       el.removeEventListener('touchend', handleTouchEnd);
-  //       el.removeEventListener('touchcancel', handleTouchEnd);
-  //     };
-  //   };
-  // }, [windowRef, zoomActive, handleTouchMove, handleTouchEnd]);
 
 
   useEffect(() => {
@@ -300,7 +222,6 @@ export default memo(function App() {
   }, [touchRef, zoomActive, handleTouchMove, handleTouchEnd]);
 
 
-
   useEffect(() => {
     if (!zoomActive) {
       prevZoom.current = zoom;
@@ -317,7 +238,6 @@ export default memo(function App() {
   }, [zoomActive, prevZoom, clampScale, zoom, setZoom, scale, setScale, storeCenter, setCenter]);
 
 
-
   useLayoutEffect(() => {   // recenter window
     // if (zoomActive && center) {
     if (center) {
@@ -326,6 +246,56 @@ export default memo(function App() {
   }, [zoomActive, center, panWindow]);
 
 
+
+  // const handleTouchStart = useCallback(e => {
+  //   storeCenter();
+  //   prevZoom.current = zoom;
+  // }, [storeCenter, prevZoom, zoom]);
+
+  // const handleTouchMove = useCallback(e => {
+  //   const { scale, targetTouches} = e;
+  //   if (!scale || targetTouches.length !== 2) return null;
+  //   setScale(scale);
+  // }, [setScale]);
+
+  // const handleTouchEnd = useCallback(e => {
+  //   setScale(null);
+  //   setCenter(null);
+  // }, [setScale, setCenter]);
+
+  // useEffect(() => {
+  //   const el = touchRef.current;
+  //   if (el && scale) {
+  //     el.addEventListener('touchmove', handleTouchMove, { passive: true });
+  //     el.addEventListener('touchend', handleTouchEnd, { passive: true });
+  //     el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+  //   };
+  //   return () => {
+  //     if (el) {
+  //       el.removeEventListener('touchmove', handleTouchMove);
+  //       el.removeEventListener('touchend', handleTouchEnd);
+  //       el.removeEventListener('touchcancel', handleTouchEnd);
+  //     };
+  //   };
+  // }, [touchRef, scale, handleTouchMove, handleTouchEnd]);
+
+  // useEffect(() => {
+  //   if (scale) {
+  //     const newZoom = clampScale((prevZoom.current * scale));
+  //     setZoom(newZoom);
+  //     storeCenter();
+  //   } else {
+  //     prevZoom.current = zoom;
+  //     setCenter(null);
+  //     setScale(1);
+  //   }
+  // }, [scale, clampScale, prevZoom, zoom, setZoom, storeCenter, setCenter, setScale]);
+
+  // useLayoutEffect(() => {   // recenter window
+  //   if (center) {
+  //     panWindow(...center);
+  //   };
+  // }, [center, panWindow]);
 
 
 
@@ -337,18 +307,25 @@ export default memo(function App() {
           gridStatus={gridStatus}
         />
       )}
-
-      <div className={'Toolbar' + (!hidStatus ? ' hide' : '') + (hasTouch ? ' touch' : '')}>
+      <div
+        className={
+          'Toolbar'
+          + (!hidStatus ? ' hide' : '')
+          + (hasTouch ? ' touch' : '')
+        }
+      >
         <div className="Toolbar--toolbox left">
           <Colors
-            palette={colors}
+            colors={colors}
             activeColor={activeColor}
             clickColor={handleClickColors}
+            hasMouse={hasMouse}
           />
           {hasMouse && (
             <Cursors
               cursorMode={cursorMode}
-              click={handleClickCursors}
+              clickCursor={handleClickCursors}
+              hasMouse={hasMouse}
             />
           )}
         </div>
@@ -358,6 +335,7 @@ export default memo(function App() {
             gridRef={touchRef}
             mapCanvasRef={mapCanvasRef}
             pan={panWindow}
+            hasMouse={hasMouse}
           />
         </div>
       </div>
@@ -374,11 +352,6 @@ export default memo(function App() {
         clickCel={clickCel}
         touchStart={handleTouchStart}
       />
-
-
-      {/*
-      */}
-
       {/*
         <User
           username={username !== 'anonymous' ? username : ''}
@@ -388,3 +361,90 @@ export default memo(function App() {
     </div>
   );
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// function Preload() {
+//   const { state, setState } = useGlobalState();
+
+// // useParams();
+//   const params = useParams();
+
+
+  // const { active, post, username, postUsername } = useSocket(handleSocketMessage);
+
+
+
+
+
+
+
+//   // const {
+//   //   width,
+//   //   height,
+//   //   colors,
+//   // } = state;
+
+
+//   console.log("app test gs", state)
+
+//   const splashRef = useRef(null);
+//   const {
+//     hidStatus,
+//     hasTouch,
+//     hasMouse,
+//   } = useHIDDetect(splashRef);
+
+//   useTouchZoomOverride(hasTouch);
+
+//   return (
+
+
+//   );
+// };
+
+
+
+
+
+
+
+
+
+// export default function AppHOC() {
+
+//   return (
+//     <GlobalStateProvider>
+//       <App />
+//     </GlobalStateProvider>
+//   );
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

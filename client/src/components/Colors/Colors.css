@@ -1,10 +1,4 @@
 .Colors {
-  width: 12vh;
-  min-width: 90px;
-}
-
-
-.Colors--inner {
 
 }
 
@@ -13,23 +7,7 @@
 
 
 .Colors--current {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 5%;
-  box-shadow: 0 0 1.25vmin .25vmin rgba(0, 0, 0, .3);
-  transform: scale(1);
-  transition: transform 20ms ease;
-  pointer-events: auto;
-  cursor: pointer;
-}
 
-.Colors--current:hover {
-  transform: scale(1.01);
-}
-
-.Colors--current:active {
-  transform: scale(.99);
 }
 
 
@@ -40,17 +18,18 @@
   position: absolute;
   left: 0%;
   bottom: 100%;
-  width: calc(150% - 7.5px);
-  height: calc(450% - 52.5px);
   padding: 5px;
-  /*overflow: hidden;*/
+  overflow: visible;
   pointer-events: none;
 }
 
+.Colors--palette.touch {
+  padding-left: 0px;
+}
+
+
 
 .Colors--palette-celbox {
-  width: 100%;
-  height: 100%;
   padding: 5px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -61,7 +40,7 @@
   opacity: 1;
   transform: translateX(0%);
   animation-name: bounce-in;
-  animation-duration: 400ms;
+  animation-duration: 350ms;
   animation-iteration-count: 1;
   animation-timing-function: ease-out;
   animation-fill-mode: forwards;
@@ -72,54 +51,19 @@
   opacity: 0;
   transform: translateX(-100%);
   animation-name: bounce-out;
-  animation-duration: 400ms;
+  animation-duration: 350ms;
   animation-iteration-count: 1;
   animation-timing-function: ease-in;
   animation-fill-mode: backwards;
 }
 
-.Colors--palette-celbox.notready {;
+.Colors--palette-celbox.notready {
   opacity: 0;
   transform: translateX(-100%);
   animation-iteration-count: 0;
 }
 
 
-.Colors--palette-cel {
-  border-radius: 5%;
-  opacity: 1;
-  transform: scale(1);
-  transition: opacity 200ms ease-out, transform 10ms ease-out;
-  cursor: pointer;
-}
-
-.Colors--palette-cel:hover {
-  opacity: .9;
-  transform: scale(1);
-  transition: opacity 50ms ease-out, transform 10ms ease-out;
-}
-
-.Colors--palette-cel:active {
-  opacity: .9;
-  transform: scale(.97);
-  transition: opacity 50ms ease, transform 20ms ease-in;
-}
-
-
-
-
-
-@media only screen and (max-height: 500px) {
-  .Colors--palette {
-    width: calc(450% - 52.5px);
-    height: calc(150% - 7.5px);
-  }
-
-  .Colors--palette-celbox {
-    grid-template-columns: repeat(9, 1fr);
-    grid-auto-rows: 1fr;
-  }
-}
 
 
 
@@ -135,4 +79,15 @@
   60%  { transform: translateX(-100%); opacity: .5 }
   70%  { transform: translateX(-99%);  opacity: .2;}
   100% { transform: translateX(-100%); opacity: 0;}
+}
+
+
+
+
+
+@media only screen and (max-height: 500px) {
+  .Colors--palette-celbox {
+    grid-template-columns: repeat(9, 1fr);
+    grid-auto-rows: 1fr;
+  }
 }

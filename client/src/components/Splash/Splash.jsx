@@ -1,13 +1,4 @@
-import React, {
-  // Fragment,
-  memo,
-  // useRef,
-  // useMemo,
-  // useState,
-  // useEffect,
-  // useLayoutEffect,
-  // useCallback,
-} from 'react';
+import React, { memo } from 'react';
 import './Splash.css'
 
 
@@ -20,10 +11,12 @@ export default memo(function Splash({
 } = {}) {
 
 
-
   return (
     <div
-      className={'Splash' + (!gridStatus ? ' loading' : '')}
+      className={
+        'Splash'
+        + (!gridStatus ? ' loading' : '')
+      }
       ref={splashRef}
     >
       <h1>PxCels by<br />Kozak</h1>
@@ -31,6 +24,3 @@ export default memo(function Splash({
     </div>
   );
 });
-
-
-      // {gridStatus && ()}

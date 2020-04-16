@@ -1,39 +1,39 @@
 import React, { memo, useState, useCallback } from 'react';
 import './Colors.css';
-import ColorsCurrent from './ColorsCurrent.jsx';
-import ColorsPalette from './ColorsPalette.jsx';
+import { ColorsCurrent, ColorsPalette } from './';
 
 
 
 
 
 export default memo(function Colors({
-  palette = [],
+  colors = [],
   activeColor = 0,
   clickColor = null,
+  hasMouse = false,
 } = {}) {
 
   const [showPalette, setShowPalette] = useState('');
 
-  const toggleHidePalette = useCallback(() => {
+  const togglePalette = useCallback(() => {
     setShowPalette(!showPalette);
   }, [showPalette, setShowPalette]);
 
 
   return (
-    <div className="Tool--wrap Colors">
-      <div className="Tool Colors--inner">
-        <ColorsCurrent
-          color={palette[activeColor]}
-          click={toggleHidePalette}
-        />
-        <ColorsPalette
-          show={showPalette}
-          palette={palette}
-          click={clickColor}
-          toggleHide={toggleHidePalette}
-        />
-      </div>
+    <div className="Colors">
+      <ColorsCurrent
+        color={colors[activeColor]}
+        togglePalette={togglePalette}
+        hasMouse={hasMouse}
+      />
+      <ColorsPalette
+        show={showPalette}
+        colors={colors}
+        clickColor={clickColor}
+        togglePalette={togglePalette}
+        hasMouse={hasMouse}
+      />
     </div>
   );
 });

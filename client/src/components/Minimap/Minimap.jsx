@@ -1,9 +1,9 @@
 import React, {
   memo,
+  useRef,
   useState,
   useEffect,
   useCallback,
-  useRef,
 } from 'react';
 import './Minimap.css';
 import { parse } from '../../libs';
@@ -17,6 +17,7 @@ export default memo(function Minimap({
   windowRef = null,
   gridRef = null,
   pan = null,
+  hasMouse = false,
 } = {}) {
 
   const [bigMap, setBigMap] = useState(false);
@@ -34,11 +35,14 @@ export default memo(function Minimap({
   }, [windowRef, gridRef, bigMap, setBigMap]);
 
   const disableMap = useCallback(e => {
-    // e.preventDefault();
     e.stopPropagation();
     setBigMap(false);
     setPanning(false);
   }, [setBigMap, setPanning]);
+
+  const disablePanning = useCallback(e => {
+    setPanning(false);
+  }, [setPanning]);
 
 
   const positionViewbox = useCallback(() => {
@@ -117,11 +121,6 @@ export default memo(function Minimap({
   }, [setPanning, handlePan]);
 
 
-  const disablePanning = useCallback(e => {
-    setPanning(false);
-  }, [setPanning]);
-
-
   useEffect(() => {
     if (panning) {
       window.addEventListener('mousemove', handleMouseMove, { passive: true });
@@ -138,25 +137,31 @@ export default memo(function Minimap({
   }, [panning, handleMouseMove, disablePanning]);
 
 
-
   return (
-    <div className="Tool--wrap Minimap">
-      <div
-        className={'Minimap--interceptor' + (!bigMap ? ' disabled' : '')}
+    <div className="Minimap">
+      <div className={'Minimap--interceptor' + (bigMap ? ' active' : '')}
         onClick={disableMap}
       />
-      <div className="Tool Minimap--inner">
-        <div className="Minimap--togglebox" onClick={activateMap}>
-          <div className={'Minimap--mapbox' + (!bigMap ? ' small' : '')}>
-            <canvas className="Minimap--map" ref={mapCanvasRef} />
-            <div
-              className="Minimap--overlay"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onMouseDown={handleMouseDown}
-            >
-              <div className="Minimap--overlay-viewbox" ref={viewboxRef} />
-            </div>
+      <div
+        className={
+          'Minimap--toggle'
+          + ' button'
+          + ' button--big'
+          + (hasMouse ? ' Minimap--toggle__mouse' : '')
+          + (!bigMap ? ' small' : '')
+        }
+        onClick={activateMap}
+      >
+        <div className={'Minimap--map' + (!bigMap ? ' small' : '')}>
+          <canvas className="Minimap--map-layer Minimap--canvas"
+            ref={mapCanvasRef}
+          />
+          <div className="Minimap--map-layer Minimap--overlay"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onMouseDown={handleMouseDown}
+          >
+            <div className="Minimap--overlay-viewbox" ref={viewboxRef} />
           </div>
         </div>
       </div>
