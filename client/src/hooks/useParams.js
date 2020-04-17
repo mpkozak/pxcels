@@ -1,20 +1,28 @@
-import { useState, useEffect, useCallback } from 'react';
+import {
+  useRef,
+  useEffect,
+  useCallback,
+} from 'react';
+import { useGlobalState } from './';
 
 
 
 
 
 export default function useParams() {
-  const [params, setParams] = useState(null);
+  // console.log('useParams ran')
+
+  const [state, setState] = useGlobalState();
+  const activeReq = useRef(false);
 
 
   const parseAndSetParams = useCallback((data) => {
-    setParams({
+    setState('params', {
       width: +data.width,
       height: +data.height,
       colors: data.colors,
     });
-  }, [setParams]);
+  }, [setState]);
 
 
   const fetchParams = useCallback(async () => {
@@ -26,16 +34,19 @@ export default function useParams() {
     } catch (err) {
       console.error('Unable to fetch params ---', err);
       return null;
+    } finally {
+      activeReq.current = false;
     };
-  }, [parseAndSetParams]);
+  }, [parseAndSetParams, activeReq]);
 
 
   useEffect(() => {
-    if (!params) {
+    if (!state.width && !activeReq.current) {
+      activeReq.current = true;
       fetchParams();
     };
-  }, [params, fetchParams]);
+  }, [state, fetchParams]);
 
 
-  return params || {};
+  return null;
 };

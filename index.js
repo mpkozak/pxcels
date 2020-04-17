@@ -44,70 +44,77 @@ const socketServer = new WebSocket.Server({
 });
 
 
-function socketDispatchAll(type, payload) {
+function socketDispatchAll(action, payload) {
   socketServer.clients.forEach(socket => {
     if (socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type, payload }));
+      socket.send(JSON.stringify({ action, payload }));
     };
   });
 };
 
 
-function socketPostMessage(socket) {
-  return (type, payload) => socket.send(JSON.stringify({ type, payload }));
-};
+function socketHandleMessage(msg) {
+    const { action, payload, uuid, login } = JSON.parse(msg);
 
+    if (login) {
+      console.log('Logging in user:', login);
+      return User.login(login)
+        .then(userLogin => {
+          if (userLogin) {
+            this.uuid = userLogin.uuid;
+            this.username = userLogin.name;
+            this.post('store_user', userLogin);
+          };
+        })
+        .catch(err => console.error('res_uuid', err))
+    };
 
-function socketHandleConnection(socket) {
-  const postMessage = socketPostMessage(socket);
+    if (!!uuid && this.uuid !== uuid) {
+      console.log('Invalid UUID with request from:', this.uuid);
+      return this.post('req_uuid');
+    };
 
-  socket.on('message', msg => {
-    const { type, payload, uuid } = JSON.parse(msg);
-    // console.log('socket got message', type, uuid, payload)
+    console.log('socket got message', action, payload, uuid);
 
-    switch (type) {
-      case 'check_uuid':
-        User.login(payload)
-          .then(userLogin => {
-            if (userLogin) {
-              postMessage('store_user', userLogin);
-            };
-          })
-          .catch(err => console.error('check_uuid', err))
+    switch (action) {
+      case 'get_grid':
+        this.post('update_grid', Grid.current);
+        break;
+      case 'set_cel':
+        if (!User.canDraw(uuid)) {
+          this.post('too_soon');
+          break;
+        };
+        const cel = Grid.update({ ...payload, uuid, name: this.username });
+        if (cel) {
+          socketDispatchAll('update_cel', cel);
+          User.didDraw(uuid)
+            .then(lastDraw => this.post('update_last_draw', lastDraw))
+            .catch(err => console.error('set_cel', err))
+        };
         break;
       case 'set_name':
         User.saveName(uuid, payload)
           .then(userName => {
             if (userName) {
-              postMessage('store_user', userName);
+              this.username = userLogin.name;
+              this.post('store_user', userName);
             };
           })
           .catch(err => console.error('set_name', err))
         break;
-      case 'get_grid':
-        postMessage('update_grid', Grid.current);
-        break;
-      case 'set_cel':
-        if (!User.canDraw(uuid)) {
-          postMessage('too_soon');
-          break;
-        };
-        const name = User.getName(uuid);
-        const cel = Grid.update({ ...payload, uuid, name });
-        if (cel) {
-          socketDispatchAll('update_cel', cel);
-          User.didDraw(uuid)
-            .then(lastDraw => postMessage('update_last_draw', lastDraw))
-            .catch(err => console.error('set_cel', err))
-        };
-        break;
       default:
-        console.log('Socket --- Unhandled Message:', type);
+        console.log('Socket --- Unhandled Message:', action);
         return null;
     };
-  });
+};
 
-  postMessage('request_uuid');
+
+function socketHandleConnection(socket) {
+  socket.post = (action, payload) => socket.send(JSON.stringify({ action, payload }));
+  socket.uuid = null;
+  socket.on('message', socketHandleMessage);
+  socket.post('req_uuid');
 };
 
 

@@ -1,22 +1,14 @@
 import React, {
-  Fragment,
-  createContext,
   memo,
-  useContext,
   useRef,
-  useMemo,
   useState,
-  useReducer,
   useEffect,
   useLayoutEffect,
   useCallback,
 } from 'react';
-
 import './App.css';
 import {
-  useGlobalState,
   useParams,
-  useSocket,
   useHIDDetect,
   useTouchZoomOverride,
   useGrid,
@@ -35,24 +27,38 @@ import {
 
 
 
+export default memo(function App() {
+  const splashRef = useRef(null);
+  const windowRef = useRef(null);
+  const touchRef = useRef(null);
+  const gridCanvasRef = useRef(null);
+  const mapCanvasRef = useRef(null);
+  const oversamplePx = 4;
 
-
-export default memo(function HOC() {
-  const [state, setState] = useGlobalState();
   const {
     width,
     height,
     colors,
-    // uuid,
-    // username,
+  } = useParams();
+
+  const {
+    hidStatus,
+    hasTouch,
+    hasMouse,
+  } = useHIDDetect(splashRef);
+
+  useTouchZoomOverride(hasTouch);
+
+  const {
     scalar,
-    // viewportMinGridScale,
-    // viewportMaxCelPx,
-    scaleRange,
-    // uiMode,
-    // cursorMode,
-    // activeColor,
-  } = state;
+    initialScale,
+    clampScale,
+  } = useViewportScalar({
+        width,
+        height,
+        oversamplePx,
+      });
+
 
   const [cursorMode, setCursorMode] = useState(null);
   const [activeColor, setActiveColor] = useState(6);
@@ -62,52 +68,21 @@ export default memo(function HOC() {
   const [zoom, setZoom] = useState(null);
   const prevZoom = useRef(null);
 
-  const splashRef = useRef(null);
-  const windowRef = useRef(null);
-  const touchRef = useRef(null);
-  // const gridCanvasRef = useRef(null);
-  // const mapCanvasRef = useRef(null);
-
-
-  void useParams();
-
-  const {
-    socketStatus,
-    // postMessage,
-    addListener,
-  } = useSocket();
-
   const {
     gridStatus,
-    gridCanvasRef,
-    mapCanvasRef,
     clickCel,
   } = useGrid({
-        socketActive: socketStatus === 2,
-        addListener,
-        // gridCanvasRef,
-        // mapCanvasRef,
+        width,
+        height,
+        colors,
+        scalar,
+        gridCanvasRef,
+        mapCanvasRef,
+        oversamplePx,
+        cursorMode,
+        activeColor,
       });
 
-  const {
-    initialScale,
-    // clampScale,
-  } = useViewportScalar();
-
-
-  const {
-    hidStatus,
-    hasTouch,
-    hasMouse,
-  } = useHIDDetect(splashRef);
-
-  void useTouchZoomOverride(hasTouch);
-
-
-  // const initialScale = useMemo(() => {
-  //   if (!scaleRange.length) return null;
-  //   return (scaleRange[0] + scaleRange[1]) / 2;
-  // }, [scaleRange])
 
   const panWindow = useCallback((x, y) => {
     const el = windowRef.current;
@@ -130,12 +105,12 @@ export default memo(function HOC() {
   }, [windowRef, setCenter]);
 
   const updateZoom = useCallback((zoomIn) => {
-    const newZoom = parse.clamp(zoom * (zoomIn ? 1.4 : 0.6), scaleRange).toFixed(2);
+    const newZoom = clampScale(zoom * (zoomIn ? 1.4 : 0.6));
     if (newZoom) {
       storeCenter();
       setZoom(newZoom);
     };
-  }, [zoom, scaleRange, storeCenter]);
+  }, [zoom, clampScale, storeCenter]);
 
 
   const handleClickColors = useCallback(e => {
@@ -234,13 +209,13 @@ export default memo(function HOC() {
       setScale(1);
     };
     if (zoomActive) {
-      const newZoom = parse.clamp(prevZoom.current * scale, scaleRange).toFixed(2);
+      const newZoom = clampScale((prevZoom.current * scale));
       if (newZoom) {
         storeCenter();
         setZoom(newZoom);
       };
     };
-  }, [zoomActive, prevZoom, scaleRange, zoom, setZoom, scale, setScale, storeCenter, setCenter]);
+  }, [zoomActive, prevZoom, clampScale, zoom, setZoom, scale, setScale, storeCenter, setCenter]);
 
 
   useLayoutEffect(() => {   // recenter window

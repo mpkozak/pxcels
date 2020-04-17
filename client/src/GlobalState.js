@@ -8,33 +8,42 @@ const initialState = {
   width: 0,
   height: 0,
   colors: [],
+  uuid: localStorage.getItem('uuid'),
+  username: localStorage.getItem('username'),
+    scalar: (window.devicePixelRatio * 4),
+    viewportMinGridScale: .5,
+    viewportMaxCelPx: 100,
+  scaleRange: [],
+
+
+  uiMode: 0,
+  cursorMode: 'drag',
+  activeColor: 6,
+
+
   hidMode: 0,
-
-    // 'mouse' = 0; 'touch' - 1;
-
 };
 
-
-function updateState(state, key, val) {
-
-  switch (key) {
-    case 'params':
-      const newState = Object.assign(state, ...val);
-      return newState;
-    default:
-      break;
-  };
-
-  // console.log('update state', state, key, val)
-
-  // return key in initialState
-  //   ? ({ ...state, [key]: val })
-  //   : state;
-};
 
 
 function globalStateReducer(state, action) {
-  return updateState(state, action.stateKey, action.newVal);
+  const { msg, data } = action;
+  // console.log("SETTING STATE ---", msg, data)
+
+  switch (msg) {
+    case 'params':
+      const { width, height, colors } = data;
+      return ({ ...state, width, height, colors });
+    case 'login':
+      const { uuid, name } = data;
+      localStorage.setItem('uuid', uuid);
+      localStorage.setItem('username', name);
+      return ({ ...state, uuid, username: name });
+    case 'scaleRange':
+      return ({ ...state, scaleRange: data });
+    default:
+      return state;
+  };
 };
 
 
@@ -53,11 +62,13 @@ function GlobalStateProvider({ children } = {}) {
 
 
 
+
+
 function useGlobalState() {
   const [state, dispatch] = useContext(GlobalStateContext);
-  const setState = ([stateKey, newVal]) => dispatch({ stateKey, newVal });
+  const setState = (msg, data) => dispatch({ msg, data });
 
-  return { state, setState };
+  return [state, setState];
 };
 
 

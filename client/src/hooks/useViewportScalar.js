@@ -1,45 +1,79 @@
-import { useMemo, useCallback } from 'react';
+import {
+  // Fragment,
+  // createContext,
+  // memo,
+  // useContext,
+  // useRef,
+  // useMemo,
+  // useState,
+  // useReducer,
+  useEffect,
+  // useLayoutEffect,
+  useCallback,
+} from 'react';
+import { useGlobalState } from './';
+import { parse } from '../libs';
 
 
 
 
 
-export default function useViewportScalar({
-  width,
-  height,
-  oversamplePx,
-} = {}) {
+export default function useViewportScalar() {
+  // console.log('useViewportScalar ran')
 
-  const scalar = useMemo(() => window.devicePixelRatio * oversamplePx, [oversamplePx]);
+  const [state, setState] = useGlobalState();
+  const {
+    width,
+    height,
+    scalar,
+    viewportMinGridScale,
+    viewportMaxCelPx,
+    scaleRange,
+  } = state;
 
-  const minScale = useMemo(() => {
-    const minViewportDimen = .5;
-    const minCelX = (window.innerWidth * minViewportDimen) / width;
-    const minCelY = (window.innerHeight * minViewportDimen) / height;
+
+  const setScale = useCallback(() => {
+    const minCelX = (window.innerWidth * viewportMinGridScale) / width;
+    const minCelY = (window.innerHeight * viewportMinGridScale) / height;
     const minCelPx = Math.min(minCelX, minCelY);
-    return minCelPx / scalar;
-  }, [width, height, scalar]);
+    const min = minCelPx / scalar;
+    const max = viewportMaxCelPx / scalar;
+    setState('scaleRange', [min, max]);
+  }, [width, height, scalar, viewportMinGridScale, viewportMaxCelPx, setState]);
 
-  const maxScale = useMemo(() => {
-    const maxCelPx = 100;
-    return maxCelPx / scalar;
-  }, [scalar]);
 
-  const clampScale = useCallback((val) => {
-    let out = val
-    if (val < minScale) {
-      out = minScale;
+  useEffect(() => {
+    window.addEventListener('resize', setScale, { passive: true });
+    window.addEventListener('orientationchange', setScale);
+
+    return () => {
+      window.removeEventListener('resize', setScale);
+      window.removeEventListener('orientationchange', setScale);
     };
-    if (val > maxScale) {
-      out = maxScale;
+  }, [setScale]);
+
+
+  const clampScale = useCallback(val => {
+    return parse.clamp(val, scaleRange).toFixed(2);
+  }, [scaleRange]);
+
+
+  // useEffect(() => {
+  //   if (!scaleRange.length) {
+  //     setScale();
+  //   };
+  // }, [scaleRange, setScale]);
+
+
+  useEffect(() => {
+    if (width && height && !scaleRange.length) {
+      setScale();
     };
-    return out.toFixed(2);
-  }, [minScale, maxScale]);
+  }, [width, height, scaleRange, setScale]);
 
 
   return {
-    scalar,
-    initialScale: (minScale + maxScale) / 2,
+    initialScale: scaleRange.reduce((acc, d) => acc + d, 0) / 2,
     clampScale,
   };
 };

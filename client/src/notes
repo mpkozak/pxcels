@@ -1,3 +1,35 @@
+
+Order of operations:
+
+1   useParams (api fetch)
+        width
+        height
+        colors
+2   useSocket (establish connection)
+        user
+        username
+3   useViewportScalar (determine size range of grid)
+        scaleRange
+
+
+
+
+
+server says           client sends
+req_uuid              res_uuid
+
+
+client says           server sends
+res_uuid              store_user
+set_name              store_user
+get_grid
+set_cel
+
+
+
+
+
+
 import React, {
   Fragment,
   createContext,
@@ -11,6 +43,8 @@ import React, {
   useLayoutEffect,
   useCallback,
 } from 'react';
+
+
 
 
 Toolbar

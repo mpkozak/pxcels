@@ -1,65 +1,87 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  // Fragment,
+  // createContext,
+  // memo,
+  // useContext,
+  useRef,
+  // useMemo,
+  useState,
+  // useReducer,
+  useEffect,
+  // useLayoutEffect,
+  useCallback,
+} from 'react';
+import { useGlobalState } from './';
 
 
+/*
+-1 starting up
+0 disconnected
+1 connected
+2 authenticated
+*/
 
 
+export default function useSocket() {
+  // console.log('useSocket ran')
 
-export default function useSocket(cb = null) {
+  const [state, setState] = useGlobalState();
+  const { uuid } = state;
+
+  const [socketStatus, setSocketStatus] = useState(0);
   const client = useRef(null);
-  const [open, setOpen] = useState(false);
-  const [uuid, setUuid] = useState(null);
-  const [name, setName] = useState('anonymous');
+  const listener = useRef(null);
 
 
   const handleOpen = useCallback(() => {
     if (client.current.readyState === 1) {
-      setOpen(true);
+      console.log('Socket open');
+      setSocketStatus(1);
     };
-  }, [client, setOpen]);
+  }, [client, setSocketStatus]);
 
 
   const handleClose = useCallback(() => {
     if (client.current.readyState === 3) {
-      console.log('socket closed!')
-      setOpen(false);
+      console.log('Socket closed');
+      setSocketStatus(0);
     };
-  }, [client, setOpen]);
+  }, [client, setSocketStatus]);
 
 
-  const handleRequestUuid = useCallback(() => {
-    const storedUuid = localStorage.getItem('uuid');
-    const msg = { type: 'check_uuid', payload: storedUuid };
-    client.current.send(JSON.stringify(msg));
-  }, [client]);
+  const handleReqUuid = useCallback(() => {
+    client.current.send(JSON.stringify({ login: uuid }));
+  }, [client, uuid]);
 
 
   const handleStoreUser = useCallback(val => {
-    const { uuid, name } = val;
-    localStorage.setItem('uuid', uuid);
-    setUuid(uuid);
-    setName(name);
-  }, [setUuid, setName]);
+    setState('login', val);
+    setSocketStatus(2);
+  }, [setState, setSocketStatus]);
 
 
   const handleMessage = useCallback(msg => {
-    const { type, payload } = JSON.parse(msg.data);
-    // console.log('useSocket got message', type, payload)
+    const { action, payload } = JSON.parse(msg.data);
+    console.log('useSocket got message', action, payload)
 
-    switch (type) {
-      case 'request_uuid':
-        handleRequestUuid();
+    switch (action) {
+      case 'req_uuid':
+        handleReqUuid();
         break;
       case 'store_user':
         handleStoreUser(payload);
         break;
       default:
-        cb({ type, payload });
+        if (listener.current) {
+          listener.current(action, payload);
+        };
         return null;
     };
-  }, [handleRequestUuid, handleStoreUser, cb]);
+  }, [handleReqUuid, handleStoreUser, listener]);
 
 
   const startClient = useCallback(() => {
+    console.log('Connecting to socket...');
     const loc = window.location;
     let socketURI;
     if (loc.protocol === 'https:') {
@@ -85,30 +107,32 @@ export default function useSocket(cb = null) {
   }, [client, handleOpen, handleClose, handleMessage]);
 
 
-  useEffect(() => {
-    if (!open || !client.current) {
-      startClient();
-    };
-  }, [open, client, startClient]);
-
-
-  const postMessage = useCallback((type, payload) => {
-    if (!open || !uuid) {
+  const postMessage = useCallback((action, payload) => {
+    if (!socketStatus || !uuid) {
       return null;
     };
-    client.current.send(JSON.stringify({ type, payload, uuid }));
-  }, [open, uuid, client]);
+    client.current.send(JSON.stringify({ action, payload, uuid }));
+  }, [socketStatus, uuid, client]);
 
 
-  const postName = useCallback(str => {
-    postMessage('set_name', str);
-  }, [postMessage]);
+  const addListener = useCallback((fn) => {
+    listener.current = fn;
+    return postMessage;
+  }, [listener, postMessage]);
+
+
+  useEffect(() => {    // connection initialize
+    // console.log('socket effect', socketStatus)
+    if (socketStatus === 0) {
+      setSocketStatus(-1);
+      startClient();
+    };
+  }, [socketStatus, setSocketStatus, startClient]);
 
 
   return {
-    active: open && !!uuid,
-    post: postMessage,
-    username: name,
-    postUsername: postName,
+    socketStatus,
+    postMessage,
+    addListener,
   };
 };

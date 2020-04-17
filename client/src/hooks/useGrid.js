@@ -1,30 +1,43 @@
 import {
+  // Fragment,
+  // createContext,
+  // memo,
+  // useContext,
   useRef,
   useMemo,
   useState,
+  // useReducer,
   useEffect,
+  // useLayoutEffect,
   useCallback,
 } from 'react';
-import { useSocket } from './';
+import { useGlobalState } from './';
 
 
 
 
 
 export default function useGrid({
-  width,
-  height,
-  colors,
-  scalar,
-  gridCanvasRef,
-  mapCanvasRef,
-  oversamplePx = 1,
-  cursorMode,
-  activeColor,
+    socketActive,
+    addListener,
+    // gridCanvasRef,
+    // mapCanvasRef,
 } = {}) {
 
+  const [state] = useGlobalState();
+  const {
+    width,
+    height,
+    colors,
+    scalar,
+    cursorMode,
+    activeColor,
+  } = state;
+
   const dataRef = useRef(null);
+  const gridCanvasRef = useRef(null);
   const gridCtx = useRef(null);
+  const mapCanvasRef = useRef(null);
   const mapCtx = useRef(null);
   const offCanvasRef = useRef(null);
   const offCtx = useRef(null);
@@ -58,8 +71,9 @@ export default function useGrid({
   }, [setLastDraw]);
 
 
-  const handleSocketMessage = useCallback(({ type, payload }) => {
-    switch (type) {
+  const handleSocketMessage = useCallback((action, payload) => {
+    console.log("socket message in GRID --- ", action)
+    switch (action) {
       case 'update_grid':
         handleUpdateGrid(payload);
         break;
@@ -70,20 +84,20 @@ export default function useGrid({
         handleUpdateLastDraw(payload);
         break;
       default:
-        console.log('Socket --- Unhandled Message in useGrid:', type, payload);
+        console.log('Socket --- Unhandled Message in useGrid:', action, payload);
         return null;
     };
   }, [handleUpdateGrid, handleUpdateCel, handleUpdateLastDraw]);
 
 
-  const { active, post, username, postUsername } = useSocket(handleSocketMessage);
+  const post = addListener(handleSocketMessage);
 
 
   useEffect(() => {   // get grid data from socket
-    if (active) {
+    if (socketActive && post) {
       post('get_grid');
     };
-  }, [active, post]);
+  }, [socketActive, post]);
 
 
 
@@ -223,7 +237,7 @@ export default function useGrid({
 
   useEffect(() => {
     if (redrawGridFlag && !gridStatus) {
-      setGridStatus(1)
+      setGridStatus(1);
     };
   }, [redrawGridFlag, gridStatus, setGridStatus]);
 
@@ -231,7 +245,8 @@ export default function useGrid({
 
   return {
     gridStatus,
-    scalar,
+    gridCanvasRef,
+    mapCanvasRef,
     clickCel,
   };
 };
