@@ -1,21 +1,29 @@
 import React, {
+  Fragment,
+  createContext,
   memo,
+  useContext,
+  useRef,
   useMemo,
   useState,
+  useReducer,
   useEffect,
+  useLayoutEffect,
   useCallback,
 } from 'react';
 
-
+import { parse } from '../../libs';
+const { cl } = parse;
 
 
 
 export default memo(function ColorsPalette({
+  active = null,
   colors = [],
-  show = '',
   clickColor = null,
   hidePalette = null,
   hasMouse = false,
+  touch = false,
 } = {}) {
 
   const [touchStartX, setTouchtouchStartX] = useState(null);
@@ -68,31 +76,23 @@ export default memo(function ColorsPalette({
     <div
       key={hex}
       id={`color-${i}`}
-      className={
-        'Colors--palette-cel'
-        + ' button'
-        + ' button--small'
-        + (hasMouse ? ' button--small-color__mouse' : '')
-      }
+      className={cl(
+        'Colors--palette-cel',
+        'button',
+        'button--small',
+        [hasMouse, 'button--small-color__mouse']
+      )}
       style={{ backgroundColor: hex }}
     />
   ), [colors, hasMouse]);
 
 
   return (
-    <div
-      className={
-        'Colors--palette'
-        + (!hasMouse ? ' touch' : '')
-        + (show ? ' active' : '')
-      }
-    >
-      <div
-        className={
-          'Colors--palette-celbox'
-          + (show === '' ? ' notready' : '')
-          + (!show ? ' hide' : '')
-        }
+    <div className={cl('Colors--palette', { touch, active })}>
+      <div className={cl('Colors--palette-celbox',
+              [active === null, 'notready'],
+              [!active, 'hide']
+            )}
         // onClick={clickColor}
         onClick={handleClick}
         onTouchStart={handleTouchStart}

@@ -12,15 +12,13 @@ import {
   useCallback,
 } from 'react';
 import { useGlobalState } from './';
-import { parse } from '../libs';
+// import { parse } from '../libs';
 
 
 
 
 
 export default function useViewportScalar() {
-  // console.log('useViewportScalar ran')
-
   const [state, setState] = useGlobalState();
   const {
     width,
@@ -53,18 +51,6 @@ export default function useViewportScalar() {
   }, [setScale]);
 
 
-  const clampScale = useCallback(val => {
-    return parse.clamp(val, scaleRange).toFixed(2);
-  }, [scaleRange]);
-
-
-  // useEffect(() => {
-  //   if (!scaleRange.length) {
-  //     setScale();
-  //   };
-  // }, [scaleRange, setScale]);
-
-
   useEffect(() => {
     if (width && height && !scaleRange.length) {
       setScale();
@@ -72,8 +58,6 @@ export default function useViewportScalar() {
   }, [width, height, scaleRange, setScale]);
 
 
-  return {
-    initialScale: scaleRange.reduce((acc, d) => acc + d, 0) / 2,
-    clampScale,
-  };
+  return scaleRange.reduce((acc, d) => acc + d, 0) / 2;
+  // return null;
 };

@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-
+import { parse } from '../../libs';
+const { cl } = parse;
 
 
 
@@ -13,12 +14,12 @@ export default memo(function ColorsCurrent({
 
   return (
     <div
-      className={
-        'Colors--current'
-        + ' button'
-        + ' button--big'
-        + (hasMouse ? ' button--big__mouse' : '')
-      }
+      className={cl(
+        'Colors--current',
+        'button',
+        'button--big',
+        [hasMouse, 'button--big__mouse'],
+      )}
       style={{ backgroundColor: color }}
       onClick={togglePalette}
     />

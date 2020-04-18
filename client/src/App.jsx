@@ -17,7 +17,7 @@ import {
   useGlobalState,
   useParams,
   useSocket,
-  useHIDDetect,
+  useInputDetect,
   useTouchZoomOverride,
   useGrid,
   useViewportScalar,
@@ -33,11 +33,141 @@ import {
 
 
 
+const { cl } = parse;
+
+
+
+
+const App = memo(function App({
+  socketPost,
+  initialScale,
+  grid,
+  ready,
+  // uiMode,
+  touch,
+  mouse,
+  children,
+} = {}) {
+
+// const App = memo(function App(props) {
+
+  // const {
+  //   postMessage,
+  //   addListener,
+  // } = socket;
+
+
+  console.log("APP PROPS",
+    // socketPost,
+    initialScale,
+    grid,
+    ready,
+  touch,
+  mouse,
+  children,
+  )
+
+
+
+  return (
+    <div id="App">
+      {children}
+      <div className={cl('Toolbar', [!ready, 'hide'], { touch })}>
+        <div className="Toolbar--toolbox left">
+          <Colors />
+          {mouse && (
+            <Cursors
+              // cursorMode={cursorMode}
+              // clickCursor={handleClickCursors}
+              // hasMouse={hasMouse}
+            />
+          )}
+        </div>
+        <div className="Toolbar--toolbox right">
+        </div>
+      </div>
+    </div>
+  );
+})
+
+
+
+          // <Colors
+          //   colors={colors}
+          //   activeColor={activeColor}
+          //   clickColor={handleClickColors}
+          //   hasMouse={hasMouse}
+          // />
+          // {hasMouse && (
+          //   <Cursors
+          //     cursorMode={cursorMode}
+          //     clickCursor={handleClickCursors}
+          //     hasMouse={hasMouse}
+          //   />
+          // )}
+
+          // <Minimap
+          //   windowRef={windowRef}
+          //   gridRef={touchRef}
+          //   mapCanvasRef={mapCanvasRef}
+          //   pan={panWindow}
+          //   hasMouse={hasMouse}
+          // />
+
+
+
+  // const {
+  //   gridReady,
+  //   gridCanvasRef,
+  //   mapCanvasRef,
+  //   clickCel,
+  // } = useGrid({ socketActive, addListener });
+
 
 
 
 
 export default memo(function HOC() {
+  void useParams();
+  const { postMessage, ...socket } = useSocket();
+  const initialScale = useViewportScalar();
+  const { gridReady, ...grid } = useGrid(socket);
+  const { uiReady, detectionRef, uiMode } = useInputDetect();
+
+  const ready = gridReady && uiReady;
+
+  return (
+    <App
+      socketPost={postMessage}
+      initialScale={initialScale}
+      grid={grid}
+      ready={ready}
+      touch={uiMode === 1}
+      mouse={uiMode === 2}
+    >
+     {!ready && (
+        <Splash splashRef={detectionRef} loading={!gridReady} />
+      )}
+    </App>
+  );
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const a = memo(function HOC() {
   const [state, setState] = useGlobalState();
   const {
     width,
@@ -69,7 +199,12 @@ export default memo(function HOC() {
   // const mapCanvasRef = useRef(null);
 
 
-  void useParams();
+  // const params = useParams();
+
+  // useEffect(() => {
+
+  // }, [width])
+
 
   const {
     socketStatus,
@@ -96,14 +231,20 @@ export default memo(function HOC() {
 
 
   const {
+    uiMode,
     hidStatus,
     hasTouch,
     hasMouse,
-  } = useHIDDetect(splashRef);
+  } = {};
+
+  // useHIDDetect(splashRef);
 
   void useTouchZoomOverride(hasTouch);
 
 
+
+
+console.log('uiMode', uiMode)
   // const initialScale = useMemo(() => {
   //   if (!scaleRange.length) return null;
   //   return (scaleRange[0] + scaleRange[1]) / 2;

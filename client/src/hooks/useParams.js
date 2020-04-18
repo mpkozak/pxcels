@@ -10,9 +10,8 @@ import { useGlobalState } from './';
 
 
 export default function useParams() {
-  // console.log('useParams ran')
-
   const [state, setState] = useGlobalState();
+  const { width } = state;
   const activeReq = useRef(false);
 
 
@@ -41,11 +40,11 @@ export default function useParams() {
 
 
   useEffect(() => {
-    if (!state.width && !activeReq.current) {
+    if (!width && !activeReq.current) {
       activeReq.current = true;
       fetchParams();
     };
-  }, [state, fetchParams]);
+  }, [width, activeReq, fetchParams]);
 
 
   return null;

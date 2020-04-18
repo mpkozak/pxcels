@@ -43,8 +43,38 @@ function clampToRange(val, [min, max]) {
 
 
 
+function concatClassName(...args) {
+  return args.reduce((acc, d) => {
+    switch (typeof d) {
+      case 'string':
+        acc += `${d} `;
+        break;
+      case 'object':
+        if (Array.isArray(d)) {
+          const [test, trueStr = '', falseStr = ''] = d;
+          acc += `${!!test ? trueStr : falseStr} `;
+          break;
+        };
+        acc += Object.entries(d).reduce((acc, d)=> {
+          const [str, test] = d;
+          acc += `${!!test ? str : ''} `;
+          return acc;
+        }, '');
+        break;
+      default:
+        return acc;
+    };
+    return acc;
+  }, '').trim();
+};
+
+
+
+
+
 export default Object.freeze({
   time: parseTime,
   pct: parsePct,
   clamp: clampToRange,
+  cl: concatClassName,
 });

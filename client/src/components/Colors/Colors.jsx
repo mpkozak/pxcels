@@ -1,27 +1,39 @@
 import React, { memo, useState, useCallback } from 'react';
 import './Colors.css';
+import { useGlobalState } from '../../hooks';
 import { ColorsCurrent, ColorsPalette } from './';
 
 
 
 
 
-export default memo(function Colors({
-  colors = [],
-  activeColor = 0,
-  clickColor = null,
-  hasMouse = false,
-} = {}) {
+export default memo(function Colors() {
+  const [state, setState] = useGlobalState();
+  const {
+    colors,
+    activeColor,
+    uiMode,
+  } = state;
 
-  const [showPalette, setShowPalette] = useState('');
+  const [showPalette, setShowPalette] = useState(null);
+
 
   const togglePalette = useCallback(() => {
     setShowPalette(!showPalette);
   }, [showPalette, setShowPalette]);
 
+
   const hidePalette = useCallback(() => {
     setShowPalette(false);
   }, [setShowPalette]);
+
+
+  const handleClickColor = useCallback(e => {
+    const { id } = e.target;
+    if (!id) return null;
+    const color = +id.split('-')[1];
+    setState('activeColor', color);
+  }, [setState]);
 
 
   return (
@@ -29,14 +41,15 @@ export default memo(function Colors({
       <ColorsCurrent
         color={colors[activeColor]}
         togglePalette={togglePalette}
-        hasMouse={hasMouse}
+        hasMouse={uiMode === 2}
       />
       <ColorsPalette
-        show={showPalette}
+        active={showPalette}
         colors={colors}
-        clickColor={clickColor}
+        clickColor={handleClickColor}
         hidePalette={hidePalette}
-        hasMouse={hasMouse}
+        hasMouse={uiMode === 2}
+        touch={uiMode === 1}
       />
     </div>
   );

@@ -10,8 +10,9 @@ Order of operations:
         username
 3   useViewportScalar (determine size range of grid)
         scaleRange
-
-
+4   useHIDDetect
+        uiMode
+        => 4a    useTouchZoomOverride
 
 
 

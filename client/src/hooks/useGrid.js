@@ -14,14 +14,16 @@ import {
 import { useGlobalState } from './';
 
 
+/*
+0   has not drawn
+1   completed initial draw
+*/
 
 
 
 export default function useGrid({
-    socketActive,
-    addListener,
-    // gridCanvasRef,
-    // mapCanvasRef,
+  socketActive,
+  addListener,
 } = {}) {
 
   const [state] = useGlobalState();
@@ -34,6 +36,11 @@ export default function useGrid({
     activeColor,
   } = state;
 
+  const [gridStatus, setGridStatus] = useState(0);
+  const [redrawGridFlag, setRedrawGridFlag] = useState(false);
+  const [redrawCel, setRedrawCel] = useState(null);
+  const [lastDraw, setLastDraw] = useState(0);
+
   const dataRef = useRef(null);
   const gridCanvasRef = useRef(null);
   const gridCtx = useRef(null);
@@ -41,10 +48,6 @@ export default function useGrid({
   const mapCtx = useRef(null);
   const offCanvasRef = useRef(null);
   const offCtx = useRef(null);
-
-  const [redrawGridFlag, setRedrawGridFlag] = useState(false);
-  const [redrawCel, setRedrawCel] = useState(null);
-  const [lastDraw, setLastDraw] = useState(0);
 
 
 
@@ -90,10 +93,19 @@ export default function useGrid({
   }, [handleUpdateGrid, handleUpdateCel, handleUpdateLastDraw]);
 
 
-  const post = addListener(handleSocketMessage);
+  const post = useMemo(() => {
+    console.log("assigned post in grid")
+    return addListener(handleSocketMessage);
+  }, [addListener, handleSocketMessage]);
+
+
+  const postUpdatedCel = useCallback((cel_id, color) => {
+    post('set_cel', { cel_id, color, t: Date.now() });
+  }, [post]);
 
 
   useEffect(() => {   // get grid data from socket
+    console.log("grid effect")
     if (socketActive && post) {
       post('get_grid');
     };
@@ -118,18 +130,14 @@ export default function useGrid({
 
 
   const clickCel = useCallback((c, r) => {
-    if (cursorMode !== 'paint' || !~activeColor ) {
-      return null;
-    };
+    if (!cursorMode) return null;
     const celI = celLookupMatrix[r][c];
     const cel = dataRef.current[celI];
-    if (!cel) {
-      return null;
-    };
+    if (!cel) return null;
     cel.current.color = activeColor;
     setRedrawCel(cel);
-    post('set_cel', { cel_id: cel.cel_id, color: cel.current.color, t: Date.now() });
-  }, [cursorMode, activeColor, dataRef, celLookupMatrix, setRedrawCel, post]);
+    postUpdatedCel(cel.cel_id, activeColor);
+  }, [cursorMode, celLookupMatrix, dataRef, activeColor, setRedrawCel, postUpdatedCel]);
 
 
 
@@ -233,8 +241,6 @@ export default function useGrid({
 
 
 
-  const [gridStatus, setGridStatus] = useState(0);
-
   useEffect(() => {
     if (redrawGridFlag && !gridStatus) {
       setGridStatus(1);
@@ -244,7 +250,7 @@ export default function useGrid({
 
 
   return {
-    gridStatus,
+    gridReady: !!gridStatus,
     gridCanvasRef,
     mapCanvasRef,
     clickCel,

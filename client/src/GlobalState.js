@@ -1,24 +1,25 @@
-import React, { createContext, useReducer, useContext } from 'react';
+import React, { createContext, useReducer, useContext, useCallback } from 'react';
 
 
 
 
 
 const initialState = {
-  width: 0,
-  height: 0,
-  colors: [],
-  uuid: localStorage.getItem('uuid'),
-  username: localStorage.getItem('username'),
+    width: 0,
+    height: 0,
+    colors: [],
+    uuid: localStorage.getItem('uuid') || '',
+    username: localStorage.getItem('username') || '',
     scalar: (window.devicePixelRatio * 4),
     viewportMinGridScale: .5,
     viewportMaxCelPx: 100,
   scaleRange: [],
-
-
+  // uiMode: localStorage.getItem('uiMode') || 0,
   uiMode: 0,
-  cursorMode: 'drag',
-  activeColor: 6,
+
+
+  cursorMode: 0,      // 0 = drag; 1 = paint;
+  activeColor: localStorage.getItem('color') || 6,
 
 
   hidMode: 0,
@@ -28,7 +29,7 @@ const initialState = {
 
 function globalStateReducer(state, action) {
   const { msg, data } = action;
-  // console.log("SETTING STATE ---", msg, data)
+  console.log("SETTING STATE ---", msg, data)
 
   switch (msg) {
     case 'params':
@@ -41,6 +42,12 @@ function globalStateReducer(state, action) {
       return ({ ...state, uuid, username: name });
     case 'scaleRange':
       return ({ ...state, scaleRange: data });
+    case 'uiMode':
+      localStorage.setItem('uiMode', data);
+      return ({ ...state, uiMode: data });
+    case 'activeColor':
+      localStorage.setItem('color', data);
+      return ({ ...state, activeColor: data });
     default:
       return state;
   };
@@ -66,7 +73,8 @@ function GlobalStateProvider({ children } = {}) {
 
 function useGlobalState() {
   const [state, dispatch] = useContext(GlobalStateContext);
-  const setState = (msg, data) => dispatch({ msg, data });
+  const setState = useCallback((msg, data) => dispatch({ msg, data }), [dispatch]);
+  // const setState = (msg, data) => dispatch({ msg, data });
 
   return [state, setState];
 };

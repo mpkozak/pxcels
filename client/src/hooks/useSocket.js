@@ -1,30 +1,21 @@
 import {
-  // Fragment,
-  // createContext,
-  // memo,
-  // useContext,
   useRef,
-  // useMemo,
   useState,
-  // useReducer,
   useEffect,
-  // useLayoutEffect,
   useCallback,
 } from 'react';
 import { useGlobalState } from './';
 
 
 /*
--1 starting up
-0 disconnected
-1 connected
-2 authenticated
+-1  starting up
+0   disconnected
+1   connected
+2   authenticated
 */
 
 
 export default function useSocket() {
-  // console.log('useSocket ran')
-
   const [state, setState] = useGlobalState();
   const { uuid } = state;
 
@@ -35,7 +26,7 @@ export default function useSocket() {
 
   const handleOpen = useCallback(() => {
     if (client.current.readyState === 1) {
-      console.log('Socket open');
+      console.log('socket open');
       setSocketStatus(1);
     };
   }, [client, setSocketStatus]);
@@ -43,7 +34,7 @@ export default function useSocket() {
 
   const handleClose = useCallback(() => {
     if (client.current.readyState === 3) {
-      console.log('Socket closed');
+      console.log('socket closed');
       setSocketStatus(0);
     };
   }, [client, setSocketStatus]);
@@ -62,7 +53,7 @@ export default function useSocket() {
 
   const handleMessage = useCallback(msg => {
     const { action, payload } = JSON.parse(msg.data);
-    console.log('useSocket got message', action, payload)
+    // console.log('useSocket got message', action, payload)
 
     switch (action) {
       case 'req_uuid':
@@ -81,7 +72,7 @@ export default function useSocket() {
 
 
   const startClient = useCallback(() => {
-    console.log('Connecting to socket...');
+    console.log('connecting socket...');
     const loc = window.location;
     let socketURI;
     if (loc.protocol === 'https:') {
@@ -122,7 +113,6 @@ export default function useSocket() {
 
 
   useEffect(() => {    // connection initialize
-    // console.log('socket effect', socketStatus)
     if (socketStatus === 0) {
       setSocketStatus(-1);
       startClient();
@@ -131,7 +121,7 @@ export default function useSocket() {
 
 
   return {
-    socketStatus,
+    socketActive: socketStatus === 2,
     postMessage,
     addListener,
   };
