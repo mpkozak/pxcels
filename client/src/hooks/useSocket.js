@@ -43,7 +43,7 @@ export default function useSocket() {
 
   const handleReqUuid = useCallback(() => {
     const { uuid } = user;
-    client.current.send(JSON.stringify({ login: uuid }));
+    client.current.send(JSON.stringify({ login: uuid || 'new_user' }));
   }, [client, user]);
 
 

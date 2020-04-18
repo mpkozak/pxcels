@@ -69,12 +69,12 @@ function socketHandleMessage(msg) {
         .catch(err => console.error('res_uuid', err))
     };
 
-    if (!!uuid && this.uuid !== uuid) {
+    if (!uuid || (uuid && this.uuid !== uuid)) {
       console.log('Invalid UUID with request from:', this.uuid);
       return this.post('req_uuid');
     };
 
-    console.log('socket got message', action, payload, uuid);
+    // console.log('socket got message', action, payload, uuid);
 
     switch (action) {
       case 'get_grid':
