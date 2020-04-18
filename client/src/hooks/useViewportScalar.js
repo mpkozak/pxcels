@@ -4,30 +4,41 @@ import {
   // memo,
   // useContext,
   // useRef,
-  // useMemo,
-  // useState,
+  useMemo,
+  useState,
   // useReducer,
   useEffect,
   // useLayoutEffect,
   useCallback,
 } from 'react';
-import { useGlobalState } from './';
-// import { parse } from '../libs';
 
 
 
 
 
-export default function useViewportScalar() {
-  const [state, setState] = useGlobalState();
+const viewportParams = Object.freeze({
+  scalar: (window.devicePixelRatio * 4),
+  viewportMinGridScale: .5,
+  viewportMaxCelPx: 100,
+});
+
+
+
+
+
+export default function useViewportScalar({
+  width,
+  height,
+} = {}) {
+
   const {
-    width,
-    height,
     scalar,
     viewportMinGridScale,
     viewportMaxCelPx,
-    scaleRange,
-  } = state;
+  } = viewportParams;
+
+
+  const [scaleRange, setScaleRange] = useState(null);
 
 
   const setScale = useCallback(() => {
@@ -36,28 +47,37 @@ export default function useViewportScalar() {
     const minCelPx = Math.min(minCelX, minCelY);
     const min = minCelPx / scalar;
     const max = viewportMaxCelPx / scalar;
-    setState('scaleRange', [min, max]);
-  }, [width, height, scalar, viewportMinGridScale, viewportMaxCelPx, setState]);
+    setScaleRange([min, max]);
+  }, [width, height, scalar, viewportMinGridScale, viewportMaxCelPx, setScaleRange]);
+
+
+  // useEffect(() => {
+  //   window.addEventListener('resize', setScale, { passive: true });
+  //   window.addEventListener('orientationchange', setScale);
+
+  //   return () => {
+  //     window.removeEventListener('resize', setScale);
+  //     window.removeEventListener('orientationchange', setScale);
+  //   };
+  // }, [setScale]);
 
 
   useEffect(() => {
-    window.addEventListener('resize', setScale, { passive: true });
-    window.addEventListener('orientationchange', setScale);
-
-    return () => {
-      window.removeEventListener('resize', setScale);
-      window.removeEventListener('orientationchange', setScale);
-    };
-  }, [setScale]);
-
-
-  useEffect(() => {
-    if (width && height && !scaleRange.length) {
+    if (width && height && !scaleRange) {
       setScale();
     };
   }, [width, height, scaleRange, setScale]);
 
 
-  return scaleRange.reduce((acc, d) => acc + d, 0) / 2;
-  // return null;
+  const scaleInitial = useMemo(() => {
+    if (!scaleRange) return null;
+    return scaleRange.reduce((acc, d) => acc + d, 0) / 2;
+  }, [scaleRange]);
+
+
+  return {
+    scalar,
+    scaleRange,
+    scaleInitial,
+  };
 };

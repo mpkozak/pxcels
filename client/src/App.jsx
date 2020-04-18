@@ -1,156 +1,99 @@
 import React, {
-  Fragment,
-  createContext,
+  // Fragment,
+  // createContext,
   memo,
-  useContext,
+  // useContext,
   useRef,
-  useMemo,
+  // useMemo,
   useState,
-  useReducer,
+  // useReducer,
   useEffect,
   useLayoutEffect,
   useCallback,
 } from 'react';
-
 import './App.css';
 import {
-  useGlobalState,
   useParams,
   useSocket,
-  useInputDetect,
-  useTouchZoomOverride,
-  useGrid,
   useViewportScalar,
+  useGrid,
+  useInputDetect,
 } from './hooks';
-import { parse } from './libs';
+import { parse, cl } from './libs';
 import {
-  Colors,
-  Cursors,
-  Grid,
-  Minimap,
   Splash,
+  Colors,
+  Toggles,
+  Minimap,
+  Grid,
 } from './components';
 
 
 
-const { cl } = parse;
 
 
+function useInit() {
+  const {
+    width,
+    height,
+    colors = [],
+  } = useParams() || {};
 
+  const {
+    scalar,
+    scaleRange,
+    scaleInitial,
+  } = useViewportScalar({ width, height });
 
-const App = memo(function App({
-  socketPost,
-  initialScale,
-  grid,
-  ready,
-  // uiMode,
-  touch,
-  mouse,
-  children,
-} = {}) {
+  const {
+    socketActive,
+    username,
+    addListener,
+    postMessage,
+  } = useSocket();
 
-// const App = memo(function App(props) {
-
-  // const {
-  //   postMessage,
+  // console.log('useInit ran')
+  // return useMemo(() => {
+  //   console.log("useInit memo ran again")
+  //   return {
+  //     width,
+  //     height,
+  //     colors,
+  //     scalar,
+  //     scaleRange,
+  //     scaleInitial,
+  //     socketActive,
+  //     username,
+  //     addListener,
+  //     postMessage,
+  //   }
+  // }, [
+  //   width,
+  //   height,
+  //   colors,
+  //   scalar,
+  //   scaleRange,
+  //   scaleInitial,
+  //   socketActive,
+  //   username,
   //   addListener,
-  // } = socket;
+  //   postMessage,
+  // ])
 
 
-  console.log("APP PROPS",
-    // socketPost,
-    initialScale,
-    grid,
-    ready,
-  touch,
-  mouse,
-  children,
-  )
-
-
-
-  return (
-    <div id="App">
-      {children}
-      <div className={cl('Toolbar', [!ready, 'hide'], { touch })}>
-        <div className="Toolbar--toolbox left">
-          <Colors />
-          {mouse && (
-            <Cursors
-              // cursorMode={cursorMode}
-              // clickCursor={handleClickCursors}
-              // hasMouse={hasMouse}
-            />
-          )}
-        </div>
-        <div className="Toolbar--toolbox right">
-        </div>
-      </div>
-    </div>
-  );
-})
-
-
-
-          // <Colors
-          //   colors={colors}
-          //   activeColor={activeColor}
-          //   clickColor={handleClickColors}
-          //   hasMouse={hasMouse}
-          // />
-          // {hasMouse && (
-          //   <Cursors
-          //     cursorMode={cursorMode}
-          //     clickCursor={handleClickCursors}
-          //     hasMouse={hasMouse}
-          //   />
-          // )}
-
-          // <Minimap
-          //   windowRef={windowRef}
-          //   gridRef={touchRef}
-          //   mapCanvasRef={mapCanvasRef}
-          //   pan={panWindow}
-          //   hasMouse={hasMouse}
-          // />
-
-
-
-  // const {
-  //   gridReady,
-  //   gridCanvasRef,
-  //   mapCanvasRef,
-  //   clickCel,
-  // } = useGrid({ socketActive, addListener });
-
-
-
-
-
-export default memo(function HOC() {
-  void useParams();
-  const { postMessage, ...socket } = useSocket();
-  const initialScale = useViewportScalar();
-  const { gridReady, ...grid } = useGrid(socket);
-  const { uiReady, detectionRef, uiMode } = useInputDetect();
-
-  const ready = gridReady && uiReady;
-
-  return (
-    <App
-      socketPost={postMessage}
-      initialScale={initialScale}
-      grid={grid}
-      ready={ready}
-      touch={uiMode === 1}
-      mouse={uiMode === 2}
-    >
-     {!ready && (
-        <Splash splashRef={detectionRef} loading={!gridReady} />
-      )}
-    </App>
-  );
-});
+  return {
+    width,
+    height,
+    colors,
+    scalar,
+    scaleRange,
+    scaleInitial,
+    socketActive,
+    username,
+    addListener,
+    postMessage,
+  };
+};
 
 
 
@@ -164,91 +107,55 @@ export default memo(function HOC() {
 
 
 
+export default memo(function App() {
+  // console.log("app rendered")
 
-
-
-const a = memo(function HOC() {
-  const [state, setState] = useGlobalState();
   const {
     width,
     height,
     colors,
-    // uuid,
-    // username,
     scalar,
-    // viewportMinGridScale,
-    // viewportMaxCelPx,
     scaleRange,
-    // uiMode,
-    // cursorMode,
-    // activeColor,
-  } = state;
+    scaleInitial,
+    socketActive,
+    // username,
+    addListener,
+    // postMessage,
+  } = useInit();
+
+  const splashRef = useRef(null);
+  const { uiMode } = useInputDetect(splashRef);
 
   const [cursorMode, setCursorMode] = useState(null);
   const [activeColor, setActiveColor] = useState(6);
+
+  const {
+    gridReady,
+    gridCanvasRef,
+    mapCanvasRef,
+    clickCel,
+  } = useGrid({
+        width,
+        height,
+        colors,
+        scalar,
+        socketActive,
+        addListener,
+        cursorMode,
+        activeColor,
+      });
+
+
+
   const [zoomActive, setZoomActive] = useState(null);
   const [scale, setScale] = useState(1);
   const [center, setCenter] = useState(null);
   const [zoom, setZoom] = useState(null);
   const prevZoom = useRef(null);
 
-  const splashRef = useRef(null);
   const windowRef = useRef(null);
   const touchRef = useRef(null);
-  // const gridCanvasRef = useRef(null);
-  // const mapCanvasRef = useRef(null);
 
-
-  // const params = useParams();
-
-  // useEffect(() => {
-
-  // }, [width])
-
-
-  const {
-    socketStatus,
-    // postMessage,
-    addListener,
-  } = useSocket();
-
-  const {
-    gridStatus,
-    gridCanvasRef,
-    mapCanvasRef,
-    clickCel,
-  } = useGrid({
-        socketActive: socketStatus === 2,
-        addListener,
-        // gridCanvasRef,
-        // mapCanvasRef,
-      });
-
-  const {
-    initialScale,
-    // clampScale,
-  } = useViewportScalar();
-
-
-  const {
-    uiMode,
-    hidStatus,
-    hasTouch,
-    hasMouse,
-  } = {};
-
-  // useHIDDetect(splashRef);
-
-  void useTouchZoomOverride(hasTouch);
-
-
-
-
-console.log('uiMode', uiMode)
-  // const initialScale = useMemo(() => {
-  //   if (!scaleRange.length) return null;
-  //   return (scaleRange[0] + scaleRange[1]) / 2;
-  // }, [scaleRange])
 
   const panWindow = useCallback((x, y) => {
     const el = windowRef.current;
@@ -270,6 +177,7 @@ console.log('uiMode', uiMode)
     setCenter([x, y]);
   }, [windowRef, setCenter]);
 
+
   const updateZoom = useCallback((zoomIn) => {
     const newZoom = parse.clamp(zoom * (zoomIn ? 1.4 : 0.6), scaleRange).toFixed(2);
     if (newZoom) {
@@ -279,44 +187,25 @@ console.log('uiMode', uiMode)
   }, [zoom, scaleRange, storeCenter]);
 
 
-  const handleClickColors = useCallback(e => {
-    const { id } = e.target;
-    if (!id) return null;
-    const color = +id.split('-')[1];
-    setActiveColor(color);
-  }, [setActiveColor]);
-
-  const handleClickCursors = useCallback(e => {
-    const { id } = e.target;
-    if (!id) return null;
-    const [setting, value] = id.split('-');
-    if (setting === 'cursor') {
-      return setCursorMode(value);
-    };
-    if (setting === 'zoom') {
-      return updateZoom(+value);
-    };
-  }, [setCursorMode, updateZoom]);
-
-
   useEffect(() => {   // set initial cursor mode
     // console.log('App ef-1')
-    if (hidStatus && !cursorMode) {
+    if (uiMode && cursorMode === null) {
       // console.log('App ef-1 --- set initial cursor mode')
-      setCursorMode(hasMouse ? 'drag' : 'paint');
+      setCursorMode(uiMode === 2 ? 0 : 1);
     };
-  }, [hidStatus, cursorMode, setCursorMode, hasMouse]);
+  }, [uiMode, cursorMode, setCursorMode]);
 
 
   useEffect(() => {   // set initial zoom and scroll to random spot
     // console.log('App ef-2')
-    if (initialScale && !zoom) {
+    if (scaleInitial && !zoom) {
       // console.log('App ef-2 --- set initial zoom and scroll to random spot')
       const paddedRandom = () => (Math.random() + 1) * .5;
-      setZoom(initialScale);
+      setZoom(scaleInitial);
       panWindow(paddedRandom(), paddedRandom());
     };
-  }, [initialScale, zoom, setZoom, panWindow])
+  }, [scaleInitial, zoom, setZoom, panWindow])
+
 
 
 
@@ -381,7 +270,7 @@ console.log('uiMode', uiMode)
         setZoom(newZoom);
       };
     };
-  }, [zoomActive, prevZoom, scaleRange, zoom, setZoom, scale, setScale, storeCenter, setCenter]);
+  }, [zoomActive, prevZoom, zoom, scaleRange, setZoom, scale, setScale, storeCenter, setCenter]);
 
 
   useLayoutEffect(() => {   // recenter window
@@ -391,108 +280,39 @@ console.log('uiMode', uiMode)
   }, [center, panWindow]);
 
 
-
-
-  // const storeDynamicCenter = useCallback((t1, t2) => {
-  //   const el = windowRef.current;
-  //   if (!el) return null;
-  //   const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = el;
-  //   const tX = ((t1.clientX + t2.clientX) / 2);
-  //   const tY = ((t1.clientY + t2.clientY) / 2);
-  //   const x = (scrollLeft + tX) / scrollWidth;
-  //   const y = (scrollTop + tY) / scrollHeight;
-  //   setCenter([x, y, t1.clientX, t1.clientY]);
-  // }, [windowRef, setCenter]);
-
-  // const handleTouchStart = useCallback(e => {
-  //   storeCenter();
-  //   prevZoom.current = zoom;
-  // }, [storeCenter, prevZoom, zoom]);
-
-  // const handleTouchMove = useCallback(e => {
-  //   const { scale, targetTouches} = e;
-  //   if (!scale || targetTouches.length !== 2) return null;
-  //   setScale(scale);
-  // }, [setScale]);
-
-  // const handleTouchEnd = useCallback(e => {
-  //   setScale(null);
-  //   setCenter(null);
-  // }, [setScale, setCenter]);
-
-  // useEffect(() => {
-  //   const el = touchRef.current;
-  //   if (el && scale) {
-  //     el.addEventListener('touchmove', handleTouchMove, { passive: true });
-  //     el.addEventListener('touchend', handleTouchEnd, { passive: true });
-  //     el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
-  //   };
-  //   return () => {
-  //     if (el) {
-  //       el.removeEventListener('touchmove', handleTouchMove);
-  //       el.removeEventListener('touchend', handleTouchEnd);
-  //       el.removeEventListener('touchcancel', handleTouchEnd);
-  //     };
-  //   };
-  // }, [touchRef, scale, handleTouchMove, handleTouchEnd]);
-
-  // useEffect(() => {
-  //   if (scale) {
-  //     const newZoom = clampScale((prevZoom.current * scale));
-  //     setZoom(newZoom);
-  //     storeCenter();
-  //   } else {
-  //     prevZoom.current = zoom;
-  //     setCenter(null);
-  //     setScale(1);
-  //   }
-  // }, [scale, clampScale, prevZoom, zoom, setZoom, storeCenter, setCenter, setScale]);
-
-  // useLayoutEffect(() => {   // recenter window
-  //   if (center) {
-  //     panWindow(...center);
-  //   };
-  // }, [center, panWindow]);
-
+  const ready = gridReady && !!uiMode;
+  const touch = uiMode === 1;
+  const mouse = uiMode === 2;
 
 
   return (
     <div id="App">
-      {!hidStatus && (
-        <Splash
-          splashRef={splashRef}
-          gridStatus={gridStatus}
-        />
+     {!ready && (
+        <Splash splashRef={splashRef} loading={!gridReady} />
       )}
-      <div
-        className={
-          'Toolbar'
-          + (!hidStatus ? ' hide' : '')
-          + (hasTouch ? ' touch' : '')
-        }
-      >
+      <div className={cl('Toolbar', [!ready, 'hide'], { touch })}>
         <div className="Toolbar--toolbox left">
           <Colors
             colors={colors}
             activeColor={activeColor}
-            clickColor={handleClickColors}
-            hasMouse={hasMouse}
+            uiMode={uiMode}
+            dispatch={setActiveColor}
           />
-          {hasMouse && (
-            <Cursors
+          {mouse && (
+            <Toggles
               cursorMode={cursorMode}
-              clickCursor={handleClickCursors}
-              hasMouse={hasMouse}
+              dispatchCursor={setCursorMode}
+              dispatchZoom={updateZoom}
             />
           )}
         </div>
         <div className="Toolbar--toolbox right">
           <Minimap
             windowRef={windowRef}
-            gridRef={touchRef}
+            touchRef={touchRef}
             mapCanvasRef={mapCanvasRef}
             pan={panWindow}
-            hasMouse={hasMouse}
+            uiMode={uiMode}
           />
         </div>
       </div>
@@ -507,7 +327,7 @@ console.log('uiMode', uiMode)
         cursorMode={cursorMode}
         clickCel={clickCel}
         touchStart={handleTouchStart}
-        hasMouse={hasMouse}
+        uiMode={uiMode}
       />
     </div>
   );

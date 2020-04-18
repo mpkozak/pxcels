@@ -11,7 +11,6 @@ import {
   // useLayoutEffect,
   useCallback,
 } from 'react';
-import { useGlobalState } from './';
 
 
 /*
@@ -20,21 +19,17 @@ import { useGlobalState } from './';
 */
 
 
-
 export default function useGrid({
+  width,
+  height,
+  colors,
+  scalar,
   socketActive,
   addListener,
+  cursorMode,
+  activeColor,
 } = {}) {
 
-  const [state] = useGlobalState();
-  const {
-    width,
-    height,
-    colors,
-    scalar,
-    cursorMode,
-    activeColor,
-  } = state;
 
   const [gridStatus, setGridStatus] = useState(0);
   const [redrawGridFlag, setRedrawGridFlag] = useState(false);
@@ -75,7 +70,7 @@ export default function useGrid({
 
 
   const handleSocketMessage = useCallback((action, payload) => {
-    console.log("socket message in GRID --- ", action)
+    // console.log("socket message in GRID --- ", action)
     switch (action) {
       case 'update_grid':
         handleUpdateGrid(payload);
@@ -94,7 +89,6 @@ export default function useGrid({
 
 
   const post = useMemo(() => {
-    console.log("assigned post in grid")
     return addListener(handleSocketMessage);
   }, [addListener, handleSocketMessage]);
 
@@ -105,7 +99,6 @@ export default function useGrid({
 
 
   useEffect(() => {   // get grid data from socket
-    console.log("grid effect")
     if (socketActive && post) {
       post('get_grid');
     };
@@ -254,5 +247,6 @@ export default function useGrid({
     gridCanvasRef,
     mapCanvasRef,
     clickCel,
+    // lastDraw,
   };
 };

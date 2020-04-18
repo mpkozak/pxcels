@@ -3,15 +3,15 @@ import {
   // createContext,
   // memo,
   // useContext,
-  useRef,
-  useMemo,
-  // useState,
+  // useRef,
+  // useMemo,
+  useState,
   // useReducer,
   useEffect,
   // useLayoutEffect,
   useCallback,
 } from 'react';
-import { useGlobalState, useTouchZoomOverride } from './';
+import { useTouchZoomOverride } from './';
 
 
 /*
@@ -21,25 +21,23 @@ import { useGlobalState, useTouchZoomOverride } from './';
 */
 
 
-export default function useInputDetect() {
-  const [state, setState] = useGlobalState();
-  const { uiMode } = state;
+export default function useInputDetect(ref = null) {
+  const [uiMode, setUiMode] = useState(0);
+
 
   void useTouchZoomOverride(uiMode === 1);
-
-  const ref = useRef(null);
 
 
   const handleTouch = useCallback(e => {
     e.preventDefault();
-    setState('uiMode', 1);
-  }, [setState]);
+    setUiMode(1);
+  }, [setUiMode]);
 
 
   const handleMouse = useCallback(e => {
     e.preventDefault();
-    setState('uiMode', 2);
-  }, [setState]);
+    setUiMode(2);
+  }, [setUiMode]);
 
 
   useEffect(() => {
@@ -60,13 +58,7 @@ export default function useInputDetect() {
   }, [ref, uiMode, handleTouch, handleMouse]);
 
 
-  const uiReady = useMemo(() => !!uiMode, [uiMode]);
-
-
   return {
-    uiReady,
-    detectionRef: ref,
     uiMode,
   };
 };
-

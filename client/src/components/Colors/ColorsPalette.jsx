@@ -1,19 +1,19 @@
 import React, {
-  Fragment,
-  createContext,
+  // Fragment,
+  // createContext,
   memo,
-  useContext,
-  useRef,
+  // useContext,
+  // useRef,
   useMemo,
   useState,
-  useReducer,
+  // useReducer,
   useEffect,
-  useLayoutEffect,
+  // useLayoutEffect,
   useCallback,
 } from 'react';
+import { cl } from '../../libs';
 
-import { parse } from '../../libs';
-const { cl } = parse;
+
 
 
 
@@ -22,7 +22,7 @@ export default memo(function ColorsPalette({
   colors = [],
   clickColor = null,
   hidePalette = null,
-  hasMouse = false,
+  mouse = false,
   touch = false,
 } = {}) {
 
@@ -30,10 +30,10 @@ export default memo(function ColorsPalette({
 
   const handleClick = useCallback(e => {
     clickColor(e);
-    if (!hasMouse && e.target.id) {
+    if (touch && e.target.id) {
       hidePalette();
     };
-  }, [clickColor, hidePalette, hasMouse]);
+  }, [clickColor, hidePalette, touch]);
 
   const handleTouchStart = useCallback(e => {
     const { targetTouches } = e;
@@ -47,14 +47,13 @@ export default memo(function ColorsPalette({
 
   const handleTouchMove = useCallback(e => {
     // e.stopPropagation();
-      e.preventDefault();
+    e.preventDefault();
     const { targetTouches } = e;
     const { clientX } = targetTouches[0];
     const deltaX = touchStartX - clientX;
     if (deltaX > 10) {
       // e.preventDefault();
-    e.stopPropagation();
-
+      e.stopPropagation();
       setTouchtouchStartX(null);
       hidePalette();
     };
@@ -80,11 +79,11 @@ export default memo(function ColorsPalette({
         'Colors--palette-cel',
         'button',
         'button--small',
-        [hasMouse, 'button--small-color__mouse']
+        [mouse, 'button--small-color__mouse']
       )}
       style={{ backgroundColor: hex }}
     />
-  ), [colors, hasMouse]);
+  ), [colors, mouse]);
 
 
   return (

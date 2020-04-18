@@ -4,7 +4,13 @@ import React, { memo, useMemo } from 'react';
 
 
 
-export default memo(function GridLines({ width = 0, height = 0, pxWidth, pxHeight } = {}) {
+export default memo(function GridLines({
+  width = 0,
+  height = 0,
+  pxWidth,
+  pxHeight,
+} = {}) {
+
   const cols = useMemo(() => {
     return (new Array(1 + width).fill('')).map((d, i) =>
       <path key={`x${i}`} d={`M ${i} ${height} L ${i} 0`} />

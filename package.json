@@ -8,7 +8,8 @@
     "dev": "nodemon index.js 8080",
     "both": "concurrently \"nodemon index.js\" \"cd client && npm start\"",
     "heroku": "sh/deploy_heroku.sh",
-    "kozak": "sh/deploy_kozak.sh"
+    "kozak": "sh/deploy_kozak.sh",
+    "mig": "node migrations.js"
   },
   "author": "m. parker kozak",
   "license": "ISC",

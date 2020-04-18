@@ -4,7 +4,6 @@ import {
   useEffect,
   useCallback,
 } from 'react';
-import { useGlobalState } from './';
 
 
 /*
@@ -16,10 +15,12 @@ import { useGlobalState } from './';
 
 
 export default function useSocket() {
-  const [state, setState] = useGlobalState();
-  const { uuid } = state;
-
   const [socketStatus, setSocketStatus] = useState(0);
+  const [user, setUser] = useState({
+    uuid: localStorage.getItem('uuid') || '',
+    username: localStorage.getItem('username') || '',
+  });
+
   const client = useRef(null);
   const listener = useRef(null);
 
@@ -41,14 +42,16 @@ export default function useSocket() {
 
 
   const handleReqUuid = useCallback(() => {
+    const { uuid } = user;
     client.current.send(JSON.stringify({ login: uuid }));
-  }, [client, uuid]);
+  }, [client, user]);
 
 
   const handleStoreUser = useCallback(val => {
-    setState('login', val);
+    const { uuid, name } = val;
+    setUser({ uuid, name });
     setSocketStatus(2);
-  }, [setState, setSocketStatus]);
+  }, [setUser, setSocketStatus]);
 
 
   const handleMessage = useCallback(msg => {
@@ -72,7 +75,7 @@ export default function useSocket() {
 
 
   const startClient = useCallback(() => {
-    console.log('connecting socket...');
+    // console.log('connecting socket...');
     const loc = window.location;
     let socketURI;
     if (loc.protocol === 'https:') {
@@ -99,11 +102,12 @@ export default function useSocket() {
 
 
   const postMessage = useCallback((action, payload) => {
+    const { uuid } = user;
     if (!socketStatus || !uuid) {
       return null;
     };
     client.current.send(JSON.stringify({ action, payload, uuid }));
-  }, [socketStatus, uuid, client]);
+  }, [socketStatus, user, client]);
 
 
   const addListener = useCallback((fn) => {
@@ -122,7 +126,8 @@ export default function useSocket() {
 
   return {
     socketActive: socketStatus === 2,
-    postMessage,
+    username: user.username,
     addListener,
+    postMessage,
   };
 };

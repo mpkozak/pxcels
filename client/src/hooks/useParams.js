@@ -1,27 +1,33 @@
 import {
+  // Fragment,
+  // createContext,
+  // memo,
+  // useContext,
   useRef,
+  // useMemo,
+  useState,
+  // useReducer,
   useEffect,
+  // useLayoutEffect,
   useCallback,
 } from 'react';
-import { useGlobalState } from './';
 
 
 
 
 
 export default function useParams() {
-  const [state, setState] = useGlobalState();
-  const { width } = state;
+  const [params, setParams] = useState(null);
   const activeReq = useRef(false);
 
 
   const parseAndSetParams = useCallback((data) => {
-    setState('params', {
+    setParams({
       width: +data.width,
       height: +data.height,
       colors: data.colors,
     });
-  }, [setState]);
+  }, [setParams]);
 
 
   const fetchParams = useCallback(async () => {
@@ -40,12 +46,12 @@ export default function useParams() {
 
 
   useEffect(() => {
-    if (!width && !activeReq.current) {
+    if (!params && !activeReq.current) {
       activeReq.current = true;
       fetchParams();
     };
-  }, [width, activeReq, fetchParams]);
+  }, [params, activeReq, fetchParams]);
 
 
-  return null;
+  return params;
 };

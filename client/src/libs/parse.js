@@ -72,9 +72,10 @@ function concatClassName(...args) {
 
 
 
-export default Object.freeze({
+export const parse = Object.freeze({
   time: parseTime,
   pct: parsePct,
   clamp: clampToRange,
-  cl: concatClassName,
 });
+
+export default concatClassName;

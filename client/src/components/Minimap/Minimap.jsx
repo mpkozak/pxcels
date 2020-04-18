@@ -1,12 +1,18 @@
 import React, {
+  // Fragment,
+  // createContext,
   memo,
+  // useContext,
   useRef,
+  // useMemo,
   useState,
+  // useReducer,
   useEffect,
+  // useLayoutEffect,
   useCallback,
 } from 'react';
 import './Minimap.css';
-import { parse } from '../../libs';
+import { cl, parse } from '../../libs';
 
 
 
@@ -15,9 +21,9 @@ import { parse } from '../../libs';
 export default memo(function Minimap({
   mapCanvasRef = null,
   windowRef = null,
-  gridRef = null,
+  touchRef = null,
   pan = null,
-  hasMouse = false,
+  uiMode = 0,
 } = {}) {
 
   const [bigMap, setBigMap] = useState(false);
@@ -29,16 +35,17 @@ export default memo(function Minimap({
     if (bigMap) {
       return null;
     };
-    if (windowRef.current && gridRef.current) {
+    if (windowRef.current && touchRef.current) {
       setBigMap(true);
     };
-  }, [windowRef, gridRef, bigMap, setBigMap]);
+  }, [windowRef, touchRef, bigMap, setBigMap]);
 
   const disableMap = useCallback(e => {
     e.stopPropagation();
     setBigMap(false);
     setPanning(false);
   }, [setBigMap, setPanning]);
+
 
   const disablePanning = useCallback(e => {
     setPanning(false);
@@ -47,7 +54,7 @@ export default memo(function Minimap({
 
   const positionViewbox = useCallback(() => {
     const elWindow = windowRef.current;
-    const elGrid = gridRef.current;
+    const elGrid = touchRef.current;
     const elViewer = viewboxRef.current;
     if (!elWindow || !elGrid || !elViewer) {
       return null;
@@ -63,7 +70,7 @@ export default memo(function Minimap({
     style.top = parse.pct(viewboxTop);
     style.width = parse.pct(viewboxWidth);
     style.height = parse.pct(viewboxHeight);
-  }, [windowRef, gridRef, viewboxRef]);
+  }, [windowRef, touchRef, viewboxRef]);
 
 
   useEffect(() => {   // redraw viewbox
@@ -139,20 +146,20 @@ export default memo(function Minimap({
 
   return (
     <div className="Minimap">
-      <div className={'Minimap--interceptor' + (bigMap ? ' active' : '')}
+      <div className={cl('Minimap--interceptor', [bigMap, 'active'])}
         onClick={disableMap}
       />
       <div
-        className={
-          'Minimap--toggle'
-          + ' button'
-          + ' button--big'
-          + (hasMouse ? ' Minimap--toggle__mouse' : '')
-          + (!bigMap ? ' small' : '')
-        }
+        className={cl(
+          'Minimap--toggle',
+          'button',
+          'button--big',
+          [uiMode === 2, 'Minimap--toggle__mouse'],
+          [!bigMap, 'small'],
+        )}
         onClick={activateMap}
       >
-        <div className={'Minimap--map' + (!bigMap ? ' small' : '')}>
+        <div className={cl('Minimap--map', [!bigMap, 'small'])}>
           <canvas className="Minimap--map-layer Minimap--canvas"
             ref={mapCanvasRef}
           />

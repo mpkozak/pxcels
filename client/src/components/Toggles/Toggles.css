@@ -1,0 +1,27 @@
+.Toggles {
+  margin-left: 15px;
+  display: grid;
+  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 5px;
+}
+
+
+
+
+
+.Toggles--button.cursor-1 {
+  background-image: url('../../_img/draw.png');
+}
+
+.Toggles--button.cursor-0 {
+  background-image: url('../../_img/grab.png');
+}
+
+.Toggles--button.zoom-0 {
+  background-image: url('../../_img/zoom-out.png');
+}
+
+.Toggles--button.zoom-1 {
+  background-image: url('../../_img/zoom-in.png');
+}

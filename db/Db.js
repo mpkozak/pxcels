@@ -4,7 +4,7 @@ const { MongoClient } = require('mongodb');
 
 
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0-eujzt.mongodb.net/test?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_URL}/test?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useUnifiedTopology: true });
 
 
@@ -31,6 +31,24 @@ Db._collections = {
       }));
       return this._c.bulkWrite(queue);
     },
+    // insert: function(arr) {
+    //   const queue = arr.map(d => {
+    //     const entry = {
+    //       _id: d._id
+    //       cel_id: d.cel_id,
+    //       col: d.col,
+    //       row: d.row,
+    //       current: {
+    //         color: 26,
+    //         user_uuid: '',
+    //         user_name: '',
+    //         timestamp: Date.now(),
+    //       },
+    //     };
+    //     return { insertOne: { document: { ...entry } } };
+    //   });
+    //   return this._c.bulkWrite(queue);
+    // },
   },
   history: {
     _c: undefined,
@@ -58,6 +76,12 @@ Db._collections = {
     _c: undefined,
     get: function() {
       return this._c.findOne({ _id: 'data' }, { projection: { _id: 0 } });
+    },
+    updateOne: function(_id, obj) {
+      return this._c.updateOne(
+        { _id: _id },
+        { $set: { ...obj } }
+      );
     },
   },
   users: {

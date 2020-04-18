@@ -1,19 +1,17 @@
 import React, { memo, useState, useCallback } from 'react';
 import './Colors.css';
-import { useGlobalState } from '../../hooks';
 import { ColorsCurrent, ColorsPalette } from './';
 
 
 
 
 
-export default memo(function Colors() {
-  const [state, setState] = useGlobalState();
-  const {
-    colors,
-    activeColor,
-    uiMode,
-  } = state;
+export default memo(function Colors({
+  colors,
+  activeColor,
+  uiMode,
+  dispatch,
+} = {}) {
 
   const [showPalette, setShowPalette] = useState(null);
 
@@ -32,8 +30,8 @@ export default memo(function Colors() {
     const { id } = e.target;
     if (!id) return null;
     const color = +id.split('-')[1];
-    setState('activeColor', color);
-  }, [setState]);
+    dispatch(color);
+  }, [dispatch]);
 
 
   return (
@@ -41,14 +39,14 @@ export default memo(function Colors() {
       <ColorsCurrent
         color={colors[activeColor]}
         togglePalette={togglePalette}
-        hasMouse={uiMode === 2}
+        mouse={uiMode === 2}
       />
       <ColorsPalette
         active={showPalette}
         colors={colors}
         clickColor={handleClickColor}
         hidePalette={hidePalette}
-        hasMouse={uiMode === 2}
+        mouse={uiMode === 2}
         touch={uiMode === 1}
       />
     </div>

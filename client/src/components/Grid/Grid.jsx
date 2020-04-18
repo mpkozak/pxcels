@@ -23,7 +23,7 @@ export default memo(function Grid({
   cursorMode,
   clickCel = null,
   touchStart = null,
-  hasMouse = false,
+  uiMode = 0,
 } = {}) {
 
   const baseWidth = useMemo(() => scalar * width, [scalar, width]);
@@ -96,7 +96,7 @@ export default memo(function Grid({
 
   const gridCanvasStyle = useMemo(() => ({
     transform: `scale(${zoom})`,
-    cursor: cursorMode === 'paint'
+    cursor: cursorMode
       ? 'crosshair'
       : (drag ? 'move' : 'grab'),
   }), [zoom, cursorMode, drag]);
@@ -105,7 +105,7 @@ export default memo(function Grid({
   return (
     <div className="Grid--window"
       ref={windowRef}
-      onMouseDown={hasMouse ? handleDragStart : null}
+      onMouseDown={uiMode === 2 ? handleDragStart : null}
     >
       <div className="Grid--flex-wrap">
         <div className="Grid--flex">

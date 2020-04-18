@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
-import './Splash.css'
-import { parse } from '../../libs';
-const { cl } = parse;
+import './Splash.css';
+import { cl } from '../../libs';
 
 
 
