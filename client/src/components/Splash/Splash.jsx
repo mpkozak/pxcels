@@ -1,4 +1,6 @@
-import React, { memo } from 'react';
+import React, {
+  memo
+} from 'react';
 import './Splash.css';
 import { cl } from '../../libs';
 
@@ -8,13 +10,15 @@ import { cl } from '../../libs';
 
 export default memo(function Splash({
   splashRef = null,
-  loading = true,
+  gridReady = false,
 } = {}) {
+
+
 
 
   return (
     <div
-      className={cl('Splash', [loading, 'Splash--loading'])}
+      className={cl('Splash', [!gridReady, 'Splash--loading'])}
       ref={splashRef}
     >
       <h1>PxCels by<br />Kozak</h1>

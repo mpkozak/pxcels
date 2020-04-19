@@ -1,92 +1,109 @@
 import React, {
+  Fragment,
+  createContext,
   memo,
-  useState,
-  useEffect,
+  useContext,
+  useRef,
   useMemo,
+  useState,
+  useReducer,
+  useEffect,
+  useLayoutEffect,
   useCallback,
 } from 'react';
-import './Grid.css';
-import { GridLines } from './';
+import './Grid.css'
+// import { cl } from '../../libs';
+import {
+  GridCanvas,
+  GridLines,
+  GridWindow,
+} from './';
 
 
 
 
 
 export default memo(function Grid({
-  windowRef,
-  touchRef,
-  gridCanvasRef,
+  uiMode = 0,
+  cursorMode = 0,
+  windowRef = null,
+  canvasRef = null,
+  paintCel = null,
+  scalar = 1,
+  zoom = 1,
+
+  gridRef,
   width,
   height,
-  scalar,
-  zoom,
-  cursorMode,
-  clickCel = null,
+  // cursorMode,
   touchStart = null,
-  uiMode = 0,
 } = {}) {
 
-  const baseWidth = useMemo(() => scalar * width, [scalar, width]);
-  const baseHeight = useMemo(() => scalar * height, [scalar, height]);
-  const pxWidth = useMemo(() => baseWidth * zoom, [baseWidth, zoom]);
-  const pxHeight = useMemo(() => baseHeight * zoom, [baseHeight, zoom]);
-
-  const [drag, setDrag] = useState(false);
 
 
-/*
-    TOUCH EVENTS
-*/
+  const gridRatio = useMemo(() => scalar * zoom, [scalar, zoom]);
+  const pxWidth = useMemo(() => width * gridRatio, [width, gridRatio]);
+  const pxHeight = useMemo(() => height * gridRatio, [height, gridRatio]);
 
 
 
 
+///////////////////////////////////////
+// Mouse Drag
+///////////////////////////////////////
 
 
+  const [dragging, setDragging] = useState(false);
 
 
-
-/*
-    MOUSE EVENTS
-*/
-
-  const handleDragStart = useCallback(e => {
-    if (cursorMode === 'paint') {
-      return null;
-    };
-    setDrag(true);
-  }, [cursorMode, setDrag]);
+  const startDragging = useCallback(e => {
+    if (cursorMode !== 0) return null;
+    setDragging(true);
+  }, [cursorMode, setDragging]);
 
 
-  const handleDragEnd = useCallback(e => {
-    setDrag(false);
-  }, [setDrag]);
+  const stopDragging = useCallback(e => {
+    setDragging(false);
+  }, [setDragging]);
 
 
-  const handleDragMove = useCallback(e => {
+  const dragWindow = useCallback(e => {
     const el = windowRef.current;
     el.scrollBy(-e.movementX, -e.movementY);
   }, [windowRef]);
 
 
   useEffect(() => {
-    if (drag) {
-      window.addEventListener('mousemove', handleDragMove);
-      window.addEventListener('mouseup', handleDragEnd);
+    if (dragging) {
+      window.addEventListener('mousemove', dragWindow);
+      window.addEventListener('mouseup', stopDragging);
     } else {
-      window.removeEventListener('mousemove', handleDragMove);
-      window.removeEventListener('mouseup', handleDragEnd);
+      window.removeEventListener('mousemove', dragWindow);
+      window.removeEventListener('mouseup', stopDragging);
     };
-  }, [drag, handleDragMove, handleDragEnd]);
+  }, [dragging, dragWindow, stopDragging]);
 
 
-  const handleClickCel = useCallback(e => {
+
+///////////////////////////////////////
+// Painting
+///////////////////////////////////////
+
+  const handlePaintCel = useCallback(e => {
+    if (cursorMode !== 1) return null;
     const { clientX, clientY } = e;
     const { x, y } = e.target.getBoundingClientRect();
-    const cX = Math.floor((clientX - x) / (scalar * zoom));
-    const cY = Math.floor((clientY - y) / (scalar * zoom));
-    clickCel(cX, cY);
-  }, [scalar, zoom, clickCel]);
+    const cX = Math.floor((clientX - x) / gridRatio);
+    const cY = Math.floor((clientY - y) / gridRatio);
+    paintCel(cX, cY);
+  }, [cursorMode, gridRatio, paintCel]);
+
+
+
+
+
+
+
 
 
   const gridStyle = useMemo(() => ({
@@ -94,42 +111,52 @@ export default memo(function Grid({
     height: pxHeight + 'px',
   }), [pxWidth, pxHeight]);
 
-  const gridCanvasStyle = useMemo(() => ({
+
+  const canvasStyle = useMemo(() => ({
     transform: `scale(${zoom})`,
     cursor: cursorMode
       ? 'crosshair'
-      : (drag ? 'move' : 'grab'),
-  }), [zoom, cursorMode, drag]);
+      : (dragging ? 'move' : 'grab'),
+  }), [zoom, cursorMode, dragging]);
 
 
   return (
-    <div className="Grid--window"
-      ref={windowRef}
-      onMouseDown={uiMode === 2 ? handleDragStart : null}
+    <GridWindow
+      uiMode={uiMode}
+      windowRef={windowRef}
+      startDragging={startDragging}
     >
-      <div className="Grid--flex-wrap">
-        <div className="Grid--flex">
-          <div className="Grid"
-            ref={touchRef}
-            style={gridStyle}
-            onTouchStart={touchStart}
-            // onTouchMove={handleTouchMove}
-            // onTouchEnd={handleTouchEnd}
-          >
-            <canvas className="Grid--canvas"
-              ref={gridCanvasRef}
-              style={gridCanvasStyle}
-              onClick={handleClickCel}
-            />
-            <GridLines
-              width={width}
-              height={height}
-              pxWidth={pxWidth}
-              pxHeight={pxHeight}
-            />
-          </div>
-        </div>
+      <div
+        className="Grid"
+        ref={gridRef}
+        style={gridStyle}
+        onTouchStart={touchStart}
+        // onTouchMove={handleTouchMove}
+        // onTouchEnd={handleTouchEnd}
+      >
+        <GridCanvas
+          canvasRef={canvasRef}
+          canvasStyle={canvasStyle}
+          paintCel={handlePaintCel}
+        />
+        <GridLines
+          width={width}
+          height={height}
+          pxWidth={pxWidth}
+          pxHeight={pxHeight}
+          gridRatio={gridRatio}
+        />
       </div>
-    </div>
+    </GridWindow>
   );
 });
+
+
+
+
+        // <canvas className="Grid__canvas"
+        //   ref={gridCanvasRef}
+        //   style={gridCanvasStyle}
+        //   onClick={handleClickCel}
+        // />
+        //

@@ -1,4 +1,4 @@
-.Grid--window {
+.Grid__window {
   position: fixed;
   left: 0;
   top: 0;
@@ -11,16 +11,16 @@
   z-index: 100;
   overflow: auto;
   -ms-overflow-style: none;
-  touch-action: manipulation;
+  touch-action: manipulation;;
 }
 
-.Grid--window::-webkit-scrollbar {
+.Grid__window::-webkit-scrollbar {
   display: none;
 }
 
 
 
-.Grid--flex-wrap {
+.Grid__flex-wrap {
   position: relative;
   max-width: 100%;
   max-height: 100%;
@@ -30,7 +30,7 @@
   justify-content: flex-start;
 }
 
-.Grid--flex-wrap::after {
+.Grid__flex-wrap::after {
   width: 100%;
   height: calc(12vh - 30px);
   min-height: 90px;
@@ -40,7 +40,7 @@
 
 
 
-.Grid--flex {
+.Grid__flex {
   padding: 60px;
 }
 
@@ -52,7 +52,7 @@
 
 
 
-.Grid--canvas {
+.Grid__canvas {
   position: absolute;
   left: 0;
   top: 0;
@@ -64,7 +64,7 @@
 
 
 
-.Grid--lines {
+.Grid__lines {
   position: absolute;
   left: 0;
   top: 0;
@@ -72,6 +72,6 @@
   z-index: 120;
 }
 
-.Grid--lines path {
+.Grid__line-group {
   stroke: rgba(0, 0, 0, .8);
 }

@@ -100,6 +100,16 @@ function useInit() {
 
 
 
+// function useColors({
+//   colors = [],
+// }) {
+
+//   const [activeColor, setActiveColor] = useState(6);
+
+
+
+// };
+
 
 
 
@@ -108,8 +118,6 @@ function useInit() {
 
 
 export default memo(function App() {
-  // console.log("app rendered")
-
   const {
     width,
     height,
@@ -124,16 +132,17 @@ export default memo(function App() {
   } = useInit();
 
   const splashRef = useRef(null);
-  const { uiMode } = useInputDetect(splashRef);
+  const { uiMode } = useInputDetect(splashRef);   // 0 = unknown; 1 = touch; 2 = mouse;
 
-  const [cursorMode, setCursorMode] = useState(null);
+  const [cursorMode, setCursorMode] = useState(null);   // 0 = drag; 1 = paint;
   const [activeColor, setActiveColor] = useState(6);
 
   const {
     gridReady,
-    gridCanvasRef,
-    mapCanvasRef,
-    clickCel,
+    gridCanvas,
+    gridMapCanvas,
+    gridPaintCel,
+    // gridLastDraw,
   } = useGrid({
         width,
         height,
@@ -154,7 +163,7 @@ export default memo(function App() {
   const prevZoom = useRef(null);
 
   const windowRef = useRef(null);
-  const touchRef = useRef(null);
+  const gridRef = useRef(null);
 
 
   const panWindow = useCallback((x, y) => {
@@ -169,6 +178,7 @@ export default memo(function App() {
       el.scrollBy(deltaX, deltaY);
     };
   }, [windowRef]);
+
 
   const storeCenter = useCallback(() => {
     const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = windowRef.current;
@@ -220,6 +230,7 @@ export default memo(function App() {
     setZoomActive(true);
   }, [setZoomActive, prevZoom, zoom, storeCenter]);
 
+
   const handleTouchMove = useCallback(e => {
     const { scale, targetTouches } = e;
     if (!scale || targetTouches.length !== 2) {
@@ -234,6 +245,7 @@ export default memo(function App() {
     setScale(scale);
   }, [zoomActive, setZoomActive, storeCenter, setScale]);
 
+
   const handleTouchEnd = useCallback(e => {
     setCenter(null);
     setZoomActive(false);
@@ -241,7 +253,7 @@ export default memo(function App() {
 
 
   useEffect(() => {
-    const el = touchRef.current;
+    const el = gridRef.current;
     if (el && zoomActive) {
       el.addEventListener('touchmove', handleTouchMove, { passive: true });
       el.addEventListener('touchend', handleTouchEnd, { passive: true });
@@ -254,7 +266,7 @@ export default memo(function App() {
         el.removeEventListener('touchcancel', handleTouchEnd);
       };
     };
-  }, [touchRef, zoomActive, handleTouchMove, handleTouchEnd]);
+  }, [gridRef, zoomActive, handleTouchMove, handleTouchEnd]);
 
 
   useEffect(() => {
@@ -280,54 +292,59 @@ export default memo(function App() {
   }, [center, panWindow]);
 
 
-  const ready = gridReady && !!uiMode;
-  const touch = uiMode === 1;
-  const mouse = uiMode === 2;
-
-
   return (
     <div id="App">
-     {!ready && (
-        <Splash splashRef={splashRef} loading={!gridReady} />
+      {!uiMode && (
+        <Splash splashRef={splashRef} gridReady={gridReady} />
       )}
-      <div className={cl('Toolbar', [!ready, 'hide'], { touch })}>
-        <div className="Toolbar--toolbox left">
+      <div
+        className={cl(
+          'Toolbar',
+          [(!uiMode || !gridReady), 'Toolbar--hide'],
+          [uiMode === 1, 'Toolbar--touch']
+        )}
+      >
+        <div className="Toolbar__toolbox Toolbar__toolbox--left">
           <Colors
+            uiMode={uiMode}
             colors={colors}
             activeColor={activeColor}
-            uiMode={uiMode}
-            dispatch={setActiveColor}
+            setActiveColor={setActiveColor}
           />
-          {mouse && (
+          {(uiMode === 2) && (
             <Toggles
               cursorMode={cursorMode}
-              dispatchCursor={setCursorMode}
-              dispatchZoom={updateZoom}
+              setCursorMode={setCursorMode}
+              updateZoom={updateZoom}
             />
           )}
         </div>
-        <div className="Toolbar--toolbox right">
+        <div className="Toolbar__toolbox Toolbar__toolbox--right">
           <Mapbox
-            windowRef={windowRef}
-            touchRef={touchRef}
-            mapCanvasRef={mapCanvasRef}
-            pan={panWindow}
             uiMode={uiMode}
+            gridRef={gridRef}
+            windowRef={windowRef}
+            canvasRef={gridMapCanvas}
+            panWindow={panWindow}
           />
         </div>
       </div>
       <Grid
+        uiMode={uiMode}
+        cursorMode={cursorMode}
         windowRef={windowRef}
-        touchRef={touchRef}
-        gridCanvasRef={gridCanvasRef}
+        canvasRef={gridCanvas}
+        paintCel={gridPaintCel}
+        scalar={scalar}
+        zoom={zoom}
+
+
+        gridRef={gridRef}
         width={width}
         height={height}
         scalar={scalar}
         zoom={zoom}
-        cursorMode={cursorMode}
-        clickCel={clickCel}
         touchStart={handleTouchStart}
-        uiMode={uiMode}
       />
     </div>
   );

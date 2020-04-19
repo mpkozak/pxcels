@@ -1,66 +1,9 @@
 import React, {
-  // Fragment,
-  // createContext,
   memo,
-  // useContext,
-  useRef,
-  // useMemo,
   useState,
-  // useReducer,
   useEffect,
-  // useLayoutEffect,
   useCallback,
 } from 'react';
-// import { cl, parse } from '../../libs';
-
-
-
-
-
-
-
-
-function usePanner({
-  uiMode = 0,
-  active = false,
-  cb = null,
-  // cb = null,
-} = {}) {
-
-  const [panning, setPanning] = useState(false);
-  const pannerRef = useRef(null);
-
-  useEffect(() => {
-    if (!active) {
-      setPanning(false);
-    };
-  }, [active, setPanning]);
-
-
-
-
-
-
-
-
-
-
-  useEffect(() => {
-    const panner = pannerRef.current;
-    if (panner) {
-
-    }
-
-  }, [uiMode, pannerRef])
-
-
-
-
-
-  return pannerRef;
-};
-
-
 
 
 
@@ -74,37 +17,12 @@ export default memo(function MapOverlay({
 } = {}) {
 
 
-  const pannerRef
-    = usePanner({
-        uiMode,
-        active,
-        cb: pan,
-      });
-
-
-
   const [panning, setPanning] = useState(false);
-
-
-
 
 
   const disablePanning = useCallback(e => {
     setPanning(false);
   }, [setPanning]);
-
-
-  useEffect(() => {
-    if (!active) {
-      setPanning(false);
-    };
-  }, [active, setPanning]);
-
-
-  const handleMouseMove = useCallback(e => {
-    const { clientX, clientY } = e;
-    pan(clientX, clientY);
-  }, [pan]);
 
 
   const handleTouchMove = useCallback(e => {
@@ -114,44 +32,65 @@ export default memo(function MapOverlay({
   }, [pan]);
 
 
-  const handleMouseDown = useCallback(e => {
-    setPanning(true);
+  const handleTouchStart = useCallback(e => {
+    setPanning('touch');
+    handleTouchMove(e);
+  }, [setPanning, handleTouchMove]);
+
+
+  const handleMouseMove = useCallback(e => {
     const { clientX, clientY } = e;
     pan(clientX, clientY);
-  }, [setPanning, pan]);
+  }, [pan]);
 
 
-  const handleTouchStart = useCallback(e => {
-    setPanning(true);
-    const { targetTouches } = e;
-    const { clientX, clientY } = targetTouches[0];
-    pan(clientX, clientY);
-  }, [setPanning, pan]);
+  const handleMouseDown = useCallback(e => {
+    setPanning('mouse');
+    handleMouseMove(e);
+  }, [setPanning, handleMouseMove]);
 
 
-  useEffect(() => {
-    if (panning) {
+  useEffect(() => {   // disable panning when map is small
+    if (!active) {
+      setPanning(false);
+    };
+  }, [active, setPanning]);
+
+
+  useEffect(() => {   // add+remove listeners based on panning state
+    if (panning === 'mouse') {
       window.addEventListener('mousemove', handleMouseMove, { passive: true });
       window.addEventListener('mouseup', disablePanning);
-      window.addEventListener('touchcancel', disablePanning);
+    };
+    if (panning === 'touch') {
       window.addEventListener('touchend', disablePanning);
+      window.addEventListener('touchcancel', disablePanning);
     };
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', disablePanning);
-      window.removeEventListener('touchcancel', disablePanning);
       window.removeEventListener('touchend', disablePanning);
+      window.removeEventListener('touchcancel', disablePanning);
     };
-  }, [panning, handleMouseMove, disablePanning]);
+  }, [panning, uiMode, handleMouseMove, disablePanning]);
+
+
+  const touchListeners = {
+    onTouchStart: handleTouchStart,
+    onTouchMove: handleTouchMove,
+  };
+
+
+  const mouseListeners = {
+    onMouseDown: handleMouseDown,
+  };
 
 
   return (
     <div
       className="Map__overlay"
-      ref={pannerRef}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onMouseDown={handleMouseDown}
+      {...(uiMode === 1 && touchListeners)}
+      {...(uiMode === 2 && mouseListeners)}
     >
       {children}
     </div>

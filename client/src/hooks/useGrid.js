@@ -122,8 +122,9 @@ export default function useGrid({
   }, [width, height]);
 
 
-  const clickCel = useCallback((c, r) => {
-    if (!cursorMode) return null;
+  const paintCel = useCallback((c, r) => {
+    console.log("paint cel")
+    if (cursorMode !== 1) return null;
     const celI = celLookupMatrix[r][c];
     const cel = dataRef.current[celI];
     if (!cel) return null;
@@ -244,9 +245,9 @@ export default function useGrid({
 
   return {
     gridReady: !!gridStatus,
-    gridCanvasRef,
-    mapCanvasRef,
-    clickCel,
-    // lastDraw,
+    gridCanvas: gridCanvasRef,
+    gridMapCanvas: mapCanvasRef,
+    gridPaintCel: paintCel,
+    gridLastDraw: lastDraw,
   };
 };

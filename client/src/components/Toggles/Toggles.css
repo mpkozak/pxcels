@@ -8,20 +8,41 @@
 
 
 
+.Toggles__button {
+  background-origin: padding-box;
+  background-position: 50% 50%;
+  background-size: 70%;
+  background-repeat: no-repeat;
+  background-color: rgba(192, 192, 192, .4);
+  transform: scale(1);
+  transition: background-color 40ms ease, transform 40ms ease;
+}
 
+.Toggles__button:hover {
+  background-color: rgba(192, 192, 192, .8);
+}
 
-.Toggles--button.cursor-1 {
+.Toggles__button:active {
+  background-color: rgba(192, 192, 192, .6);
+  transform: scale(.99);
+}
+
+.Toggles__button--active {
+  background-color: rgba(192, 192, 192, .8);
+}
+
+.Toggles__button--cursor-1 {
   background-image: url('../../_img/draw.png');
 }
 
-.Toggles--button.cursor-0 {
+.Toggles__button--cursor-0 {
   background-image: url('../../_img/grab.png');
 }
 
-.Toggles--button.zoom-0 {
+.Toggles__button--zoom-0 {
   background-image: url('../../_img/zoom-out.png');
 }
 
-.Toggles--button.zoom-1 {
+.Toggles__button--zoom-1 {
   background-image: url('../../_img/zoom-in.png');
 }

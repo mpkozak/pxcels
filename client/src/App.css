@@ -9,8 +9,6 @@
 
 
 
-
-
 .Toolbar {
   position: fixed;
   left: 0px;
@@ -28,7 +26,7 @@
   pointer-events: none;
 }
 
-.Toolbar.touch {
+.Toolbar--touch {
   left: 5px;
   width: calc(100% - 10px);
   height: auto;
@@ -37,15 +35,14 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-.Toolbar.hide {
+.Toolbar--hide {
   opacity: 0;
   transform: translateY(200%);
 }
 
 
 
-
-.Toolbar--toolbox {
+.Toolbar__toolbox {
   position: relative;
   padding: 10px;
   display: flex;
@@ -57,106 +54,18 @@
   pointer-events: auto;
 }
 
-.Toolbar.touch>.Toolbar--toolbox {
+.Toolbar--touch>.Toolbar__toolbox {
   padding: 5px;
   border-radius: calc(.4vh + 2px);
   box-shadow: 0 0 1.25vmin .5vmin rgba(0, 0, 0, .3);
 }
 
-.Toolbar--toolbox.left {
+.Toolbar__toolbox--left {
   justify-content: flex-start;
   border-top-right-radius: calc(.4vh + 2px);
 }
 
-.Toolbar--toolbox.right {
+.Toolbar__toolbox--right {
   justify-content: flex-end;
   border-top-left-radius: calc(.4vh + 2px);
 }
-
-
-
-
-
-
-
-.btn {
-  border-radius: 5%;
-  pointer-events: auto;
-  cursor: pointer;
-}
-
-.btn--lg {
-  width: calc(12vh - 20px);
-  height: calc(12vh - 20px);
-  min-width: 70px;
-  min-height: 70px;
-  box-shadow: 0 0 1.25vmin .25vmin rgba(0, 0, 0, .3);
-}
-
-
-
-
-
-
-
-
-
-.btn--sm {
-  width: calc(6vh - 12.5px);
-  height: calc(6vh - 12.5px);
-  min-width: 32.5px;
-  min-height: 32.5px;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.button--small {
-  width: calc(6vh - 12.5px);
-  height: calc(6vh - 12.5px);
-  min-width: 32.5px;
-  min-height: 32.5px;
-}
-
-
-
-.button--small-icon {
-  background-origin: padding-box;
-  background-position: 50% 50%;
-  background-size: 70%;
-  background-repeat: no-repeat;
-  background-color: rgba(192, 192, 192, .4);
-}
-
-
-
-.button--small-icon__mouse {
-  transform: scale(1);
-  transition: background-color 40ms ease, transform 40ms ease;
-}
-
-.button--small-icon__mouse.enabled {
-  background-color: rgba(192, 192, 192, .8);
-}
-
-.button--small-icon__mouse:hover {
-  background-color: rgba(192, 192, 192, .8);
-}
-
-.button--small-icon__mouse:active {
-  background-color: rgba(192, 192, 192, .6);
-  transform: scale(.99);
-}
-

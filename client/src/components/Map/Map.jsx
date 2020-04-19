@@ -1,17 +1,12 @@
 import React, {
-  // Fragment,
-  // createContext,
   memo,
-  // useContext,
-  // useRef,
-  // useMemo,
   useState,
-  // useReducer,
-  useEffect,
-  // useLayoutEffect,
   useCallback,
 } from 'react';
 import './Map.css';
+import {
+  useMapViewbox,
+} from '../../hooks';
 import {
   MapBlackout,
   MapButton,
@@ -19,78 +14,25 @@ import {
   MapOverlay,
   MapViewbox,
 } from './';
-import { cl, parse } from '../../libs';
-
-
-
-
-
-
-
-// function useViewbox({
-//   elRef,
-//   elWindowRef,
-//   viewboxRef,
-// } = {}) {
-
-
-//   const positionViewbox = useCallback(() => {
-//     const el = elRef.current;
-//     const elWindow = elWindowRef.current;
-//     const viewbox = viewboxRef.current;
-//     if (!elWindow || !el || !viewbox) {
-//       return null;
-//     };
-
-//     const viewboxWidth = elWindow.clientWidth / el.clientHeight;
-//     const viewboxHeight = elWindow.clientHeight / el.clientHeight;
-//     const viewboxLeft = (elWindow.scrollLeft - el.offsetLeft) / el.clientWidth;
-//     const viewboxTop = (elWindow.scrollTop - el.offsetTop) / el.clientHeight;
-
-//     const { style } = viewbox;
-//     style.left = parse.pct(viewboxLeft);
-//     style.top = parse.pct(viewboxTop);
-//     style.width = parse.pct(viewboxWidth);
-//     style.height = parse.pct(viewboxHeight);
-//   }, [elRef, elWindowRef, viewboxRef]);
-
-
-//   useEffect(() => {   // redraw viewbox on change
-//     const el = elWindowRef.current;
-//     if (el) {
-//       el.addEventListener('scroll', positionViewbox, { passive: true });
-//       window.addEventListener('resize', positionViewbox, { passive: true });
-//     };
-
-//     return () => {
-//       if (el) {
-//         el.removeEventListener('scroll', positionViewbox);
-//         window.removeEventListener('resize', positionViewbox);
-//       };
-//     };
-//   }, [elWindowRef, positionViewbox]);
-
-
-//   useEffect(() => {   // initial draw
-//     if (elRef.current && elWindowRef.current && viewboxRef.current) {
-//       positionViewbox();
-//     };
-//   }, [elRef, elWindowRef, viewboxRef, positionViewbox]);
-// };
-
-
 
 
 
 
 
 export default memo(function Map({
-  mapCanvasRef = null,
-  windowRef = null,
-  touchRef = null,
-  pan = null,
   uiMode = 0,
+  gridRef = null,
+  windowRef = null,
+  canvasRef = null,
+  panWindow = null,
 } = {}) {
+
+
+  const viewboxRef =
+    useMapViewbox({
+      elRef: gridRef,
+      elWindowRef: windowRef,
+    });
 
 
   const [active, setActive] = useState(false);
@@ -98,10 +40,10 @@ export default memo(function Map({
 
   const showMap = useCallback(() => {
     if (active) return null;
-    if (windowRef.current && touchRef.current) {
+    if (windowRef.current && gridRef.current) {
       setActive(true);
     };
-  }, [windowRef, touchRef, active, setActive]);
+  }, [windowRef, gridRef, active, setActive]);
 
 
   const hideMap = useCallback(e => {
@@ -116,45 +58,22 @@ export default memo(function Map({
       top,
       width,
       height,
-    } = mapCanvasRef.current.getBoundingClientRect();
+    } = canvasRef.current.getBoundingClientRect();
     const relX = (x - left) / width;
     const relY = (y - top) / height;
-    pan(relX, relY);
-  }, [mapCanvasRef, pan]);
+    panWindow(relX, relY);
+  }, [canvasRef, panWindow]);
 
 
   return (
     <div className="Map">
       <MapBlackout active={active} hideMap={hideMap} />
       <MapButton uiMode={uiMode} active={active} showMap={showMap}>
-        <MapCanvas canvasRef={mapCanvasRef} />
+        <MapCanvas canvasRef={canvasRef} />
         <MapOverlay uiMode={uiMode} active={active} pan={handlePan}>
-          <MapViewbox elRef={touchRef} elWindowRef={windowRef} />
+          <MapViewbox viewboxRef={viewboxRef} />
         </MapOverlay>
       </MapButton>
     </div>
   );
 });
-
-
-
-const MapPanner = memo(function MapPanner({
-  active = false,
-  children,
-} = {}) {
-  return (
-      <div
-        className={cl(
-          'Map__map',
-          [!active, 'Map__map--inactive']
-        )}
-      >
-        {children}
-      </div>
-  );
-});
-
-
-        // <canvas className="Map__canvas" ref={mapCanvasRef} />
-
-

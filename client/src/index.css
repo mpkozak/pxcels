@@ -6,7 +6,6 @@
   -ms-overflow-style: none;
 }
 
-
 *::-webkit-scrollbar {
   -webkit-appearance: none;
   display: none;
@@ -17,17 +16,39 @@
 
 
 
-
-
 body {
   background-color: #2a2e2f;
   font-family: 'Helvetica', 'Helvetica Neue', 'Arial', sans-serif;
   font-weight: 400;
-  /*-webkit-tap-highlight-color: rgba(0, 0, 0, 0);*/
   -webkit-tap-highlight-color: transparent;
   /*-webkit-overflow-scrolling: touch;*/
   overflow: hidden;
   touch-action: manipulation;
+}
+
+
+
+
+
+.btn {
+  border-radius: 5%;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.btn--lg {
+  width: calc(12vh - 20px);
+  height: calc(12vh - 20px);
+  min-width: 70px;
+  min-height: 70px;
+  box-shadow: 0 0 1.25vmin .25vmin rgba(0, 0, 0, .3);
+}
+
+.btn--sm {
+  width: calc(6vh - 12.5px);
+  height: calc(6vh - 12.5px);
+  min-width: 32.5px;
+  min-height: 32.5px;
 }
 
 

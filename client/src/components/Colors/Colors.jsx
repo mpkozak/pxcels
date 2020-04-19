@@ -1,17 +1,27 @@
-import React, { memo, useState, useCallback } from 'react';
+import React, {
+  memo,
+  useMemo,
+  useState,
+  useCallback,
+} from 'react';
 import './Colors.css';
-import { ColorsButton, ColorsPalette, ColorsCelbox } from './';
+import { cl } from '../../libs';
+import {
+  ColorsButton,
+  ColorsPalette,
+} from './';
 
 
 
 
 
 export default memo(function Colors({
-  colors,
-  activeColor,
-  uiMode,
-  dispatch,
+  uiMode = 0,
+  colors = [],
+  activeColor = 0,
+  setActiveColor = null,
 } = {}) {
+
 
   const [showPalette, setShowPalette] = useState(null);
 
@@ -30,8 +40,24 @@ export default memo(function Colors({
     const { id } = e.target;
     if (!id) return null;
     const color = +id.split('-')[1];
-    dispatch(color);
-  }, [dispatch]);
+    if (uiMode === 1) {
+      hidePalette();
+    };
+    setActiveColor(color);
+  }, [uiMode, hidePalette, setActiveColor]);
+
+
+  const paletteCels = useMemo(() => colors.map((hex, i) =>
+    <div
+      key={hex}
+      id={`color-${i}`}
+      className={cl(
+        'Colors__cel btn btn--sm',
+        [uiMode === 2, 'Colors__cel--mouse'],
+      )}
+      style={{ backgroundColor: hex }}
+    />
+  ), [colors, uiMode]);
 
 
   return (
@@ -41,18 +67,13 @@ export default memo(function Colors({
         color={colors[activeColor]}
         togglePalette={togglePalette}
       />
-      <ColorsPalette uiMode={uiMode} active={showPalette}>
-        <ColorsCelbox
+      <ColorsPalette
+        uiMode={uiMode}
         active={showPalette}
-        colors={colors}
         clickColor={handleClickColor}
         hidePalette={hidePalette}
-        uiMode={uiMode}
-        mouse={uiMode === 2}
-        touch={uiMode === 1}
-
-
-        />
+      >
+        {paletteCels}
       </ColorsPalette>
     </div>
   );

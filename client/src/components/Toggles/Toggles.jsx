@@ -1,14 +1,6 @@
 import React, {
-  // Fragment,
-  // createContext,
   memo,
-  // useContext,
-  // useRef,
   useMemo,
-  // useState,
-  // useReducer,
-  // useEffect,
-  // useLayoutEffect,
   useCallback,
 } from 'react';
 import './Toggles.css';
@@ -19,9 +11,9 @@ import { cl } from '../../libs';
 
 
 export default memo(function Toggles({
-  cursorMode,
-  dispatchCursor = null,
-  dispatchZoom = null,
+  cursorMode = 0,
+  setCursorMode = null,
+  updateZoom = null,
 } = {}) {
 
 
@@ -40,28 +32,24 @@ export default memo(function Toggles({
     if (!id) return null;
     const [setting, value] = id.split('-');
     if (setting === 'cursor') {
-      return dispatchCursor(+value);
+      return setCursorMode(+value);
     };
     if (setting === 'zoom') {
-      return dispatchZoom(+value);
+      return updateZoom(+value);
     };
-  }, [dispatchCursor, dispatchZoom]);
+  }, [setCursorMode, updateZoom]);
 
 
   return (
     <div className="Toggles" onClick={handleClickToggle}>
-      {cursorButtons.map(([id, enabled]) =>
+      {cursorButtons.map(([id, active]) =>
         <div
           key={id}
           id={id}
           className={cl(
-            'Toggles--button',
-            id,
-            'button',
-            'button--small',
-            'button--small-icon',
-            'button--small-icon__mouse',
-            { enabled },
+            'Toggles__button btn btn--sm',
+            `Toggles__button--${id}`,
+            [active, 'Toggles__button--active'],
           )}
         />
       )}
