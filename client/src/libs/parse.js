@@ -26,7 +26,8 @@ function parseTime(ms) {
 
 
 function parsePct(val) {
-  return Math.floor(val * 100) + '%';
+  if (!isFinite(val) || isNaN(val)) return 0;
+  return (val * 100).toFixed(2) + '%';
 };
 
 

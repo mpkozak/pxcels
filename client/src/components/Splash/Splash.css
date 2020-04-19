@@ -15,7 +15,7 @@
   z-index: 1000;
 }
 
-.Splash.loading {
+.Splash--loading {
   background-color: #2a2e2f;
   cursor: default;
 }
@@ -35,7 +35,7 @@
   transition: color 100ms ease-out 150ms;
 }
 
-.Splash.loading>h1 {
+.Splash--loading>h1 {
   color: rgba(255, 255, 255, .8);
 }
 
@@ -47,6 +47,6 @@
   transition: opacity 250ms ease-in 250ms;
 }
 
-.Splash.loading>h2 {
+.Splash--loading>h2 {
   opacity: 0;
 }

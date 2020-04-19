@@ -17,22 +17,19 @@ import { cl } from '../../libs';
 
 
 
-export default memo(function ColorsPalette({
-  active = null,
-  uiMode = 0,
-  children,
+export default memo(function MapBlackout({
+  active = false,
+  hideMap = null,
 } = {}) {
 
 
   return (
     <div
       className={cl(
-        'Colors__palette',
-        [uiMode === 2, 'Colors__palette--touch'],
-        [active, 'Colors__palette--active'],
+        'Map__blackout',
+        [active, 'Map__blackout--visible']
       )}
-    >
-      {children}
-    </div>
+      onClick={hideMap}
+    />
   );
 });

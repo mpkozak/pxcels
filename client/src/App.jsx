@@ -24,7 +24,7 @@ import {
   Splash,
   Colors,
   Toggles,
-  Minimap,
+  Mapbox,
   Grid,
 } from './components';
 
@@ -307,7 +307,7 @@ export default memo(function App() {
           )}
         </div>
         <div className="Toolbar--toolbox right">
-          <Minimap
+          <Mapbox
             windowRef={windowRef}
             touchRef={touchRef}
             mapCanvasRef={mapCanvasRef}

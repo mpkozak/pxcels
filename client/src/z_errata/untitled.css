@@ -1,0 +1,92 @@
+
+
+
+.button {
+  border-radius: 5%;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+
+
+.button--big {
+  width: calc(12vh - 20px);
+  height: calc(12vh - 20px);
+  min-width: 70px;
+  min-height: 70px;
+  box-shadow: 0 0 1.25vmin .25vmin rgba(0, 0, 0, .3);
+}
+
+
+
+.button--big__mouse {
+  transform: scale(1);
+  transition: transform 20ms ease;
+}
+
+.button--big__mouse:hover {
+  transform: scale(1.01);
+}
+
+.button--big__mouse:active {
+  transform: scale(.99);
+}
+
+
+
+.button--small {
+  width: calc(6vh - 12.5px);
+  height: calc(6vh - 12.5px);
+  min-width: 32.5px;
+  min-height: 32.5px;
+}
+
+
+
+.button--small-icon {
+  background-origin: padding-box;
+  background-position: 50% 50%;
+  background-size: 70%;
+  background-repeat: no-repeat;
+  background-color: rgba(192, 192, 192, .4);
+}
+
+
+
+.button--small-icon__mouse {
+  transform: scale(1);
+  transition: background-color 40ms ease, transform 40ms ease;
+}
+
+.button--small-icon__mouse.enabled {
+  background-color: rgba(192, 192, 192, .8);
+}
+
+.button--small-icon__mouse:hover {
+  background-color: rgba(192, 192, 192, .8);
+}
+
+.button--small-icon__mouse:active {
+  background-color: rgba(192, 192, 192, .6);
+  transform: scale(.99);
+}
+
+
+
+.button--small-color__mouse {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 500ms ease-out, transform 10ms ease-out;
+}
+
+.button--small-color__mouse:hover {
+  opacity: .85;
+  transform: scale(1);
+  transition: opacity 50ms ease-out, transform 10ms ease-out;
+}
+
+.button--small-color__mouse:active {
+  opacity: .9;
+  transform: scale(.97);
+  transition: opacity 50ms ease, transform 20ms ease-in;
+}

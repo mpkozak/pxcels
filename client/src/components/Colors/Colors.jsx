@@ -1,6 +1,6 @@
 import React, { memo, useState, useCallback } from 'react';
 import './Colors.css';
-import { ColorsCurrent, ColorsPalette } from './';
+import { ColorsButton, ColorsPalette, ColorsCelbox } from './';
 
 
 
@@ -36,19 +36,24 @@ export default memo(function Colors({
 
   return (
     <div className="Colors">
-      <ColorsCurrent
+      <ColorsButton
+        uiMode={uiMode}
         color={colors[activeColor]}
         togglePalette={togglePalette}
-        mouse={uiMode === 2}
       />
-      <ColorsPalette
+      <ColorsPalette uiMode={uiMode} active={showPalette}>
+        <ColorsCelbox
         active={showPalette}
         colors={colors}
         clickColor={handleClickColor}
         hidePalette={hidePalette}
+        uiMode={uiMode}
         mouse={uiMode === 2}
         touch={uiMode === 1}
-      />
+
+
+        />
+      </ColorsPalette>
     </div>
   );
 });

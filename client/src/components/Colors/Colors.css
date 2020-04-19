@@ -4,17 +4,26 @@
 
 
 
+.Colors__button {
 
+}
 
-.Colors--current {
+.Colors__button--mouse {
+  transform: scale(1);
+  transition: transform 20ms ease;
+}
 
+.Colors__button--mouse:hover {
+  transform: scale(1.01);
+}
+
+.Colors__button--mouse:active {
+  transform: scale(.99);
 }
 
 
 
-
-
-.Colors--palette {
+.Colors__palette {
   position: absolute;
   left: 0%;
   bottom: 100%;
@@ -23,17 +32,17 @@
   pointer-events: none;
 }
 
-.Colors--palette.touch {
+.Colors__palette--touch {
   padding-left: 0px;
 }
 
-.Colors--palette.active {
+.Colors__palette--active {
   pointer-events: auto;
 }
 
 
 
-.Colors--palette-celbox {
+.Colors__celbox {
   padding: 5px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -51,7 +60,7 @@
   pointer-events: auto;
 }
 
-.Colors--palette-celbox.hide {
+.Colors__celbox--hide {
   opacity: 0;
   transform: translateX(-100%);
   animation-name: bounce-out;
@@ -61,10 +70,34 @@
   animation-fill-mode: backwards;
 }
 
-.Colors--palette-celbox.notready {
+.Colors__celbox--not-ready {
   opacity: 0;
   transform: translateX(-100%);
   animation-iteration-count: 0;
+}
+
+
+
+.Colors__cel {
+
+}
+
+.Colors__cel--mouse {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 500ms ease-out, transform 10ms ease-out;
+}
+
+.Colors__cel--mouse:hover {
+  opacity: .85;
+  transform: scale(1);
+  transition: opacity 50ms ease-out, transform 10ms ease-out;
+}
+
+.Colors__cel--mouse:active {
+  opacity: .9;
+  transform: scale(.97);
+  transition: opacity 50ms ease, transform 20ms ease-in;
 }
 
 
@@ -90,7 +123,7 @@
 
 
 @media only screen and (max-height: 500px) {
-  .Colors--palette-celbox {
+  .Colors__celbox {
     grid-template-columns: repeat(9, 1fr);
     grid-auto-rows: 1fr;
   }

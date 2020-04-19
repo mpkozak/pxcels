@@ -13,7 +13,10 @@ export default memo(function Splash({
 
 
   return (
-    <div className={cl('Splash', { loading })} ref={splashRef}>
+    <div
+      className={cl('Splash', [loading, 'Splash--loading'])}
+      ref={splashRef}
+    >
       <h1>PxCels by<br />Kozak</h1>
       <h2>Click to<br />continue.</h2>
     </div>
