@@ -1,22 +1,22 @@
 import React, {
-  Fragment,
-  createContext,
+  // Fragment,
+  // createContext,
   memo,
-  useContext,
-  useRef,
+  // useContext,
+  // useRef,
   useMemo,
   useState,
-  useReducer,
+  // useReducer,
   useEffect,
-  useLayoutEffect,
+  // useLayoutEffect,
   useCallback,
 } from 'react';
 import './Grid.css'
-// import { cl } from '../../libs';
 import {
   GridCanvas,
   GridLines,
   GridWindow,
+  GridZoom,
 } from './';
 
 
@@ -26,19 +26,18 @@ import {
 export default memo(function Grid({
   uiMode = 0,
   cursorMode = 0,
+  gridRef = null,
   windowRef = null,
   canvasRef = null,
   paintCel = null,
+  width = 0,
+  height = 0,
   scalar = 1,
   zoom = 1,
-
-  gridRef,
-  width,
-  height,
-  // cursorMode,
-  touchStart = null,
+  setZoom = null,
+  calcZoom = null,
+  storeCenter = null,
 } = {}) {
-
 
 
   const gridRatio = useMemo(() => scalar * zoom, [scalar, zoom]);
@@ -47,11 +46,9 @@ export default memo(function Grid({
 
 
 
-
 ///////////////////////////////////////
 // Mouse Drag
 ///////////////////////////////////////
-
 
   const [dragging, setDragging] = useState(false);
 
@@ -86,6 +83,82 @@ export default memo(function Grid({
 
 
 ///////////////////////////////////////
+// Touch Zoom
+///////////////////////////////////////
+
+  // const [zoomActive, setZoomActive] = useState(null);
+  // const [scale, setScale] = useState(1);
+  // const prevZoom = useRef(null);
+
+
+  // const handleTouchStart = useCallback(e => {
+  //   const { targetTouches } = e;
+  //   if (targetTouches.length !== 2) {
+  //     return setZoomActive(false);
+  //   };
+  //   e.preventDefault();
+  //   prevZoom.current = zoom;
+  //   storeCenter();
+  //   setZoomActive(true);
+  // }, [setZoomActive, prevZoom, zoom, storeCenter]);
+
+
+  // const handleTouchMove = useCallback(e => {
+  //   const { scale, targetTouches } = e;
+  //   if (!scale || targetTouches.length !== 2) {
+  //     // e.stopPropagation();
+  //     return setZoomActive(false);
+  //   };
+  //   if (!zoomActive) {
+  //     return null;
+  //   };
+  //   e.preventDefault();
+  //   storeCenter();
+  //   setScale(scale);
+  // }, [setZoomActive, zoomActive, storeCenter, setScale]);
+
+
+  // const handleTouchEnd = useCallback(e => {
+  //   storeCenter(true);
+  //   setZoomActive(false);
+  // }, [storeCenter, setZoomActive]);
+
+
+  // useEffect(() => {
+  //   const el = gridRef.current;
+  //   if (el && zoomActive) {
+  //     el.addEventListener('touchmove', handleTouchMove, { passive: true });
+  //     el.addEventListener('touchend', handleTouchEnd, { passive: true });
+  //     el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+  //   };
+  //   return () => {
+  //     if (el) {
+  //       el.removeEventListener('touchmove', handleTouchMove);
+  //       el.removeEventListener('touchend', handleTouchEnd);
+  //       el.removeEventListener('touchcancel', handleTouchEnd);
+  //     };
+  //   };
+  // }, [gridRef, zoomActive, handleTouchMove, handleTouchEnd]);
+
+
+  // useEffect(() => {
+  //   if (!zoomActive) {
+  //     prevZoom.current = zoom;
+  //     storeCenter(true);
+  //     setScale(1);
+  //   };
+  //   if (zoomActive) {
+  //     const newZoom = calcZoom(prevZoom.current * scale);
+  //     if (newZoom) {
+  //       storeCenter();
+  //       setZoom(newZoom);
+  //     };
+  //   };
+  // }, [zoomActive, prevZoom, storeCenter, scale, setScale, calcZoom, zoom, setZoom]);
+
+
+
+///////////////////////////////////////
 // Painting
 ///////////////////////////////////////
 
@@ -100,11 +173,9 @@ export default memo(function Grid({
 
 
 
-
-
-
-
-
+///////////////////////////////////////
+// Style Memos
+///////////////////////////////////////
 
   const gridStyle = useMemo(() => ({
     width: pxWidth + 'px',
@@ -120,19 +191,21 @@ export default memo(function Grid({
   }), [zoom, cursorMode, dragging]);
 
 
+
   return (
     <GridWindow
       uiMode={uiMode}
       windowRef={windowRef}
       startDragging={startDragging}
     >
-      <div
-        className="Grid"
-        ref={gridRef}
-        style={gridStyle}
-        onTouchStart={touchStart}
-        // onTouchMove={handleTouchMove}
-        // onTouchEnd={handleTouchEnd}
+      <GridZoom
+        uiMode={uiMode}
+        gridRef={gridRef}
+        gridStyle={gridStyle}
+        zoom={zoom}
+        setZoom={setZoom}
+        calcZoom={calcZoom}
+        storeCenter={storeCenter}
       >
         <GridCanvas
           canvasRef={canvasRef}
@@ -146,17 +219,7 @@ export default memo(function Grid({
           pxHeight={pxHeight}
           gridRatio={gridRatio}
         />
-      </div>
+      </GridZoom>
     </GridWindow>
   );
 });
-
-
-
-
-        // <canvas className="Grid__canvas"
-        //   ref={gridCanvasRef}
-        //   style={gridCanvasStyle}
-        //   onClick={handleClickCel}
-        // />
-        //

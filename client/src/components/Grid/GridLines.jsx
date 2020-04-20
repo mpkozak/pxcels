@@ -1,15 +1,6 @@
 import React, {
-  Fragment,
-  createContext,
   memo,
-  useContext,
-  useRef,
   useMemo,
-  useState,
-  useReducer,
-  useEffect,
-  useLayoutEffect,
-  useCallback,
 } from 'react';
 
 
@@ -23,6 +14,9 @@ export default memo(function GridLines({
   pxHeight,
   gridRatio = 1,
 } = {}) {
+
+
+  const viewBox = useMemo(() => `0 0 ${width} ${height}`, [width, height]);
 
 
   const lines = useMemo(() => {
@@ -58,7 +52,7 @@ export default memo(function GridLines({
       className="Grid__lines"
       width={pxWidth}
       height={pxHeight}
-      viewBox={`0 0 ${width} ${height}`}
+      viewBox={viewBox}
     >
       <g
         className="Grid__line-group"

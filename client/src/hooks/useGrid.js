@@ -123,7 +123,6 @@ export default function useGrid({
 
 
   const paintCel = useCallback((c, r) => {
-    console.log("paint cel")
     if (cursorMode !== 1) return null;
     const celI = celLookupMatrix[r][c];
     const cel = dataRef.current[celI];

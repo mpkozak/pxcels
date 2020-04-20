@@ -39,11 +39,13 @@ function useInit() {
     colors = [],
   } = useParams() || {};
 
+
   const {
     scalar,
     scaleRange,
     scaleInitial,
   } = useViewportScalar({ width, height });
+
 
   const {
     socketActive,
@@ -51,34 +53,6 @@ function useInit() {
     addListener,
     postMessage,
   } = useSocket();
-
-  // console.log('useInit ran')
-  // return useMemo(() => {
-  //   console.log("useInit memo ran again")
-  //   return {
-  //     width,
-  //     height,
-  //     colors,
-  //     scalar,
-  //     scaleRange,
-  //     scaleInitial,
-  //     socketActive,
-  //     username,
-  //     addListener,
-  //     postMessage,
-  //   }
-  // }, [
-  //   width,
-  //   height,
-  //   colors,
-  //   scalar,
-  //   scaleRange,
-  //   scaleInitial,
-  //   socketActive,
-  //   username,
-  //   addListener,
-  //   postMessage,
-  // ])
 
 
   return {
@@ -99,24 +73,6 @@ function useInit() {
 
 
 
-
-// function useColors({
-//   colors = [],
-// }) {
-
-//   const [activeColor, setActiveColor] = useState(6);
-
-
-
-// };
-
-
-
-
-
-
-
-
 export default memo(function App() {
   const {
     width,
@@ -131,11 +87,10 @@ export default memo(function App() {
     // postMessage,
   } = useInit();
 
-  const splashRef = useRef(null);
-  const { uiMode } = useInputDetect(splashRef);   // 0 = unknown; 1 = touch; 2 = mouse;
 
   const [cursorMode, setCursorMode] = useState(null);   // 0 = drag; 1 = paint;
   const [activeColor, setActiveColor] = useState(6);
+
 
   const {
     gridReady,
@@ -155,15 +110,14 @@ export default memo(function App() {
       });
 
 
+  const splashRef = useRef(null);
+  const { uiMode } = useInputDetect(splashRef);   // 0 = unknown; 1 = touch; 2 = mouse;
 
-  const [zoomActive, setZoomActive] = useState(null);
-  const [scale, setScale] = useState(1);
-  const [center, setCenter] = useState(null);
+
   const [zoom, setZoom] = useState(null);
-  const prevZoom = useRef(null);
-
-  const windowRef = useRef(null);
+  const [center, setCenter] = useState(null);
   const gridRef = useRef(null);
+  const windowRef = useRef(null);
 
 
   const panWindow = useCallback((x, y) => {
@@ -180,7 +134,10 @@ export default memo(function App() {
   }, [windowRef]);
 
 
-  const storeCenter = useCallback(() => {
+  const storeCenter = useCallback((reset = false) => {
+    if (reset) {
+      return setCenter(null);
+    };
     const { scrollWidth, scrollHeight, clientWidth, clientHeight, scrollLeft, scrollTop } = windowRef.current;
     const x = (scrollLeft + clientWidth / 2) / scrollWidth;
     const y = (scrollTop + clientHeight / 2) / scrollHeight;
@@ -188,13 +145,18 @@ export default memo(function App() {
   }, [windowRef, setCenter]);
 
 
+  const calcZoom = useCallback((val) => {
+    return parse.clamp(val, scaleRange).toFixed(2);
+  }, [scaleRange])
+
+
   const updateZoom = useCallback((zoomIn) => {
-    const newZoom = parse.clamp(zoom * (zoomIn ? 1.4 : 0.6), scaleRange).toFixed(2);
+    const newZoom = calcZoom(zoom * (zoomIn ? 1.4 : 0.6));
     if (newZoom) {
       storeCenter();
       setZoom(newZoom);
     };
-  }, [zoom, scaleRange, storeCenter]);
+  }, [zoom, calcZoom, storeCenter]);
 
 
   useEffect(() => {   // set initial cursor mode
@@ -214,75 +176,7 @@ export default memo(function App() {
       setZoom(scaleInitial);
       panWindow(paddedRandom(), paddedRandom());
     };
-  }, [scaleInitial, zoom, setZoom, panWindow])
-
-
-
-
-  const handleTouchStart = useCallback(e => {
-    const { targetTouches } = e;
-    if (targetTouches.length !== 2) {
-      return setZoomActive(false);
-    };
-    e.preventDefault();
-    prevZoom.current = zoom;
-    storeCenter();
-    setZoomActive(true);
-  }, [setZoomActive, prevZoom, zoom, storeCenter]);
-
-
-  const handleTouchMove = useCallback(e => {
-    const { scale, targetTouches } = e;
-    if (!scale || targetTouches.length !== 2) {
-      // e.stopPropagation();
-      return setZoomActive(false);
-    };
-    if (!zoomActive) {
-      return null;
-    };
-    e.preventDefault();
-    storeCenter();
-    setScale(scale);
-  }, [zoomActive, setZoomActive, storeCenter, setScale]);
-
-
-  const handleTouchEnd = useCallback(e => {
-    setCenter(null);
-    setZoomActive(false);
-  }, [setZoomActive, setCenter]);
-
-
-  useEffect(() => {
-    const el = gridRef.current;
-    if (el && zoomActive) {
-      el.addEventListener('touchmove', handleTouchMove, { passive: true });
-      el.addEventListener('touchend', handleTouchEnd, { passive: true });
-      el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
-    };
-    return () => {
-      if (el) {
-        el.removeEventListener('touchmove', handleTouchMove);
-        el.removeEventListener('touchend', handleTouchEnd);
-        el.removeEventListener('touchcancel', handleTouchEnd);
-      };
-    };
-  }, [gridRef, zoomActive, handleTouchMove, handleTouchEnd]);
-
-
-  useEffect(() => {
-    if (!zoomActive) {
-      prevZoom.current = zoom;
-      setCenter(null);
-      setScale(1);
-    };
-    if (zoomActive) {
-      const newZoom = parse.clamp(prevZoom.current * scale, scaleRange).toFixed(2);
-      if (newZoom) {
-        storeCenter();
-        setZoom(newZoom);
-      };
-    };
-  }, [zoomActive, prevZoom, zoom, scaleRange, setZoom, scale, setScale, storeCenter, setCenter]);
+  }, [scaleInitial, zoom, setZoom, panWindow]);
 
 
   useLayoutEffect(() => {   // recenter window
@@ -332,19 +226,17 @@ export default memo(function App() {
       <Grid
         uiMode={uiMode}
         cursorMode={cursorMode}
+        gridRef={gridRef}
         windowRef={windowRef}
         canvasRef={gridCanvas}
         paintCel={gridPaintCel}
-        scalar={scalar}
-        zoom={zoom}
-
-
-        gridRef={gridRef}
         width={width}
         height={height}
         scalar={scalar}
         zoom={zoom}
-        touchStart={handleTouchStart}
+        setZoom={setZoom}
+        calcZoom={calcZoom}
+        storeCenter={storeCenter}
       />
     </div>
   );

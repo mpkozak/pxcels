@@ -1,36 +1,16 @@
 import React, {
-  Fragment,
-  createContext,
   memo,
-  useContext,
-  useRef,
-  useMemo,
-  useState,
-  useReducer,
-  useEffect,
-  useLayoutEffect,
-  useCallback,
 } from 'react';
-// import { cl } from '../../libs';
 
 
 
 
 
-export default memo(function GridWindow({
+export default memo(function GridCanvas({
   canvasRef = null,
   canvasStyle = {},
   paintCel = null,
-
 } = {}) {
-
-
-/*
-    TOUCH EVENTS
-*/
-
-
-
 
 
   return (

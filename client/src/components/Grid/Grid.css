@@ -46,7 +46,7 @@
 
 
 
-.Grid {
+.Grid__zoom {
   position: relative;
 }
 
@@ -71,6 +71,8 @@
   pointer-events: none;
   z-index: 120;
 }
+
+
 
 .Grid__line-group {
   stroke: rgba(0, 0, 0, .8);
