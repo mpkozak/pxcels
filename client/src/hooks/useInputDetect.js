@@ -1,28 +1,21 @@
 import {
-  // Fragment,
-  // createContext,
-  // memo,
-  // useContext,
-  // useRef,
-  // useMemo,
   useState,
-  // useReducer,
   useEffect,
-  // useLayoutEffect,
   useCallback,
 } from 'react';
 import { useTouchZoomOverride } from './';
 
 
-/*
-0 unknown
-1 touch
-2 mouse
-*/
+
 
 
 export default function useInputDetect(ref = null) {
   const [uiMode, setUiMode] = useState(0);
+  /*
+    0 unknown
+    1 touch
+    2 mouse
+  */
 
 
   void useTouchZoomOverride(uiMode === 1);

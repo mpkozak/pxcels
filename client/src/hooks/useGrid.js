@@ -1,22 +1,14 @@
 import {
-  // Fragment,
-  // createContext,
-  // memo,
-  // useContext,
   useRef,
   useMemo,
   useState,
-  // useReducer,
   useEffect,
-  // useLayoutEffect,
   useCallback,
 } from 'react';
+import { d3, parse } from '../libs';
 
 
-/*
-0   has not drawn
-1   completed initial draw
-*/
+
 
 
 export default function useGrid({
@@ -26,12 +18,18 @@ export default function useGrid({
   scalar,
   socketActive,
   addListener,
+  uiMode,
   cursorMode,
   activeColor,
 } = {}) {
 
 
   const [gridStatus, setGridStatus] = useState(0);
+  /*
+    0   has not drawn
+    1   completed initial draw
+  */
+
   const [redrawGridFlag, setRedrawGridFlag] = useState(false);
   const [redrawCel, setRedrawCel] = useState(null);
   const [lastDraw, setLastDraw] = useState(0);
@@ -135,6 +133,71 @@ export default function useGrid({
 
 
 ///////////////////////////////////////
+// Tooltip hover
+///////////////////////////////////////
+
+  const tooltipNodeRef = useRef(null);
+
+
+  useEffect(() => {   // assign tooltip ref to d3 node
+    if (!tooltipNodeRef.current) {
+      tooltipNodeRef.current = d3.select('body')
+        .append('div')
+          .attr('id', 'tooltip')
+          .style('opacity', 0);
+    };
+  }, [tooltipNodeRef]);
+
+
+  const drawTooltip = useCallback(({ x, y, color, name, time }) => {
+    const node = tooltipNodeRef.current;
+    if (!node) return null;
+
+    node
+      .html(`<h5>${name}</h5><h6>${time}</h6>`)
+      .style('left', x + 'px')
+      .style('top', y + 'px')
+      .style('background-color', color)
+      .style('opacity', .9);
+  }, [tooltipNodeRef]);
+
+
+  const undrawTooltip = useCallback(() => {
+    const node = tooltipNodeRef.current;
+    if (!node) return null;
+
+    node
+      .html('')
+      .style('opacity', 0);
+  }, [tooltipNodeRef]);
+
+
+  const tooltipCel = useCallback((x, y, c, r) => {
+    const row = parse.clamp(r, [0, height - 1]);
+    const col = parse.clamp(c, [0, width - 1]);
+    const celI = celLookupMatrix[row][col];
+    const cel = dataRef.current[celI];
+    if (!cel) {
+      return undrawTooltip();
+    };
+    const { user_name, timestamp, color } = cel.current;
+    if (!user_name) {
+      console.log("no one drawed here")
+      return undrawTooltip();;
+    };
+
+    drawTooltip({
+      x,
+      y,
+      color: colors[color],
+      name: user_name,
+      time: parse.time(Date.now() - timestamp),
+    });
+  }, [width, height, celLookupMatrix, dataRef, colors, undrawTooltip, drawTooltip]);
+
+
+
+///////////////////////////////////////
 // CANVAS
 ///////////////////////////////////////
 
@@ -215,7 +278,9 @@ export default function useGrid({
 
 
 
-
+///////////////////////////////////////
+// LIFECYCLE Effects
+///////////////////////////////////////
 
   useEffect(() => {   // redraw entire grid
     if (redrawGridFlag) {
@@ -233,7 +298,6 @@ export default function useGrid({
   }, [redrawCel, setRedrawCel, drawToGrid]);
 
 
-
   useEffect(() => {
     if (redrawGridFlag && !gridStatus) {
       setGridStatus(1);
@@ -247,6 +311,7 @@ export default function useGrid({
     gridCanvas: gridCanvasRef,
     gridMapCanvas: mapCanvasRef,
     gridPaintCel: paintCel,
+    gridTooltipCel: tooltipCel,
     gridLastDraw: lastDraw,
   };
 };

@@ -28,12 +28,39 @@ body {
 
 
 
+h1 {
+  font-size: 16vmin;
+}
+
+h2 {
+  font-size: 12vmin;
+}
+
+h3 {
+  font-size: 8vmin;
+}
+
+h4 {
+  font-size: 5vmin;
+}
+
+h5 {
+
+}
+
+h6 {
+
+}
+
+
+
 
 
 .btn {
   border-radius: 5%;
   pointer-events: auto;
   cursor: pointer;
+  backface-visibility: hidden;
 }
 
 .btn--lg {
@@ -62,24 +89,28 @@ body {
   padding: 5px 10px 8px 10px;
   border-radius: 5px;
   box-shadow: 0 0 1.25vmin .25vmin rgba(0, 0, 0, .3);
-  transform: translateY(-60px);
+  /*transform: translateY(-67px);*/
+  transform: translate(15px, -82px);
   z-index: 101;
   pointer-events: none;
 }
 
 #tooltip>* {
-  white-space: nowrap;
-  color: #FFFFFF;
-  text-shadow: 1px 1px 1px rgba(127, 127, 127, .7);
+  -webkit-text-stroke: .5px rgba(127, 127, 127, 1);
+  -webkit-font-smoothing: subpixel-antialiased;
+  -webkit-text-fill-color: #ddd;
   mix-blend-mode: difference;
-}
-
-#tooltip>h4 {
-  font-size: 16px;
-  line-height: 20px;
+  /*text-shadow: 0 0 .3vmin rgba(127, 127, 127, 1);*/
+  /*-webkit-background-clip: text;*/
+  /*-webkit-text-fill-color: transparent;*/
 }
 
 #tooltip>h5 {
-  font-size: 12px;
-  line-ight: 18px;
+  font-size: 24px;
+  line-height: 30px;
+}
+
+#tooltip>h6 {
+  font-size: 16px;
+  line-height: 24px;
 }

@@ -31,7 +31,6 @@
 
 
 .Splash>h1 {
-  font-size: 16vmin;
   transition: color 100ms ease-out 150ms;
 }
 
@@ -42,7 +41,6 @@
 
 
 .Splash>h2 {
-  font-size: 12vmin;
   opacity: 1;
   transition: opacity 250ms ease-in 250ms;
 }

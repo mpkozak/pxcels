@@ -14,8 +14,6 @@ export default memo(function Splash({
 } = {}) {
 
 
-
-
   return (
     <div
       className={cl('Splash', [!gridReady, 'Splash--loading'])}

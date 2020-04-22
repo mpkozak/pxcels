@@ -92,11 +92,16 @@ export default memo(function App() {
   const [activeColor, setActiveColor] = useState(6);
 
 
+  const splashRef = useRef(null);
+  const { uiMode } = useInputDetect(splashRef);   // 0 = unknown; 1 = touch; 2 = mouse;
+
+
   const {
     gridReady,
     gridCanvas,
     gridMapCanvas,
     gridPaintCel,
+    gridTooltipCel,
     // gridLastDraw,
   } = useGrid({
         width,
@@ -105,13 +110,10 @@ export default memo(function App() {
         scalar,
         socketActive,
         addListener,
+        uiMode,
         cursorMode,
         activeColor,
       });
-
-
-  const splashRef = useRef(null);
-  const { uiMode } = useInputDetect(splashRef);   // 0 = unknown; 1 = touch; 2 = mouse;
 
 
   const [zoom, setZoom] = useState(null);
@@ -230,6 +232,7 @@ export default memo(function App() {
         windowRef={windowRef}
         canvasRef={gridCanvas}
         paintCel={gridPaintCel}
+        tooltipCel={gridTooltipCel}
         width={width}
         height={height}
         scalar={scalar}

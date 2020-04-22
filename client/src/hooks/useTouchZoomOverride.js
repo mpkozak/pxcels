@@ -6,7 +6,6 @@ import { useEffect } from 'react';
 
 export default function useTouchZoomOverride(enableOverride = true) {
   useEffect(() => {
-    // const cancelTouch = e => e.preventDefault();
     const cancelTouch = e => {
       if (e.touches.length === 2) {
         e.preventDefault();

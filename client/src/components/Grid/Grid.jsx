@@ -1,14 +1,8 @@
 import React, {
-  // Fragment,
-  // createContext,
   memo,
-  // useContext,
-  // useRef,
   useMemo,
   useState,
-  // useReducer,
   useEffect,
-  // useLayoutEffect,
   useCallback,
 } from 'react';
 import './Grid.css'
@@ -30,6 +24,7 @@ export default memo(function Grid({
   windowRef = null,
   canvasRef = null,
   paintCel = null,
+  tooltipCel = null,
   width = 0,
   height = 0,
   scalar = 1,
@@ -83,95 +78,37 @@ export default memo(function Grid({
 
 
 ///////////////////////////////////////
-// Touch Zoom
-///////////////////////////////////////
-
-  // const [zoomActive, setZoomActive] = useState(null);
-  // const [scale, setScale] = useState(1);
-  // const prevZoom = useRef(null);
-
-
-  // const handleTouchStart = useCallback(e => {
-  //   const { targetTouches } = e;
-  //   if (targetTouches.length !== 2) {
-  //     return setZoomActive(false);
-  //   };
-  //   e.preventDefault();
-  //   prevZoom.current = zoom;
-  //   storeCenter();
-  //   setZoomActive(true);
-  // }, [setZoomActive, prevZoom, zoom, storeCenter]);
-
-
-  // const handleTouchMove = useCallback(e => {
-  //   const { scale, targetTouches } = e;
-  //   if (!scale || targetTouches.length !== 2) {
-  //     // e.stopPropagation();
-  //     return setZoomActive(false);
-  //   };
-  //   if (!zoomActive) {
-  //     return null;
-  //   };
-  //   e.preventDefault();
-  //   storeCenter();
-  //   setScale(scale);
-  // }, [setZoomActive, zoomActive, storeCenter, setScale]);
-
-
-  // const handleTouchEnd = useCallback(e => {
-  //   storeCenter(true);
-  //   setZoomActive(false);
-  // }, [storeCenter, setZoomActive]);
-
-
-  // useEffect(() => {
-  //   const el = gridRef.current;
-  //   if (el && zoomActive) {
-  //     el.addEventListener('touchmove', handleTouchMove, { passive: true });
-  //     el.addEventListener('touchend', handleTouchEnd, { passive: true });
-  //     el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
-  //   };
-  //   return () => {
-  //     if (el) {
-  //       el.removeEventListener('touchmove', handleTouchMove);
-  //       el.removeEventListener('touchend', handleTouchEnd);
-  //       el.removeEventListener('touchcancel', handleTouchEnd);
-  //     };
-  //   };
-  // }, [gridRef, zoomActive, handleTouchMove, handleTouchEnd]);
-
-
-  // useEffect(() => {
-  //   if (!zoomActive) {
-  //     prevZoom.current = zoom;
-  //     storeCenter(true);
-  //     setScale(1);
-  //   };
-  //   if (zoomActive) {
-  //     const newZoom = calcZoom(prevZoom.current * scale);
-  //     if (newZoom) {
-  //       storeCenter();
-  //       setZoom(newZoom);
-  //     };
-  //   };
-  // }, [zoomActive, prevZoom, storeCenter, scale, setScale, calcZoom, zoom, setZoom]);
-
-
-
-///////////////////////////////////////
 // Painting
 ///////////////////////////////////////
 
   const handlePaintCel = useCallback(e => {
     if (cursorMode !== 1) return null;
+    if (uiMode === 1 && gridRatio < 5) return null;
     const { clientX, clientY } = e;
     const { x, y } = e.target.getBoundingClientRect();
     const cX = Math.floor((clientX - x) / gridRatio);
     const cY = Math.floor((clientY - y) / gridRatio);
     paintCel(cX, cY);
-  }, [cursorMode, gridRatio, paintCel]);
+  }, [uiMode, cursorMode, gridRatio, paintCel]);
 
 
+
+///////////////////////////////////////
+// Tooltip
+///////////////////////////////////////
+
+  const handleTooltipCel = useCallback(e => {
+    if (uiMode !== 2) return null;
+    if (cursorMode !== 1) return null;
+    const { clientX, clientY } = e;
+    const { x, y } = e.target.getBoundingClientRect();
+    const cX = Math.floor((clientX - x) / gridRatio);
+    const cY = Math.floor((clientY - y) / gridRatio);
+    // console.log('cx, cy', cX, cY)
+    tooltipCel(clientX, clientY, cX, cY);
+  }, [uiMode, cursorMode, gridRatio, tooltipCel]);
+
+console.log(gridRatio)
 
 ///////////////////////////////////////
 // Style Memos
@@ -211,6 +148,7 @@ export default memo(function Grid({
           canvasRef={canvasRef}
           canvasStyle={canvasStyle}
           paintCel={handlePaintCel}
+          tooltipCel={handleTooltipCel}
         />
         <GridLines
           width={width}

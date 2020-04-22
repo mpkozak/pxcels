@@ -6,16 +6,18 @@ import {
 } from 'react';
 
 
-/*
--1  starting up
-0   disconnected
-1   connected
-2   authenticated
-*/
+
 
 
 export default function useSocket() {
   const [socketStatus, setSocketStatus] = useState(0);
+  /*
+    -1  starting up
+    0   disconnected
+    1   connected
+    2   authenticated
+  */
+
   const [user, setUser] = useState({
     uuid: localStorage.getItem('uuid') || '',
     username: localStorage.getItem('username') || '',
