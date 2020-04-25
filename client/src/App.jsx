@@ -110,8 +110,6 @@ export default memo(function App() {
         scalar,
         socketActive,
         addListener,
-        uiMode,
-        cursorMode,
         activeColor,
       });
 
@@ -196,6 +194,20 @@ export default memo(function App() {
       <div
         className={cl(
           'Toolbar',
+          'Toolbar--top',
+          [(!uiMode || !gridReady), 'Toolbar--hide'],
+          [uiMode === 1, 'Toolbar--touch']
+        )}
+      >
+        <div className="Toolbar__toolbox Toolbar__toolbox--left">
+          left
+        </div>
+
+      </div>
+      <div
+        className={cl(
+          'Toolbar',
+          'Toolbar--bottom',
           [(!uiMode || !gridReady), 'Toolbar--hide'],
           [uiMode === 1, 'Toolbar--touch']
         )}

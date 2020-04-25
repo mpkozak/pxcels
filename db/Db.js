@@ -17,7 +17,7 @@ Db._collections = {
   current: {
     _c: undefined,
     get: function() {
-      return this._c.find().toArray();
+      return this._c.find().sort( { _id: 1 } ).toArray();
     },
     getOne: function(id) {
       return this._c.findOne({ _id: id });

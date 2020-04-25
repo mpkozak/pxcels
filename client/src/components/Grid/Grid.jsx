@@ -78,18 +78,28 @@ export default memo(function Grid({
 
 
 ///////////////////////////////////////
+// Position Helper
+///////////////////////////////////////
+
+  const getCelCoords = useCallback(e => {
+    const { clientX, clientY, target } = e;
+    const { x, y } = target.getBoundingClientRect();
+    const cX = Math.floor((clientX - x) / gridRatio);
+    const cY = Math.floor((clientY - y) / gridRatio);
+    return { cX, cY, clientX, clientY };
+  }, [gridRatio]);
+
+
+
+///////////////////////////////////////
 // Painting
 ///////////////////////////////////////
 
   const handlePaintCel = useCallback(e => {
-    if (cursorMode !== 1) return null;
-    if (uiMode === 1 && gridRatio < 5) return null;
-    const { clientX, clientY } = e;
-    const { x, y } = e.target.getBoundingClientRect();
-    const cX = Math.floor((clientX - x) / gridRatio);
-    const cY = Math.floor((clientY - y) / gridRatio);
+    if (cursorMode !== 1 || (uiMode === 1 && gridRatio < 5)) return null;
+    const { cX, cY } = getCelCoords(e);
     paintCel(cX, cY);
-  }, [uiMode, cursorMode, gridRatio, paintCel]);
+  }, [uiMode, cursorMode, gridRatio, getCelCoords, paintCel]);
 
 
 
@@ -98,17 +108,12 @@ export default memo(function Grid({
 ///////////////////////////////////////
 
   const handleTooltipCel = useCallback(e => {
-    if (uiMode !== 2) return null;
-    if (cursorMode !== 1) return null;
-    const { clientX, clientY } = e;
-    const { x, y } = e.target.getBoundingClientRect();
-    const cX = Math.floor((clientX - x) / gridRatio);
-    const cY = Math.floor((clientY - y) / gridRatio);
-    // console.log('cx, cy', cX, cY)
-    tooltipCel(clientX, clientY, cX, cY);
-  }, [uiMode, cursorMode, gridRatio, tooltipCel]);
+    if (uiMode !== 2 || cursorMode !== 1) return null;
+    const { cX, cY, clientX, clientY } = getCelCoords(e);
+    tooltipCel(cX, cY, clientX, clientY);
+  }, [uiMode, cursorMode, getCelCoords, tooltipCel]);
 
-console.log(gridRatio)
+
 
 ///////////////////////////////////////
 // Style Memos

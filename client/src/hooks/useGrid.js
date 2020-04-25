@@ -18,8 +18,6 @@ export default function useGrid({
   scalar,
   socketActive,
   addListener,
-  uiMode,
-  cursorMode,
   activeColor,
 } = {}) {
 
@@ -110,7 +108,6 @@ export default function useGrid({
 
   const celLookupMatrix = useMemo(() => {
     if (!width || !height) return null;
-    // const makeId = (c, r) => `c${c}r${r}`;
     const makeI = (c, r) => (r * width) + c;
     const makeRow = (r) => (new Array(width).fill(''))
       .map((d, c) => makeI(c, r));
@@ -121,14 +118,13 @@ export default function useGrid({
 
 
   const paintCel = useCallback((c, r) => {
-    if (cursorMode !== 1) return null;
     const celI = celLookupMatrix[r][c];
     const cel = dataRef.current[celI];
     if (!cel) return null;
     cel.current.color = activeColor;
     setRedrawCel(cel);
     postUpdatedCel(cel.cel_id, activeColor);
-  }, [cursorMode, celLookupMatrix, dataRef, activeColor, setRedrawCel, postUpdatedCel]);
+  }, [celLookupMatrix, dataRef, activeColor, setRedrawCel, postUpdatedCel]);
 
 
 
@@ -172,7 +168,7 @@ export default function useGrid({
   }, [tooltipNodeRef]);
 
 
-  const tooltipCel = useCallback((x, y, c, r) => {
+  const tooltipCel = useCallback((c, r, x, y) => {
     const row = parse.clamp(r, [0, height - 1]);
     const col = parse.clamp(c, [0, width - 1]);
     const celI = celLookupMatrix[row][col];
@@ -182,8 +178,7 @@ export default function useGrid({
     };
     const { user_name, timestamp, color } = cel.current;
     if (!user_name) {
-      console.log("no one drawed here")
-      return undrawTooltip();;
+      return undrawTooltip();
     };
 
     drawTooltip({
@@ -198,7 +193,7 @@ export default function useGrid({
 
 
 ///////////////////////////////////////
-// CANVAS
+// Canvas
 ///////////////////////////////////////
 
   const canvasColorSquares = useMemo(() => {
