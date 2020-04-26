@@ -23,6 +23,7 @@ export default function useSocket() {
     username: localStorage.getItem('username') || '',
   });
 
+
   const client = useRef(null);
   const listener = useRef(null);
 
@@ -45,12 +46,14 @@ export default function useSocket() {
 
   const handleReqUuid = useCallback(() => {
     const { uuid } = user;
-    client.current.send(JSON.stringify({ login: uuid || 'new_user' }));
+    client.current.send(JSON.stringify({ login: (uuid || 'new_user') }));
   }, [client, user]);
 
 
   const handleStoreUser = useCallback(val => {
     const { uuid, name } = val;
+    localStorage.setItem('uuid', uuid);
+    localStorage.setItem('username', name);
     setUser({ uuid, name });
     setSocketStatus(2);
   }, [setUser, setSocketStatus]);

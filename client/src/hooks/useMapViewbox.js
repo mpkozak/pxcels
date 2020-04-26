@@ -1,20 +1,11 @@
-import {
-  useRef,
-  useEffect,
-  useCallback,
-} from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import { parse } from '../libs';
 
 
 
 
 
-export default function useMapViewbox({
-  elRef,
-  elWindowRef,
-} = {}) {
-
-
+export default function useMapViewbox(elRef, elWindowRef) {
   const viewboxRef = useRef(null);
 
 

@@ -1,27 +1,17 @@
 import React, {
-  // Fragment,
-  // createContext,
   memo,
-  // useContext,
   useRef,
-  // useMemo,
   useState,
-  // useReducer,
   useEffect,
   useLayoutEffect,
   useCallback,
 } from 'react';
 import './App.css';
-import {
-  useParams,
-  useSocket,
-  useViewportScalar,
-  useGrid,
-  useInputDetect,
-} from './hooks';
+import { useInit, useGrid, useInputDetect } from './hooks';
 import { parse, cl } from './libs';
 import {
   Splash,
+  User,
   Colors,
   Toggles,
   Mapbox,
@@ -32,42 +22,39 @@ import {
 
 
 
-function useInit() {
-  const {
-    width,
-    height,
-    colors = [],
-  } = useParams() || {};
+const Toolbar = memo(function Toolbar({
+  uiMode = 0,
+  hidden = true,
+  pos = '',
+  children,
+} = {}) {
 
 
-  const {
-    scalar,
-    scaleRange,
-    scaleInitial,
-  } = useViewportScalar({ width, height });
+  return (
+    <div
+      className={cl(
+        'Toolbar',
+        `Toolbar--${pos}`,
+        [hidden, 'Toolbar--hide'],
+        [uiMode === 1, 'Toolbar--touch']
+      )}
+    >
+      {children}
+    </div>
+  );
+});
 
 
-  const {
-    socketActive,
-    username,
-    addListener,
-    postMessage,
-  } = useSocket();
 
 
-  return {
-    width,
-    height,
-    colors,
-    scalar,
-    scaleRange,
-    scaleInitial,
-    socketActive,
-    username,
-    addListener,
-    postMessage,
-  };
-};
+
+const Toolbox = memo(function Toolbox({ pos = '', children } = {}) {
+  return (
+    <div className={cl('Toolbox', `Toolbox--${pos}`)}>
+      {children}
+    </div>
+  );
+});
 
 
 
@@ -82,9 +69,9 @@ export default memo(function App() {
     scaleRange,
     scaleInitial,
     socketActive,
-    // username,
+    username,
     addListener,
-    // postMessage,
+    postMessage,
   } = useInit();
 
 
@@ -94,6 +81,14 @@ export default memo(function App() {
 
   const splashRef = useRef(null);
   const { uiMode } = useInputDetect(splashRef);   // 0 = unknown; 1 = touch; 2 = mouse;
+
+
+  const [showSplash, setShowSplash] = useState(!uiMode);
+
+
+  const hideSplash = useCallback(() => {
+    setShowSplash(false);
+  }, [setShowSplash]);
 
 
   const {
@@ -160,18 +155,14 @@ export default memo(function App() {
 
 
   useEffect(() => {   // set initial cursor mode
-    // console.log('App ef-1')
     if (uiMode && cursorMode === null) {
-      // console.log('App ef-1 --- set initial cursor mode')
       setCursorMode(uiMode === 2 ? 0 : 1);
     };
   }, [uiMode, cursorMode, setCursorMode]);
 
 
   useEffect(() => {   // set initial zoom and scroll to random spot
-    // console.log('App ef-2')
     if (scaleInitial && !zoom) {
-      // console.log('App ef-2 --- set initial zoom and scroll to random spot')
       const paddedRandom = () => (Math.random() + 1) * .5;
       setZoom(scaleInitial);
       panWindow(paddedRandom(), paddedRandom());
@@ -188,31 +179,24 @@ export default memo(function App() {
 
   return (
     <div id="App">
-      {!uiMode && (
-        <Splash splashRef={splashRef} gridReady={gridReady} />
+      {showSplash && (
+        <Splash
+          splashRef={splashRef}
+          gridReady={gridReady}
+          hideSplash={hideSplash}
+        />
       )}
-      <div
-        className={cl(
-          'Toolbar',
-          'Toolbar--top',
-          [(!uiMode || !gridReady), 'Toolbar--hide'],
-          [uiMode === 1, 'Toolbar--touch']
-        )}
-      >
-        <div className="Toolbar__toolbox Toolbar__toolbox--left">
-          left
-        </div>
-
-      </div>
-      <div
-        className={cl(
-          'Toolbar',
-          'Toolbar--bottom',
-          [(!uiMode || !gridReady), 'Toolbar--hide'],
-          [uiMode === 1, 'Toolbar--touch']
-        )}
-      >
-        <div className="Toolbar__toolbox Toolbar__toolbox--left">
+      <Toolbar uiMode={uiMode} hidden={showSplash} pos="top">
+        <Toolbox pos="left">
+          <User
+            uiMode={uiMode}
+            username={username}
+            postMessage={postMessage}
+          />
+        </Toolbox>
+      </Toolbar>
+      <Toolbar uiMode={uiMode} hidden={showSplash} pos="bottom">
+        <Toolbox pos="left">
           <Colors
             uiMode={uiMode}
             colors={colors}
@@ -226,8 +210,8 @@ export default memo(function App() {
               updateZoom={updateZoom}
             />
           )}
-        </div>
-        <div className="Toolbar__toolbox Toolbar__toolbox--right">
+        </Toolbox>
+        <Toolbox pos="right">
           <Mapbox
             uiMode={uiMode}
             gridRef={gridRef}
@@ -235,8 +219,8 @@ export default memo(function App() {
             canvasRef={gridMapCanvas}
             panWindow={panWindow}
           />
-        </div>
-      </div>
+        </Toolbox>
+      </Toolbar>
       <Grid
         uiMode={uiMode}
         cursorMode={cursorMode}

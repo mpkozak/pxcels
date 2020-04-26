@@ -1,5 +1,6 @@
 import React, {
   memo,
+  useMemo,
   useState,
   useEffect,
   useCallback,
@@ -75,22 +76,26 @@ export default memo(function MapOverlay({
   }, [panning, uiMode, handleMouseMove, disablePanning]);
 
 
-  const touchListeners = {
-    onTouchStart: handleTouchStart,
-    onTouchMove: handleTouchMove,
-  };
-
-
-  const mouseListeners = {
-    onMouseDown: handleMouseDown,
-  };
+  const listeners = useMemo(() => {
+    if (uiMode === 2) {
+      return {
+        onMouseDown: handleMouseDown,
+      };
+    };
+    if (uiMode === 1) {
+      return {
+        onTouchStart: handleTouchStart,
+        onTouchMove: handleTouchMove,
+      };
+    };
+    return {};
+  }, [uiMode, handleMouseDown, handleTouchStart, handleTouchMove]);
 
 
   return (
     <div
       className="Map__overlay"
-      {...(uiMode === 1 && touchListeners)}
-      {...(uiMode === 2 && mouseListeners)}
+      {...listeners}
     >
       {children}
     </div>

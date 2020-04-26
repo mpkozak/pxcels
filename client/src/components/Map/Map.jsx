@@ -1,12 +1,6 @@
-import React, {
-  memo,
-  useState,
-  useCallback,
-} from 'react';
+import React, { memo, useState, useCallback } from 'react';
 import './Map.css';
-import {
-  useMapViewbox,
-} from '../../hooks';
+import { useMapViewbox } from '../../hooks';
 import {
   MapBlackout,
   MapButton,
@@ -28,11 +22,7 @@ export default memo(function Map({
 } = {}) {
 
 
-  const viewboxRef =
-    useMapViewbox({
-      elRef: gridRef,
-      elWindowRef: windowRef,
-    });
+  const viewboxRef = useMapViewbox(gridRef, windowRef);
 
 
   const [active, setActive] = useState(false);

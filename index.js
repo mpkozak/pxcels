@@ -57,7 +57,7 @@ function socketHandleMessage(msg) {
     const { action, payload, uuid, login } = JSON.parse(msg);
 
     if (login) {
-      console.log('Logging in user:', login);
+      // console.log('Logging in user:', login);
       return User.login(login)
         .then(userLogin => {
           if (userLogin) {
@@ -97,7 +97,7 @@ function socketHandleMessage(msg) {
         User.saveName(uuid, payload)
           .then(userName => {
             if (userName) {
-              this.username = userLogin.name;
+              this.username = userName.name;
               this.post('store_user', userName);
             };
           })

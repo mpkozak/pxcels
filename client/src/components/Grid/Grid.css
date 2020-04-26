@@ -30,10 +30,14 @@
   justify-content: flex-start;
 }
 
+.Grid__flex-wrap::before,
 .Grid__flex-wrap::after {
   width: 100%;
-  height: calc(12vh - 30px);
+  height: 12vh;
   min-height: 90px;
+  max-height: 110px;
+  min-height: calc(90px + env(safe-area-inset-bottom));
+  max-height: calc(110px + env(safe-area-inset-bottom));
   content: "";
   opacity: 0;
 }
@@ -41,7 +45,11 @@
 
 
 .Grid__flex {
-  padding: 60px;
+  padding: 60px 150px;
+}
+
+.Grid__flex--touch {
+  padding: 15px 30px;
 }
 
 

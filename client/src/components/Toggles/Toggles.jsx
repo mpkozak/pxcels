@@ -1,8 +1,4 @@
-import React, {
-  memo,
-  useMemo,
-  useCallback,
-} from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import './Toggles.css';
 import { cl } from '../../libs';
 

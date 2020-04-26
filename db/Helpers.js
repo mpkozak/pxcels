@@ -18,7 +18,7 @@ const {
 
 
 
-async function updateDimensions(w, h) {
+async function updateParams(w, h) {
   const dbFile = path.join(__dirname, '_local', 'db_grid.json');
   const dbGrid = require(dbFile);
   const { params } = dbGrid;
@@ -39,7 +39,7 @@ async function updateDimensions(w, h) {
 };
 
 
-// updateDimensions(256, 256);
+// updateParams(256, 256);
 
 
 
@@ -86,7 +86,7 @@ const getSortInt = (str) => {
 
 const sortGrid = (grid) => grid.sort((a, b) => getSortInt(a.cel_id) - getSortInt(b.cel_id))
 
-async function expandGrid(rows, cols) {     // reads local grid json and expands and reindexes with more cels,
+async function expandGrid(addRows, addCols) {     // reads local grid json and expands and reindexes with more cels,
   try {
     console.log('do this')
     const gridFile = path.join(__dirname, '_local', 'db_grid.json');
@@ -95,8 +95,8 @@ async function expandGrid(rows, cols) {     // reads local grid json and expands
     const lastCel = gridSorted[gridSorted.length - 1];
     const startRow = lastCel.row + 1;
     const startCol = lastCel.col + 1;
-    const endRow = startRow + rows;
-    const endCol = startCol + cols;
+    const endRow = startRow + addRows;
+    const endCol = startCol + addCols;
     console.log('startRow', startRow, startCol, endRow, endCol)
 
     const newGrid = [...gridSorted];

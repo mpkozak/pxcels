@@ -3,3 +3,4 @@ export { default as Colors } from './Colors';
 export { default as Toggles } from './Toggles';
 export { default as Mapbox } from './Map';
 export { default as Splash } from './Splash';
+export { default as User } from './User';

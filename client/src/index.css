@@ -14,6 +14,10 @@
   background-color: transparent;
 }
 
+*:focus {
+  outline: none;
+}
+
 
 
 body {
@@ -44,14 +48,6 @@ h4 {
   font-size: 5vmin;
 }
 
-h5 {
-
-}
-
-h6 {
-
-}
-
 
 
 
@@ -68,6 +64,8 @@ h6 {
   height: calc(12vh - 20px);
   min-width: 70px;
   min-height: 70px;
+  max-width: 90px;
+  max-height: 90px;
   box-shadow: 0 0 1.25vmin .25vmin rgba(0, 0, 0, .3);
 }
 
@@ -76,6 +74,8 @@ h6 {
   height: calc(6vh - 12.5px);
   min-width: 32.5px;
   min-height: 32.5px;
+  max-width: 42.5px;
+  max-height: 42.5px;
 }
 
 
@@ -89,20 +89,17 @@ h6 {
   padding: 5px 10px 8px 10px;
   border-radius: 5px;
   box-shadow: 0 0 1.25vmin .25vmin rgba(0, 0, 0, .3);
-  /*transform: translateY(-67px);*/
   transform: translate(15px, -82px);
   z-index: 101;
   pointer-events: none;
 }
 
 #tooltip>* {
+  white-space: nowrap;
   -webkit-text-stroke: .5px rgba(127, 127, 127, 1);
   -webkit-font-smoothing: subpixel-antialiased;
   -webkit-text-fill-color: #ddd;
   mix-blend-mode: difference;
-  /*text-shadow: 0 0 .3vmin rgba(127, 127, 127, 1);*/
-  /*-webkit-background-clip: text;*/
-  /*-webkit-text-fill-color: transparent;*/
 }
 
 #tooltip>h5 {

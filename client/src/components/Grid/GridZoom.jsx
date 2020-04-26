@@ -42,7 +42,6 @@ export default memo(function GridZoom({
   const handleTouchMove = useCallback(e => {
     const { scale, targetTouches } = e;
     if (!scale || targetTouches.length !== 2) {
-      // e.stopPropagation();
       return setZoomActive(false);
     };
     if (!zoomActive) {

@@ -1,7 +1,4 @@
-import React, {
-  memo,
-  useMemo,
-} from 'react';
+import React, { memo, useMemo } from 'react';
 import { cl } from '../../libs';
 
 

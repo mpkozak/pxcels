@@ -1,15 +1,7 @@
-import React, {
-  memo,
-  useMemo,
-  useState,
-  useCallback,
-} from 'react';
+import React, { memo, useMemo, useState, useCallback } from 'react';
 import './Colors.css';
 import { cl } from '../../libs';
-import {
-  ColorsButton,
-  ColorsPalette,
-} from './';
+import { ColorsButton, ColorsPalette } from './';
 
 
 
