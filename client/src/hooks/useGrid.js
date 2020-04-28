@@ -32,6 +32,7 @@ export default function useGrid({
   const [redrawCel, setRedrawCel] = useState(null);
   const [lastDraw, setLastDraw] = useState(0);
 
+
   const dataRef = useRef(null);
   const gridCanvasRef = useRef(null);
   const gridCtx = useRef(null);

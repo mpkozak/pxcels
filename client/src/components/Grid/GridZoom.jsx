@@ -40,6 +40,7 @@ export default memo(function GridZoom({
 
 
   const handleTouchMove = useCallback(e => {
+    e.preventDefault();
     const { scale, targetTouches } = e;
     if (!scale || targetTouches.length !== 2) {
       return setZoomActive(false);
@@ -47,7 +48,6 @@ export default memo(function GridZoom({
     if (!zoomActive) {
       return null;
     };
-    e.preventDefault();
     storeCenter();
     setScale(scale);
   }, [setZoomActive, zoomActive, storeCenter, setScale]);

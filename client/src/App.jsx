@@ -8,53 +8,17 @@ import React, {
 } from 'react';
 import './App.css';
 import { useInit, useGrid, useInputDetect } from './hooks';
-import { parse, cl } from './libs';
+import { parse } from './libs';
 import {
   Splash,
+  Toolbar,
+  Toolbox,
   User,
   Colors,
   Toggles,
   Mapbox,
   Grid,
 } from './components';
-
-
-
-
-
-const Toolbar = memo(function Toolbar({
-  uiMode = 0,
-  hidden = true,
-  pos = '',
-  children,
-} = {}) {
-
-
-  return (
-    <div
-      className={cl(
-        'Toolbar',
-        `Toolbar--${pos}`,
-        [hidden, 'Toolbar--hide'],
-        [uiMode === 1, 'Toolbar--touch']
-      )}
-    >
-      {children}
-    </div>
-  );
-});
-
-
-
-
-
-const Toolbox = memo(function Toolbox({ pos = '', children } = {}) {
-  return (
-    <div className={cl('Toolbox', `Toolbox--${pos}`)}>
-      {children}
-    </div>
-  );
-});
 
 
 

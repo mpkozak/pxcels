@@ -66,7 +66,7 @@ function socketHandleMessage(msg) {
             this.post('store_user', userLogin);
           };
         })
-        .catch(err => console.error('res_uuid', err))
+        .catch(err => console.error('res_uuid', err));
     };
 
     if (!uuid || (uuid && this.uuid !== uuid)) {

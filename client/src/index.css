@@ -4,6 +4,7 @@
   box-sizing: border-box;
   user-select: none;
   -ms-overflow-style: none;
+  touch-action: inherit;
 }
 
 *::-webkit-scrollbar {
@@ -27,7 +28,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   /*-webkit-overflow-scrolling: touch;*/
   overflow: hidden;
-  touch-action: manipulation;
+  touch-action: none;
 }
 
 
