@@ -48,3 +48,215 @@
 .Splash--loading>h2 {
   opacity: 0;
 }
+
+
+
+
+
+.Splash-load {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 250ms ease-in;
+}
+
+.Splash-load--hide {
+  opacity: 0;
+}
+
+
+
+.Splash-load__wrap {
+  position: relative;
+  width: 20vmin;
+  height: 20vmin;
+  max-width: 100px;
+  max-height: 100px;
+  opacity: 0;
+  animation-name: loader-enter;
+  animation-duration: 500ms;
+  animation-delay: 250ms;
+  animation-iteration-count: 1;
+  animation-play-state: running;
+  animation-fill-mode: forwards;
+}
+
+
+
+.Splash-load__cel {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+}
+
+.Splash-load__cel--red {
+  background-color: #f00;
+  animation: cel-red 7s ease infinite;
+}
+
+.Splash-load__cel--green {
+  background-color: #0f0;
+  animation: cel-green 7s ease infinite;
+}
+
+.Splash-load__cel--blue {
+  background-color: #00f;
+  animation: cel-blue 7s ease infinite;
+}
+
+
+
+
+
+@keyframes loader-enter {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+
+
+@keyframes cel-red {
+  0% {
+    left: 0%;
+    top: 0%;
+  }
+
+  8.33% {
+    left: 0%;
+    top: 0%;
+  }
+  16.67% {
+    left: 50%;
+    top: 0%;
+  }
+
+  33.33% {
+    left: 50%;
+    top: 0%;
+  }
+  41.67% {
+    left: 50%;
+    top: 50%;
+  }
+
+  58.33% {
+    left: 50%;
+    top: 50%;
+  }
+  66.67% {
+    left: 0%;
+    top: 50%;
+  }
+
+  83.33% {
+    left: 0%;
+    top: 50%;
+  }
+  91.67% {
+    left: 0%;
+    top: 0%;
+  }
+
+  100.00% {
+    left: 0%;
+    top: 0%;
+  }
+}
+
+
+
+@keyframes cel-green {
+  0.00% {
+    left: 0%;
+    top: 50%;
+  }
+
+  16.67% {
+    left: 0%;
+    top: 50%;
+  }
+  25.00% {
+    left: 0%;
+    top: 0%;
+  }
+
+  41.67% {
+    left: 0%;
+    top: 0%;
+  }
+  50.00% {
+    left: 50%;
+    top: 0%;
+  }
+
+  66.67% {
+    left: 50%;
+    top: 0%;
+  }
+  75.00% {
+    left: 50%;
+    top: 50%;
+  }
+
+  91.67% {
+    left: 50%;
+    top: 50%;
+  }
+  100.00% {
+    left: 0%;
+    top: 50%;
+  }
+}
+
+
+
+@keyframes cel-blue {
+  0.00% {
+    left: 50%;
+    top: 0%;
+  }
+  8.33% {
+    left: 50%;
+    top: 50%;
+  }
+
+  25.00% {
+    left: 50%;
+    top: 50%;
+  }
+  33.33% {
+    left: 0%;
+    top: 50%;
+  }
+
+  50.00% {
+    left: 0%;
+    top: 50%;
+  }
+  58.33% {
+    left: 0%;
+    top: 0%;
+  }
+
+  75.00% {
+    left: 0%;
+    top: 0%;
+  }
+  83.33% {
+    left: 50%;
+    top: 0%;
+  }
+
+  100.00% {
+    left: 50%;
+    top: 0%;
+  }
+}

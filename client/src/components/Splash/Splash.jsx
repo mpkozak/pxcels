@@ -1,6 +1,7 @@
 import React, { memo, useRef, useEffect, useCallback } from 'react';
 import './Splash.css';
 import { cl } from '../../libs';
+import { SplashLoad } from './';
 
 
 
@@ -41,6 +42,7 @@ export default memo(function Splash({
       onTouchStart={handleClick}
     >
       <h1>PxCels by<br />Kozak</h1>
+      <SplashLoad gridReady={gridReady} />
       <h2>Click to<br />continue.</h2>
     </div>
   );
