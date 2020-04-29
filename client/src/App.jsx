@@ -182,6 +182,7 @@ export default memo(function App() {
             windowRef={windowRef}
             canvasRef={gridMapCanvas}
             panWindow={panWindow}
+            zoom={zoom}
           />
         </Toolbox>
       </Toolbar>

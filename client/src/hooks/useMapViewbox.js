@@ -5,7 +5,8 @@ import { parse } from '../libs';
 
 
 
-export default function useMapViewbox(elRef, elWindowRef) {
+export default function useMapViewbox(elRef, elWindowRef, zoom) {
+  const prevZoom = useRef(zoom);
   const viewboxRef = useRef(null);
 
 
@@ -28,7 +29,7 @@ export default function useMapViewbox(elRef, elWindowRef) {
   }, [elRef, elWindowRef, viewboxRef]);
 
 
-  useEffect(() => {   // redraw viewbox on change
+  useEffect(() => {   // redraw viewbox on scroll/resize
     const el = elWindowRef.current;
     if (el) {
       el.addEventListener('scroll', positionViewbox, { passive: true });
@@ -42,6 +43,14 @@ export default function useMapViewbox(elRef, elWindowRef) {
       };
     };
   }, [elWindowRef, positionViewbox]);
+
+
+  useEffect(() => {   // redraw viewbox on zoom
+    const prev = prevZoom.current;
+    if (prev !== zoom) {
+      positionViewbox();
+    };
+  }, [prevZoom, zoom, positionViewbox]);
 
 
   useEffect(() => {   // initial draw

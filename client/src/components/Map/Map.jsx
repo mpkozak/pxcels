@@ -19,10 +19,11 @@ export default memo(function Map({
   windowRef = null,
   canvasRef = null,
   panWindow = null,
+  zoom = 1,
 } = {}) {
 
 
-  const viewboxRef = useMapViewbox(gridRef, windowRef);
+  const viewboxRef = useMapViewbox(gridRef, windowRef, zoom);
 
 
   const [active, setActive] = useState(false);
