@@ -89,9 +89,10 @@
 
 
 .Map__overlay {
-  background-color: rgba(0, 0, 0, .2);
-  overflow: hidden;
+  background-color: rgba(0, 0, 0, 1);
+  opacity: .2;
   mix-blend-mode: multiply;
+  overflow: hidden;
 }
 
 .Map__overlay:active {
