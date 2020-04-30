@@ -1,31 +1,65 @@
-import { useParams, useSocket, useViewportScalar } from './';
+import {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  // useGlobalContext,
+} from 'react';
+import {
+  useParams,
+  // useSocket,
+  useViewportScalar,
+  useGlobalContext,
+} from './';
 
 
 
 
 
 export default function useInit() {
+  const [state, dispatch] = useGlobalContext();
   const {
     width,
     height,
-    colors = [],
-  } = useParams() || {};
-
-
-  const {
+    colors,
     scalar,
     scaleRange,
     scaleInitial,
-  } = useViewportScalar({ width, height });
+  } = state;
 
 
-  const {
-    socketActive,
-    username,
-    addListener,
-    postMessage,
-  } = useSocket();
+  useParams(dispatch);
 
+  useViewportScalar({ width, height, scalar, dispatch });
+
+  // console.log(state)
+
+
+  // const {
+  //   width,
+  //   height,
+  //   colors = [],
+  // } = useParams(setState) || {};
+
+
+
+  // const {
+  //   // scalar,
+  //   scaleRange,
+  //   scaleInitial,
+  // } = useViewportScalar({ width, height });
+
+
+  // const {
+  //   socketActive,
+  //   username,
+  //   addListener,
+  //   postMessage,
+  // } = useSocket();
+  if (!scaleInitial) {
+    console.log('init not ready')
+    return {};
+  }
 
   return {
     width,
@@ -34,9 +68,9 @@ export default function useInit() {
     scalar,
     scaleRange,
     scaleInitial,
-    socketActive,
-    username,
-    addListener,
-    postMessage,
+    // socketActive,
+    // username,
+    // addListener,
+    // postMessage,
   };
 };

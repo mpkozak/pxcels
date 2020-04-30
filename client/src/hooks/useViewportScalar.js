@@ -1,6 +1,6 @@
 import {
-  useMemo,
-  useState,
+  // useMemo,
+  // useState,
   useEffect,
   useCallback,
 } from 'react';
@@ -10,7 +10,6 @@ import {
 
 
 const viewportParams = Object.freeze({
-  scalar: (window.devicePixelRatio * 4),
   viewportMinGridScale: .5,
   viewportMaxCelPx: 100,
 });
@@ -22,55 +21,47 @@ const viewportParams = Object.freeze({
 export default function useViewportScalar({
   width,
   height,
+  scalar,
+  dispatch,
 } = {}) {
 
+    console.log('useViewportScalar ran')
+
   const {
-    scalar,
     viewportMinGridScale,
     viewportMaxCelPx,
   } = viewportParams;
 
 
-  const [scaleRange, setScaleRange] = useState(null);
-
-
   const setScale = useCallback(() => {
+    if (!width || !height) return null;
+    console.log('setScale ran')
     const minCelX = (window.innerWidth * viewportMinGridScale) / width;
     const minCelY = (window.innerHeight * viewportMinGridScale) / height;
     const minCelPx = Math.min(minCelX, minCelY);
-    const min = minCelPx / scalar;
-    const max = viewportMaxCelPx / scalar;
-    setScaleRange([min, max]);
-  }, [width, height, scalar, viewportMinGridScale, viewportMaxCelPx, setScaleRange]);
-
-
-  // useEffect(() => {
-  //   window.addEventListener('resize', setScale, { passive: true });
-  //   window.addEventListener('orientationchange', setScale);
-
-  //   return () => {
-  //     window.removeEventListener('resize', setScale);
-  //     window.removeEventListener('orientationchange', setScale);
-  //   };
-  // }, [setScale]);
+    const scaleRange = [minCelPx, viewportMaxCelPx].map(d => d / scalar);
+    const scaleInitial = scaleRange.reduce((acc, d) => acc + d, 0) / 3;
+    dispatch('scale', { scaleRange, scaleInitial });
+  }, [width, height, scalar, viewportMinGridScale, viewportMaxCelPx, dispatch]);
 
 
   useEffect(() => {
-    if (width && height && !scaleRange) {
-      setScale();
+    window.addEventListener('resize', setScale, { passive: true });
+    window.addEventListener('orientationchange', setScale);
+
+    return () => {
+      window.removeEventListener('resize', setScale);
+      window.removeEventListener('orientationchange', setScale);
     };
-  }, [width, height, scaleRange, setScale]);
+  }, [setScale]);
 
 
-  const scaleInitial = useMemo(() => {
-    if (!scaleRange) return null;
-    return scaleRange.reduce((acc, d) => acc + d, 0) / 2;
-  }, [scaleRange]);
+  useEffect(() => {
+    console.log('useViewportScalar EFFECT')
+    // if (width && height && !scaleRange) {
+      setScale();
+  }, [setScale]);
 
 
-  return {
-    scalar,
-    scaleRange,
-    scaleInitial,
-  };
+  return true;
 };

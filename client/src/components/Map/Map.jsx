@@ -23,7 +23,7 @@ export default memo(function Map({
 } = {}) {
 
 
-  const viewboxRef = useMapViewbox(gridRef, windowRef, zoom);
+  const viewboxRef = useMapViewbox({ gridRef, windowRef, zoom });
 
 
   const [active, setActive] = useState(false);
