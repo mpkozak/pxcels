@@ -12,6 +12,7 @@ export default memo(function User({
   postMessage = null
 } = {}) {
 
+
   const [context] = useGlobalContext();
   const { uiMode } = context;
 

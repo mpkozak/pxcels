@@ -1,8 +1,4 @@
-import React, {
-  memo,
-  useRef,
-  useReducer,
-} from 'react';
+import React, { memo, useRef, useReducer } from 'react';
 import './App.css';
 import {
   useGlobalContext,
@@ -31,7 +27,6 @@ const appState = {
   cursorMode: 0,      // 0 = drag; 1 = paint;
   activeColor: 6,
   showSplash: true,
-  // gridStatus: 0     // 0 = has now drawn; 1 = completed initial draw;
 };
 
 
@@ -40,8 +35,6 @@ function appReducer(state, action) {
 
   return ({ ...state, ...action });
 };
-
-
 
 
 

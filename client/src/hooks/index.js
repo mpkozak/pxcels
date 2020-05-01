@@ -1,4 +1,3 @@
-export { default as useInit } from './useInit.js';
 export { default as useGrid } from './useGrid.js';
 export { default as useInputDetect } from './useInputDetect.js';
 export { default as useParams } from './useParams.js';
