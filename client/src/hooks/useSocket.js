@@ -130,7 +130,6 @@ export default function useSocket() {
 
 
   return {
-    // socketActive: socketStatus === 2,
     username: user.username,
     addListener: socketStatus === 2 ? addListener : null,
     postMessage,

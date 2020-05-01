@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import './Toolbar.css';
+import { useGlobalContext } from '../../hooks';
 import { cl } from '../../libs';
 
 
@@ -7,11 +8,14 @@ import { cl } from '../../libs';
 
 
 export default memo(function Toolbar({
-  uiMode = 0,
   hidden = true,
   pos = '',
   children,
 } = {}) {
+
+
+  const [context] = useGlobalContext();
+  const { uiMode } = context;
 
 
   return (

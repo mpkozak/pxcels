@@ -1,5 +1,6 @@
 import React, { memo, useState, useCallback } from 'react';
 import './User.css';
+import { useGlobalContext } from '../../hooks';
 import { UserButton, UserForm } from './';
 
 
@@ -7,10 +8,12 @@ import { UserButton, UserForm } from './';
 
 
 export default memo(function User({
-  uiMode = 0,
   username = '',
   postMessage = null
 } = {}) {
+
+  const [context] = useGlobalContext();
+  const { uiMode } = context;
 
 
   const [active, setActive] = useState(false);

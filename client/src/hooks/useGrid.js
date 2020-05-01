@@ -5,40 +5,30 @@ import {
   useEffect,
   useCallback,
 } from 'react';
+import { useGlobalContext } from './';
 import { d3, parse } from '../libs';
 
-// import {
-//   useGlobalContext,
-// } from './';
 
 
 
 
 export default function useGrid({
-  width,
-  height,
-  colors,
-  scalar,
-  activeColor,
   gridCanvasRef,
   mapCanvasRef,
+  activeColor,
   addListener,
 } = {}) {
 
 
-  // const [state] = useGlobalContext();
-  // const {
-  //   width,
-  //   height,
-  //   colors,
-  //   scalar,
-  //   activeColor,
-  // } = state;
+  const [context] = useGlobalContext();
+  const {
+    width,
+    height,
+    colors,
+    scalar,
+  } = context;
 
 
-
-
-  console.log('useGrid')
   const [gridStatus, setGridStatus] = useState(0);
   /*
     0   has not drawn
@@ -112,10 +102,7 @@ export default function useGrid({
 
 
   useEffect(() => {   // get grid data from socket
-    console.log('useGrid -- get grid data from socket')
     if (post) {
-      console.log('useGrid -- RAN get grid data from socket')
-
       post('get_grid');
     };
   }, [post]);
@@ -147,7 +134,7 @@ export default function useGrid({
 
   const paintCel = useCallback((c, r) => {
     // const celI = celLookupMatrix[r][c];
-    const cel = getCelFromLoc(r, c);
+    const cel = getCelFromLoc(c, r);
     if (!cel) return null;
     cel.current.color = activeColor;
     setRedrawCel(cel);

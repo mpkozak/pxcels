@@ -1,7 +1,4 @@
-import {
-  useEffect,
-  useCallback,
-} from 'react';
+import { useEffect, useCallback } from 'react';
 import {
   useGlobalContext,
   useTouchZoomOverride,

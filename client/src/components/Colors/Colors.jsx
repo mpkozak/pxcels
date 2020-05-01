@@ -1,5 +1,6 @@
 import React, { memo, useMemo, useState, useCallback } from 'react';
 import './Colors.css';
+import { useGlobalContext } from '../../hooks';
 import { cl } from '../../libs';
 import { ColorsButton, ColorsPalette } from './';
 
@@ -8,11 +9,16 @@ import { ColorsButton, ColorsPalette } from './';
 
 
 export default memo(function Colors({
-  uiMode = 0,
-  colors = [],
   activeColor = 0,
   setActiveColor = null,
 } = {}) {
+
+
+  const [context] = useGlobalContext();
+  const {
+    colors,
+    uiMode,
+  } = context;
 
 
   const [showPalette, setShowPalette] = useState(null);

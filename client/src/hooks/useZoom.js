@@ -1,16 +1,11 @@
 import {
-  // Fragment,
-  // createContext,
-  // memo,
-  // useContext,
   useRef,
-  // useMemo,
   useState,
-  // useReducer,
   useEffect,
   useLayoutEffect,
   useCallback,
 } from 'react';
+import { useGlobalContext } from './';
 import { parse } from '../libs';
 
 
@@ -18,12 +13,17 @@ import { parse } from '../libs';
 
 
 export default function useZoom({
-  scaleRange = [],
-  scaleInitial = 1,
-  uiMode = 0,
   gridRef = null,
   windowRef = null,
 } = {}) {
+
+
+  const [context] = useGlobalContext();
+  const {
+    scaleRange,
+    scaleInitial,
+    uiMode,
+  } = context;
 
 
   const [zoom, setZoom] = useState(null);
@@ -155,21 +155,6 @@ export default function useZoom({
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   useEffect(() => {   // set initial zoom and scroll to random spot
     if (scaleInitial && !zoom) {
       const paddedRandom = () => (Math.random() + 1) * .5;
@@ -186,6 +171,7 @@ export default function useZoom({
   }, [center, panWindow]);
 
 
+
   return {
     zoom,
     updateZoom,
@@ -195,6 +181,8 @@ export default function useZoom({
       : {},
   };
 };
+
+
 
 
 

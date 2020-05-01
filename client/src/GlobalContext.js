@@ -24,18 +24,13 @@ const initialState = {
     scaleRange: [],
     scaleInitial: 0,
     uiMode: 0,      // 0 = unknown; 1 = touch; 2 = mouse;
-
-    // cursorMode: 0,      // 0 = drag; 1 = paint;
-    // activeColor: localStorage.getItem('color') || 6,
-    // showSplash: true,
-    // gridStatus: 0     // 0 = has now drawn; 1 = completed initial draw;
 };
 
 
 
 function globalContextReducer(state, action) {
   const { msg, data } = action;
-  console.log("SETTING GLOBAL CONTEXT ---", msg, data)
+  // console.log("SETTING GLOBAL CONTEXT ---", msg, data)
 
   switch (msg) {
     case 'params':

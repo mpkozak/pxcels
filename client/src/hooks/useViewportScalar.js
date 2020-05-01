@@ -1,10 +1,5 @@
-import {
-  useEffect,
-  useCallback,
-} from 'react';
-import {
-  useGlobalContext,
-} from './';
+import { useEffect, useCallback } from 'react';
+import { useGlobalContext } from './';
 
 
 
@@ -17,11 +12,10 @@ export default function useViewportScalar() {
     height,
     scalar,
   } = context;
-  // console.log('useViewportScalar ran')
 
 
   const calcScale = useCallback(() => {
-    console.log('useViewportScalar -- calcScale')
+    // console.log('useViewportScalar -- calcScale')
     if (!width || !height) return null;
     const scalar = window.devicePixelRatio * 4;
     const viewportMinGridScale = .5;
@@ -36,7 +30,7 @@ export default function useViewportScalar() {
 
 
   const setScale = useCallback(() => {
-    console.log('useViewportScalar -- setScale')
+    // console.log('useViewportScalar -- setScale')
     const scale = calcScale();
     if (!scale) return null;
     dispatch('scale', scale);
@@ -55,15 +49,13 @@ export default function useViewportScalar() {
 
 
   useEffect(() => {
-    console.log('useViewportScalar -- EFFECT')
+    // console.log('useViewportScalar -- EFFECT')
     if (width && !scalar) {
-      console.log('useViewportScalar -- EFFECT RAN')
+      // console.log('useViewportScalar -- EFFECT RAN')
       setScale();
     };
   }, [width, scalar, setScale]);
 };
-
-
 
 
 

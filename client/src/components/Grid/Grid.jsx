@@ -5,7 +5,8 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import './Grid.css'
+import './Grid.css';
+import { useGlobalContext } from '../../hooks';
 import {
   GridCanvas,
   GridLines,
@@ -18,23 +19,24 @@ import {
 
 
 export default memo(function Grid({
-  width = 0,
-  height = 0,
-  scalar = 1,
-  uiMode = 0,
-
   gridRef = null,
   windowRef = null,
   gridCanvasRef = null,
-
   cursorMode = 0,
-
   paintCel = null,
   showTooltip = null,
-
   zoom = 1,
   zoomListeners = {},
 } = {}) {
+
+
+  const [context] = useGlobalContext();
+  const {
+    width,
+    height,
+    scalar,
+    uiMode,
+  } = context;
 
 
   const gridRatio = useMemo(() => scalar * zoom, [scalar, zoom]);

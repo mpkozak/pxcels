@@ -9,12 +9,9 @@ import {
   useParams,
   useViewportScalar,
   useSocket,
-  // useInputDetect,
-
   useGrid,
   useZoom,
 } from './hooks';
-// import { parse } from './libs';
 import {
   Splash,
   Toolbar,
@@ -39,7 +36,7 @@ const appState = {
 
 
 function appReducer(state, action) {
-  console.log("SETTING APP STATE ---", action)
+  // console.log("SETTING APP STATE ---", action)
 
   return ({ ...state, ...action });
 };
@@ -49,16 +46,8 @@ function appReducer(state, action) {
 
 
 export default memo(function App() {
-  const [state] = useGlobalContext();
-  const {
-    width,
-    height,
-    colors,
-    scalar,
-    scaleRange,
-    scaleInitial,
-    uiMode,
-  } = state;
+  const [context] = useGlobalContext();
+  const { uiMode } = context;
 
 
   void useParams();
@@ -71,12 +60,12 @@ export default memo(function App() {
   const mapCanvasRef = useRef(null);
 
 
-  const [localState, dispatch] = useReducer(appReducer, appState);
+  const [state, dispatch] = useReducer(appReducer, appState);
   const {
     cursorMode,
     activeColor,
     showSplash,
-  } = localState;
+  } = state;
 
 
   const {
@@ -90,15 +79,11 @@ export default memo(function App() {
     gridReady,
     paintCel,
     showTooltip,
-    // gridLastDraw,
+    // lastDraw,
   } = useGrid({
-        width,
-        height,
-        colors,
-        scalar,
-        activeColor,
         gridCanvasRef,
         mapCanvasRef,
+        activeColor,
         addListener,
       });
 
@@ -109,9 +94,6 @@ export default memo(function App() {
     panWindow,
     zoomListeners,
   } = useZoom({
-        uiMode,
-        scaleRange,
-        scaleInitial,
         gridRef,
         windowRef,
       });
@@ -126,20 +108,17 @@ export default memo(function App() {
           hideSplash={() => dispatch({ showSplash: false })}
         />
       )}
-      <Toolbar uiMode={uiMode} hidden={showSplash} pos="top">
+      <Toolbar hidden={showSplash} pos="top">
         <Toolbox pos="left">
           <User
-            uiMode={uiMode}
             username={username}
             postMessage={postMessage}
           />
         </Toolbox>
       </Toolbar>
-      <Toolbar uiMode={uiMode} hidden={showSplash} pos="bottom">
+      <Toolbar hidden={showSplash} pos="bottom">
         <Toolbox pos="left">
           <Colors
-            uiMode={uiMode}
-            colors={colors}
             activeColor={activeColor}
             setActiveColor={val => dispatch({ activeColor: val })}
           />
@@ -153,30 +132,21 @@ export default memo(function App() {
         </Toolbox>
         <Toolbox pos="right">
           <Mapbox
-            uiMode={uiMode}
             gridRef={gridRef}
             windowRef={windowRef}
-            canvasRef={mapCanvasRef}
+            mapCanvasRef={mapCanvasRef}
             zoom={zoom}
             panWindow={panWindow}
           />
         </Toolbox>
       </Toolbar>
       <Grid
-        width={width}
-        height={height}
-        scalar={scalar}
-        uiMode={uiMode}
-
         gridRef={gridRef}
         windowRef={windowRef}
         gridCanvasRef={gridCanvasRef}
-
         cursorMode={cursorMode}
-
         paintCel={paintCel}
         showTooltip={showTooltip}
-
         zoom={zoom}
         zoomListeners={zoomListeners}
       />

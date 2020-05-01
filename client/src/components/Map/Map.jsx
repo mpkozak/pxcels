@@ -1,6 +1,6 @@
 import React, { memo, useState, useCallback } from 'react';
 import './Map.css';
-import { useMapViewbox } from '../../hooks';
+import { useGlobalContext, useMapViewbox } from '../../hooks';
 import {
   MapBlackout,
   MapButton,
@@ -14,13 +14,16 @@ import {
 
 
 export default memo(function Map({
-  uiMode = 0,
   gridRef = null,
   windowRef = null,
-  canvasRef = null,
-  panWindow = null,
+  mapCanvasRef = null,
   zoom = 1,
+  panWindow = null,
 } = {}) {
+
+
+  const [context] = useGlobalContext();
+  const { uiMode } = context;
 
 
   const viewboxRef = useMapViewbox({ gridRef, windowRef, zoom });
@@ -49,18 +52,18 @@ export default memo(function Map({
       top,
       width,
       height,
-    } = canvasRef.current.getBoundingClientRect();
+    } = mapCanvasRef.current.getBoundingClientRect();
     const relX = (x - left) / width;
     const relY = (y - top) / height;
     panWindow(relX, relY);
-  }, [canvasRef, panWindow]);
+  }, [mapCanvasRef, panWindow]);
 
 
   return (
     <div className="Map">
       <MapBlackout active={active} hideMap={hideMap} />
       <MapButton uiMode={uiMode} active={active} showMap={showMap}>
-        <MapCanvas canvasRef={canvasRef} />
+        <MapCanvas canvasRef={mapCanvasRef} />
         <MapOverlay uiMode={uiMode} active={active} pan={handlePan}>
           <MapViewbox viewboxRef={viewboxRef} />
         </MapOverlay>

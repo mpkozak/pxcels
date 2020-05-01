@@ -1,10 +1,5 @@
-import {
-  useEffect,
-  useCallback,
-} from 'react';
-import {
-  useGlobalContext,
-} from './';
+import { useEffect, useCallback } from 'react';
+import { useGlobalContext } from './';
 
 
 
@@ -13,11 +8,10 @@ import {
 export default function useParams() {
   const [context, dispatch] = useGlobalContext();
   const { width } = context;
-  // console.log('useParams ran')
 
 
   const fetchParams = useCallback(async () => {
-    console.log('useParams -- fetchParams')
+    // console.log('useParams -- fetchParams')
     try {
       const url = `${process.env.REACT_APP_API_URL || ''}/params`;
       const res = await fetch(url)
@@ -35,13 +29,15 @@ export default function useParams() {
 
 
   useEffect(() => {
-    console.log('useParams -- EFFECT')
+    // console.log('useParams -- EFFECT')
     if (!width) {
-      console.log('useParams -- EFFECT RAN')
+      // console.log('useParams -- EFFECT RAN')
       fetchParams();
     };
   }, [width, fetchParams]);
 };
+
+
 
 
 
