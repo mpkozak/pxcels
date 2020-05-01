@@ -18,20 +18,22 @@ import {
 
 
 export default memo(function Grid({
-  uiMode = 0,
-  cursorMode = 0,
-  gridRef = null,
-  windowRef = null,
-  canvasRef = null,
-  paintCel = null,
-  tooltipCel = null,
   width = 0,
   height = 0,
   scalar = 1,
+  uiMode = 0,
+
+  gridRef = null,
+  windowRef = null,
+  gridCanvasRef = null,
+
+  cursorMode = 0,
+
+  paintCel = null,
+  showTooltip = null,
+
   zoom = 1,
-  setZoom = null,
-  calcZoom = null,
-  storeCenter = null,
+  zoomListeners = {},
 } = {}) {
 
 
@@ -107,11 +109,11 @@ export default memo(function Grid({
 // Tooltip
 ///////////////////////////////////////
 
-  const handleTooltipCel = useCallback(e => {
+  const handleShowTooltip = useCallback(e => {
     if (uiMode !== 2 || cursorMode !== 1) return null;
     const { cX, cY, clientX, clientY } = getCelCoords(e);
-    tooltipCel(cX, cY, clientX, clientY);
-  }, [uiMode, cursorMode, getCelCoords, tooltipCel]);
+    showTooltip(cX, cY, clientX, clientY);
+  }, [uiMode, cursorMode, getCelCoords, showTooltip]);
 
 
 
@@ -141,19 +143,15 @@ export default memo(function Grid({
       startDragging={startDragging}
     >
       <GridZoom
-        uiMode={uiMode}
         gridRef={gridRef}
         gridStyle={gridStyle}
-        zoom={zoom}
-        setZoom={setZoom}
-        calcZoom={calcZoom}
-        storeCenter={storeCenter}
+        zoomListeners={zoomListeners}
       >
         <GridCanvas
-          canvasRef={canvasRef}
+          canvasRef={gridCanvasRef}
           canvasStyle={canvasStyle}
           paintCel={handlePaintCel}
-          tooltipCel={handleTooltipCel}
+          showTooltip={handleShowTooltip}
         />
         <GridLines
           width={width}

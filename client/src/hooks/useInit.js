@@ -35,32 +35,6 @@ export default function useInit() {
   // console.log(state)
 
 
-  // const {
-  //   width,
-  //   height,
-  //   colors = [],
-  // } = useParams(setState) || {};
-
-
-
-  // const {
-  //   // scalar,
-  //   scaleRange,
-  //   scaleInitial,
-  // } = useViewportScalar({ width, height });
-
-
-  // const {
-  //   socketActive,
-  //   username,
-  //   addListener,
-  //   postMessage,
-  // } = useSocket();
-  if (!scaleInitial) {
-    console.log('init not ready')
-    return {};
-  }
-
   return {
     width,
     height,

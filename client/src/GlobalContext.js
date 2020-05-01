@@ -20,12 +20,15 @@ const initialState = {
     width: 0,
     height: 0,
     colors: [],
-    scalar: (window.devicePixelRatio * 4),
+    scalar: 0,
     scaleRange: [],
     scaleInitial: 0,
-    uiMode: 0,
-    cursorMode: 0,      // 0 = drag; 1 = paint;
-    activeColor: localStorage.getItem('color') || 6,
+    uiMode: 0,      // 0 = unknown; 1 = touch; 2 = mouse;
+
+    // cursorMode: 0,      // 0 = drag; 1 = paint;
+    // activeColor: localStorage.getItem('color') || 6,
+    // showSplash: true,
+    // gridStatus: 0     // 0 = has now drawn; 1 = completed initial draw;
 };
 
 
@@ -38,31 +41,24 @@ function globalContextReducer(state, action) {
     case 'params':
       const { width, height, colors } = data;
       return ({ ...state, width, height, colors });
-    // case 'login':
-    //   const { uuid, name } = data;
-    //   localStorage.setItem('uuid', uuid);
-    //   localStorage.setItem('username', name);
-    //   return ({ ...state, uuid, username: name });
     case 'scale':
-      const { scaleRange, scaleInitial } = data;
-      return ({ ...state, scaleRange, scaleInitial });
-
-
+      const { scalar, scaleRange, scaleInitial } = data;
+      return ({ ...state, scalar, scaleRange, scaleInitial });
     case 'uiMode':
-      localStorage.setItem('uiMode', data);
-      return ({ ...state, uiMode: data });
-    case 'cursorMode':
-      return ({ ...state, cursorMode: data });
-    case 'activeColor':
-      localStorage.setItem('color', data);
-      return ({ ...state, activeColor: data });
+      const cursorMode = data === 2 ? 0 : 1;
+      return ({ ...state, uiMode: data, cursorMode });
     default:
+      if (msg in state) {
+        return ({ ...state, [msg]: data });
+      };
       return state;
   };
 };
 
 
+
 const GlobalContext = createContext();
+
 
 
 function GlobalContextProvider({ children } = {}) {
@@ -74,8 +70,6 @@ function GlobalContextProvider({ children } = {}) {
     </GlobalContext.Provider>
   );
 };
-
-
 
 
 

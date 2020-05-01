@@ -1,5 +1,6 @@
 import React, { memo, useRef, useEffect, useCallback } from 'react';
 import './Splash.css';
+import { useInputDetect } from '../../hooks';
 import { cl } from '../../libs';
 import { SplashLoad } from './';
 
@@ -8,10 +9,12 @@ import { SplashLoad } from './';
 
 
 export default memo(function Splash({
-  splashRef = null,
   gridReady = false,
   hideSplash = null,
 } = {}) {
+
+  const splashRef = useRef(null);
+  void useInputDetect(splashRef);
 
 
   const readyRef = useRef(0);

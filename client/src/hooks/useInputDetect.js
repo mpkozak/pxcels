@@ -1,21 +1,19 @@
 import {
-  useState,
   useEffect,
   useCallback,
 } from 'react';
-import { useTouchZoomOverride } from './';
+import {
+  useGlobalContext,
+  useTouchZoomOverride,
+} from './';
 
 
 
 
 
-export default function useInputDetect(ref = null) {
-  const [uiMode, setUiMode] = useState(0);
-  /*
-    0 unknown
-    1 touch
-    2 mouse
-  */
+export default function useInputDetect(splashRef = null) {
+  const [context, dispatch] = useGlobalContext();
+  const { uiMode } = context;
 
 
   void useTouchZoomOverride(uiMode === 1);
@@ -23,19 +21,19 @@ export default function useInputDetect(ref = null) {
 
   const handleTouch = useCallback(e => {
     e.preventDefault();
-    setUiMode(1);
-  }, [setUiMode]);
+    dispatch('uiMode', 1);
+  }, [dispatch]);
 
 
   const handleMouse = useCallback(e => {
     e.preventDefault();
-    setUiMode(2);
-  }, [setUiMode]);
+    dispatch('uiMode', 2);
+  }, [dispatch]);
 
 
   useEffect(() => {
     const handleClick = e => e.preventDefault();
-    const el = ref.current;
+    const el = splashRef.current;
     if (el && !uiMode) {
       el.addEventListener('mousedown', handleMouse);
       el.addEventListener('touchstart', handleTouch);
@@ -48,10 +46,5 @@ export default function useInputDetect(ref = null) {
         el.removeEventListener('click', handleClick);
       };
     }
-  }, [ref, uiMode, handleTouch, handleMouse]);
-
-
-  return {
-    uiMode,
-  };
+  }, [splashRef, uiMode, handleTouch, handleMouse]);
 };

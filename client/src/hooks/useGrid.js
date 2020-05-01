@@ -7,6 +7,9 @@ import {
 } from 'react';
 import { d3, parse } from '../libs';
 
+// import {
+//   useGlobalContext,
+// } from './';
 
 
 
@@ -16,12 +19,26 @@ export default function useGrid({
   height,
   colors,
   scalar,
-  socketActive,
-  addListener,
   activeColor,
+  gridCanvasRef,
+  mapCanvasRef,
+  addListener,
 } = {}) {
 
 
+  // const [state] = useGlobalContext();
+  // const {
+  //   width,
+  //   height,
+  //   colors,
+  //   scalar,
+  //   activeColor,
+  // } = state;
+
+
+
+
+  console.log('useGrid')
   const [gridStatus, setGridStatus] = useState(0);
   /*
     0   has not drawn
@@ -34,9 +51,7 @@ export default function useGrid({
 
 
   const dataRef = useRef(null);
-  const gridCanvasRef = useRef(null);
   const gridCtx = useRef(null);
-  const mapCanvasRef = useRef(null);
   const mapCtx = useRef(null);
   const offCanvasRef = useRef(null);
   const offCtx = useRef(null);
@@ -86,6 +101,7 @@ export default function useGrid({
 
 
   const post = useMemo(() => {
+    if (!addListener) return null;
     return addListener(handleSocketMessage);
   }, [addListener, handleSocketMessage]);
 
@@ -96,10 +112,13 @@ export default function useGrid({
 
 
   useEffect(() => {   // get grid data from socket
-    if (socketActive && post) {
+    console.log('useGrid -- get grid data from socket')
+    if (post) {
+      console.log('useGrid -- RAN get grid data from socket')
+
       post('get_grid');
     };
-  }, [socketActive, post]);
+  }, [post]);
 
 
 
@@ -118,14 +137,22 @@ export default function useGrid({
   }, [width, height]);
 
 
-  const paintCel = useCallback((c, r) => {
+  const getCelFromLoc = useCallback((c, r) => {
     const celI = celLookupMatrix[r][c];
     const cel = dataRef.current[celI];
+    if (!cel) return null;
+    return cel;
+  }, [celLookupMatrix, dataRef])
+
+
+  const paintCel = useCallback((c, r) => {
+    // const celI = celLookupMatrix[r][c];
+    const cel = getCelFromLoc(r, c);
     if (!cel) return null;
     cel.current.color = activeColor;
     setRedrawCel(cel);
     postUpdatedCel(cel.cel_id, activeColor);
-  }, [celLookupMatrix, dataRef, activeColor, setRedrawCel, postUpdatedCel]);
+  }, [getCelFromLoc, activeColor, setRedrawCel, postUpdatedCel]);
 
 
 
@@ -304,10 +331,8 @@ export default function useGrid({
 
   return {
     gridReady: !!gridStatus,
-    gridCanvas: gridCanvasRef,
-    gridMapCanvas: mapCanvasRef,
-    gridPaintCel: paintCel,
-    gridTooltipCel: tooltipCel,
-    gridLastDraw: lastDraw,
+    paintCel: paintCel,
+    showTooltip: tooltipCel,
+    // lastDraw: lastDraw,
   };
 };

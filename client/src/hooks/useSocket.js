@@ -115,7 +115,7 @@ export default function useSocket() {
   }, [socketStatus, user, client]);
 
 
-  const addListener = useCallback((fn) => {
+  const addListener = useCallback(fn => {
     listener.current = fn;
     return postMessage;
   }, [listener, postMessage]);
@@ -130,9 +130,9 @@ export default function useSocket() {
 
 
   return {
-    socketActive: socketStatus === 2,
+    // socketActive: socketStatus === 2,
     username: user.username,
-    addListener,
+    addListener: socketStatus === 2 ? addListener : null,
     postMessage,
   };
 };

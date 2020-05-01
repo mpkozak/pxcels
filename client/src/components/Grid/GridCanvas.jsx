@@ -8,7 +8,7 @@ export default memo(function GridCanvas({
   canvasRef = null,
   canvasStyle = {},
   paintCel = null,
-  tooltipCel = null,
+  showTooltip = null,
 } = {}) {
 
 
@@ -18,7 +18,7 @@ export default memo(function GridCanvas({
       ref={canvasRef}
       style={canvasStyle}
       onClick={paintCel}
-      onMouseMove={tooltipCel}
+      onMouseMove={showTooltip}
     />
   );
 });

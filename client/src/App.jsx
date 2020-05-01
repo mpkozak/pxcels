@@ -1,23 +1,20 @@
 import React, {
   memo,
   useRef,
-  useState,
-  useEffect,
-  // useLayoutEffect,
-  useCallback,
+  useReducer,
 } from 'react';
 import './App.css';
 import {
-  useInit,
+  useGlobalContext,
   useParams,
   useViewportScalar,
   useSocket,
+  // useInputDetect,
+
   useGrid,
-  useInputDetect,
   useZoom,
-  useGlobalContext,
 } from './hooks';
-import { parse } from './libs';
+// import { parse } from './libs';
 import {
   Splash,
   Toolbar,
@@ -33,7 +30,26 @@ import {
 
 
 
+const appState = {
+  cursorMode: 0,      // 0 = drag; 1 = paint;
+  activeColor: 6,
+  showSplash: true,
+  // gridStatus: 0     // 0 = has now drawn; 1 = completed initial draw;
+};
+
+
+function appReducer(state, action) {
+  console.log("SETTING APP STATE ---", action)
+
+  return ({ ...state, ...action });
+};
+
+
+
+
+
 export default memo(function App() {
+  const [state] = useGlobalContext();
   const {
     width,
     height,
@@ -41,100 +57,73 @@ export default memo(function App() {
     scalar,
     scaleRange,
     scaleInitial,
-  } = useInit();
+    uiMode,
+  } = state;
 
 
-  // useInit();
-  // const [state, dispatch] = useGlobalContext();
-  // const {
-  //   width,
-  //   height,
-  //   colors,
-  //   scalar,
-  //   scaleRange,
-  //   scaleInitial,
-  // } = state;
+  void useParams();
+  void useViewportScalar();
 
 
-  // useParams(dispatch);
+  const gridRef = useRef(null);
+  const windowRef = useRef(null);
+  const gridCanvasRef = useRef(null);
+  const mapCanvasRef = useRef(null);
 
-  // useViewportScalar({ width, height, scalar, dispatch });
+
+  const [localState, dispatch] = useReducer(appReducer, appState);
+  const {
+    cursorMode,
+    activeColor,
+    showSplash,
+  } = localState;
+
 
   const {
-    socketActive,
     username,
     addListener,
     postMessage,
   } = useSocket();
 
 
-  const [cursorMode, setCursorMode] = useState(null);   // 0 = drag; 1 = paint;
-  const [activeColor, setActiveColor] = useState(6);
-
-
-  const splashRef = useRef(null);
-  const { uiMode } = useInputDetect(splashRef);   // 0 = unknown; 1 = touch; 2 = mouse;
-
-
-  const [showSplash, setShowSplash] = useState(!uiMode);
-
-
-  const hideSplash = useCallback(() => {
-    setShowSplash(false);
-  }, [setShowSplash]);
-
-
   const {
     gridReady,
-    gridCanvas,
-    gridMapCanvas,
-    gridPaintCel,
-    gridTooltipCel,
+    paintCel,
+    showTooltip,
     // gridLastDraw,
   } = useGrid({
         width,
         height,
         colors,
         scalar,
-        socketActive,
-        addListener,
         activeColor,
+        gridCanvasRef,
+        mapCanvasRef,
+        addListener,
       });
-
-
-  const gridRef = useRef(null);
-  const windowRef = useRef(null);
 
 
   const {
     zoom,
-    setZoom,
-    calcZoom,
     updateZoom,
-    storeCenter,
     panWindow,
+    zoomListeners,
   } = useZoom({
-        gridRef,
-        windowRef,
+        uiMode,
         scaleRange,
         scaleInitial,
+        gridRef,
+        windowRef,
       });
 
-
-  useEffect(() => {   // set initial cursor mode
-    if (uiMode && cursorMode === null) {
-      setCursorMode(uiMode === 2 ? 0 : 1);
-    };
-  }, [uiMode, cursorMode, setCursorMode]);
 
 
   return (
     <div id="App">
       {showSplash && (
         <Splash
-          splashRef={splashRef}
           gridReady={gridReady}
-          hideSplash={hideSplash}
+          hideSplash={() => dispatch({ showSplash: false })}
         />
       )}
       <Toolbar uiMode={uiMode} hidden={showSplash} pos="top">
@@ -152,13 +141,13 @@ export default memo(function App() {
             uiMode={uiMode}
             colors={colors}
             activeColor={activeColor}
-            setActiveColor={setActiveColor}
+            setActiveColor={val => dispatch({ activeColor: val })}
           />
           {(uiMode === 2) && (
             <Toggles
               cursorMode={cursorMode}
-              setCursorMode={setCursorMode}
-                  updateZoom={updateZoom}
+              setCursorMode={val => dispatch({ cursorMode: val })}
+              updateZoom={updateZoom}
             />
           )}
         </Toolbox>
@@ -167,27 +156,29 @@ export default memo(function App() {
             uiMode={uiMode}
             gridRef={gridRef}
             windowRef={windowRef}
-            canvasRef={gridMapCanvas}
-                panWindow={panWindow}
-                zoom={zoom}
+            canvasRef={mapCanvasRef}
+            zoom={zoom}
+            panWindow={panWindow}
           />
         </Toolbox>
       </Toolbar>
       <Grid
-        uiMode={uiMode}
-        cursorMode={cursorMode}
-        gridRef={gridRef}
-        windowRef={windowRef}
-        canvasRef={gridCanvas}
-        paintCel={gridPaintCel}
-        tooltipCel={gridTooltipCel}
         width={width}
         height={height}
         scalar={scalar}
-            zoom={zoom}
-            setZoom={setZoom}
-            calcZoom={calcZoom}
-            storeCenter={storeCenter}
+        uiMode={uiMode}
+
+        gridRef={gridRef}
+        windowRef={windowRef}
+        gridCanvasRef={gridCanvasRef}
+
+        cursorMode={cursorMode}
+
+        paintCel={paintCel}
+        showTooltip={showTooltip}
+
+        zoom={zoom}
+        zoomListeners={zoomListeners}
       />
     </div>
   );
