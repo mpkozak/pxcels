@@ -21,7 +21,7 @@
     "mongodb": "^3.5.5",
     "morgan": "^1.10.0",
     "uuid": "^7.0.3",
-    "ws": "^7.2.3"
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "concurrently": "^5.1.0",
